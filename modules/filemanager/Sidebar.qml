@@ -29,9 +29,8 @@ StyledRect {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.bottom: parent.bottom
         anchors.margins: Appearance.padding.normal
-        spacing: Appearance.spacing.small / 2
+        spacing: 2
 
         StyledText {
             Layout.alignment: Qt.AlignHCenter
@@ -55,7 +54,7 @@ StyledRect {
                 readonly property bool selected: FileManagerService.currentPath === modelData.path
 
                 Layout.fillWidth: true
-                implicitHeight: placeInner.implicitHeight + Appearance.padding.normal * 2
+                implicitHeight: placeInner.implicitHeight + Appearance.padding.small * 2
 
                 radius: Appearance.rounding.full
                 color: Qt.alpha(Colours.palette.m3secondaryContainer, selected ? 1 : 0)
@@ -72,9 +71,9 @@ StyledRect {
                     id: placeInner
 
                     anchors.fill: parent
-                    anchors.margins: Appearance.padding.normal
-                    anchors.leftMargin: Appearance.padding.large
-                    anchors.rightMargin: Appearance.padding.large
+                    anchors.margins: Appearance.padding.small
+                    anchors.leftMargin: Appearance.padding.normal
+                    anchors.rightMargin: Appearance.padding.normal
                     spacing: Appearance.spacing.normal
 
                     MaterialIcon {
