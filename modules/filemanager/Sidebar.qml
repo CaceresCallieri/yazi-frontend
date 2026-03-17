@@ -10,7 +10,7 @@ StyledRect {
     id: root
 
     implicitWidth: Config.fileManager.sizes.sidebarWidth
-    color: Theme.palette.m3surfaceContainer
+    color: Theme.layer(Theme.palette.m3surfaceContainer, 1)
 
     readonly property var _places: [
         { name: "Home",      icon: "home",             path: Paths.home },

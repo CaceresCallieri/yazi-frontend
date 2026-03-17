@@ -11,7 +11,7 @@ StyledRect {
     required property var currentEntry
 
     implicitHeight: inner.implicitHeight + Theme.padding.small * 2
-    color: Theme.palette.m3surfaceContainer
+    color: Theme.layer(Theme.palette.m3surfaceContainer, 1)
 
     RowLayout {
         id: inner

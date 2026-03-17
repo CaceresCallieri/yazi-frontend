@@ -10,7 +10,7 @@ StyledRect {
     id: root
 
     implicitHeight: inner.implicitHeight + Theme.padding.normal * 2
-    color: Theme.palette.m3surfaceContainer
+    color: Theme.layer(Theme.palette.m3surfaceContainer, 1)
 
     // Build breadcrumb segments: [{name, path, isHome}]
     readonly property var _segments: {

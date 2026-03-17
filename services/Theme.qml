@@ -1,73 +1,169 @@
 pragma Singleton
 
 import Quickshell
+import Quickshell.Io
 import QtQuick
 
 Singleton {
     id: root
 
-    // === M3 Dark Palette (from Symmetria M3Palette defaults) ===
-    readonly property QtObject palette: QtObject {
-        readonly property color m3background: "#191114"
-        readonly property color m3surface: "#191114"
-        readonly property color m3surfaceContainerLowest: "#130c0e"
-        readonly property color m3surfaceContainerLow: "#22191c"
-        readonly property color m3surfaceContainer: "#261d20"
-        readonly property color m3surfaceContainerHigh: "#31282a"
-        readonly property color m3surfaceContainerHighest: "#3c3235"
-        readonly property color m3onSurface: "#efdfe2"
-        readonly property color m3onSurfaceVariant: "#d5c2c6"
-        readonly property color m3primary: "#ffb0ca"
-        readonly property color m3onPrimary: "#541d34"
-        readonly property color m3outline: "#9e8c91"
-        readonly property color m3outlineVariant: "#514347"
-        readonly property color m3secondary: "#e2bdc7"
-        readonly property color m3secondaryContainer: "#5a3f48"
-        readonly property color m3onSecondaryContainer: "#ffd9e3"
-        readonly property color m3error: "#ffb4ab"
-        readonly property color m3shadow: "#000000"
+    // === Symmetria integration state ===
+    property bool _symmetriaAvailable: false
+    readonly property string _configDir: Paths.home + "/.config/quickshell/symmetria/config"
+
+    // === M3 Palette (defaults from Symmetria M3Palette; overwritten by IPC) ===
+    property QtObject palette: QtObject {
+        property color m3background: "#191114"
+        property color m3surface: "#191114"
+        property color m3surfaceContainerLowest: "#130c0e"
+        property color m3surfaceContainerLow: "#22191c"
+        property color m3surfaceContainer: "#261d20"
+        property color m3surfaceContainerHigh: "#31282a"
+        property color m3surfaceContainerHighest: "#3c3235"
+        property color m3onSurface: "#efdfe2"
+        property color m3onSurfaceVariant: "#d5c2c6"
+        property color m3primary: "#ffb0ca"
+        property color m3onPrimary: "#541d34"
+        property color m3outline: "#9e8c91"
+        property color m3outlineVariant: "#514347"
+        property color m3secondary: "#e2bdc7"
+        property color m3secondaryContainer: "#5a3f48"
+        property color m3onSecondaryContainer: "#ffd9e3"
+        property color m3error: "#ffb4ab"
+        property color m3shadow: "#000000"
     }
 
     // === Typography ===
-    readonly property QtObject font: QtObject {
-        readonly property QtObject family: QtObject {
-            readonly property string sans: "Rubik"
-            readonly property string mono: "CaskaydiaCove NF"
-            readonly property string material: "Material Symbols Rounded"
+    property QtObject font: QtObject {
+        property QtObject family: QtObject {
+            property string sans: "Rubik"
+            property string mono: "CaskaydiaCove NF"
+            property string material: "Material Symbols Rounded"
         }
-        readonly property QtObject size: QtObject {
-            readonly property int small: 11
-            readonly property int smaller: 12
-            readonly property int normal: 13
-            readonly property int larger: 15
-            readonly property int large: 18
-            readonly property int extraLarge: 28
+        property QtObject size: QtObject {
+            property real small: 11
+            property real smaller: 12
+            property real normal: 13
+            property real larger: 15
+            property real large: 18
+            property real extraLarge: 28
         }
     }
 
     // === Layout tokens ===
-    readonly property QtObject rounding: QtObject {
-        readonly property int small: 12
-        readonly property int full: 1000
+    property QtObject rounding: QtObject {
+        property int small: 12
+        property int normal: 17
+        property int large: 25
+        property int full: 1000
     }
 
-    readonly property QtObject spacing: QtObject {
-        readonly property int tiny: 2
-        readonly property int small: 7
-        readonly property int normal: 12
+    property QtObject spacing: QtObject {
+        property real tiny: 2
+        property real small: 7
+        property real smaller: 10
+        property real normal: 12
+        property real larger: 15
+        property real large: 20
     }
 
-    readonly property QtObject padding: QtObject {
-        readonly property int small: 5
-        readonly property int normal: 10
-        readonly property int large: 15
+    property QtObject padding: QtObject {
+        property real small: 5
+        property real smaller: 7
+        property real normal: 10
+        property real larger: 12
+        property real large: 15
     }
 
     // === Animation tokens ===
-    readonly property int animDuration: 400
-    readonly property list<real> animCurveStandard: [0.2, 0, 0, 1, 1, 1]
-    readonly property list<real> animCurveStandardDecel: [0, 0, 0, 1, 1, 1]
+    property int animDuration: 400
+    property list<real> animCurveStandard: [0.2, 0, 0, 1, 1, 1]
+    property list<real> animCurveStandardDecel: [0, 0, 0, 1, 1, 1]
+
+    // === Transparency ===
+    property QtObject transparency: QtObject {
+        property bool enabled: true
+        property real base: 0.3
+        property real layers: 0.25
+    }
+
+    // Simplified layer function matching Symmetria's approach:
+    // layer 0 = base transparency (window background)
+    // layer 1+ = slightly more opaque (containers)
+    function layer(c: color, depth: int): color {
+        if (!transparency.enabled)
+            return c;
+        return depth === 0
+            ? Qt.alpha(c, transparency.base)
+            : Qt.alpha(c, Math.min(1, transparency.base + transparency.layers * depth));
+    }
 
     // === Misc ===
-    readonly property bool light: false
+    property bool light: false
+
+    // === Symmetria IPC: query theme on startup and on changes ===
+    Process {
+        id: themeQuery
+        command: ["qs", "-c", "symmetria", "ipc", "call", "theme", "getTheme"]
+        stdout: StdioCollector {
+            onStreamFinished: root._applyTheme(text)
+        }
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode !== 0)
+                root._symmetriaAvailable = false;
+        }
+    }
+
+    FileView {
+        path: "file://" + root._configDir + "/color-scheme.json"
+        watchChanges: true
+        onFileChanged: queryDebounce.restart()
+        onLoaded: themeQuery.running = true
+    }
+
+    FileView {
+        path: "file://" + root._configDir + "/shell.json"
+        watchChanges: true
+        onFileChanged: queryDebounce.restart()
+    }
+
+    Timer {
+        id: queryDebounce
+        interval: 100
+        onTriggered: themeQuery.running = true
+    }
+
+    // === Apply theme data from IPC JSON response ===
+    function _applyTheme(json: string): void {
+        try {
+            const t = JSON.parse(json);
+            root._symmetriaAvailable = true;
+            root.light = t.meta.light;
+
+            // Apply palette colors — only set properties that exist locally
+            for (const [key, value] of Object.entries(t.palette))
+                if (root.palette.hasOwnProperty(key))
+                    root.palette[key] = value;
+
+            // Apply appearance tokens
+            const a = t.appearance;
+            _applyObject(root.rounding, a.rounding);
+            _applyObject(root.spacing, a.spacing);
+            _applyObject(root.padding, a.padding);
+            _applyObject(root.font.family, a.font.family);
+            _applyObject(root.font.size, a.font.size);
+            root.animDuration = a.anim.duration;
+            root.animCurveStandard = a.anim.curves.standard;
+            root.animCurveStandardDecel = a.anim.curves.standardDecel;
+            _applyObject(root.transparency, a.transparency);
+        } catch (e) {
+            console.warn("Theme: failed to parse IPC response:", e);
+        }
+    }
+
+    function _applyObject(target: QtObject, source: var): void {
+        for (const [key, value] of Object.entries(source))
+            if (target.hasOwnProperty(key))
+                target[key] = value;
+    }
 }

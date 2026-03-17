@@ -34,7 +34,7 @@ Item {
     // Background
     StyledRect {
         anchors.fill: parent
-        color: Theme.palette.m3surfaceContainerLow
+        color: Theme.layer(Theme.palette.m3surfaceContainerLow, 1)
     }
 
     // Empty state

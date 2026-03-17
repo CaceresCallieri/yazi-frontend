@@ -29,7 +29,7 @@ Singleton {
         FloatingWindow {
             id: win
 
-            color: Theme.palette.m3surface
+            color: Theme.layer(Theme.palette.m3surface, 0)
             title: qsTr("File Manager")
 
             implicitWidth: Config.fileManager.sizes.windowWidth
