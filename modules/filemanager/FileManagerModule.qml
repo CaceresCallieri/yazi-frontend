@@ -1,5 +1,5 @@
-// Module entry point — instantiated in shell.qml to trigger QuickShell's
-// directory scan, which registers singletons like WindowFactory.
+// Module entry point — this file must exist so QuickShell registers the
+// directory as a QML module when imported in shell.qml.
 import Quickshell
 
 Scope {}

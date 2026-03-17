@@ -9,10 +9,9 @@ StyledRect {
 
     required property int fileCount
     required property var currentEntry
-    required property string currentPath
 
     implicitHeight: inner.implicitHeight + Theme.padding.small * 2
-    color: Theme.tPalette.m3surfaceContainer
+    color: Theme.palette.m3surfaceContainer
 
     RowLayout {
         id: inner
@@ -28,7 +27,7 @@ StyledRect {
         // Left: file count
         StyledText {
             text: root.fileCount + (root.fileCount === 1 ? " item" : " items")
-            color: Theme.tPalette.m3onSurfaceVariant
+            color: Theme.palette.m3onSurfaceVariant
             font.pointSize: Theme.font.size.small
         }
 
@@ -42,7 +41,7 @@ StyledRect {
                     return root.currentEntry.name + "/";
                 return (root.currentEntry?.name ?? "") + "  " + FileManagerService.formatSize(root.currentEntry?.size ?? 0);
             }
-            color: Theme.tPalette.m3onSurface
+            color: Theme.palette.m3onSurface
             font.pointSize: Theme.font.size.small
             font.family: Theme.font.family.mono
         }
@@ -51,8 +50,8 @@ StyledRect {
 
         // Right: abbreviated path
         StyledText {
-            text: Paths.shortenHome(root.currentPath)
-            color: Theme.tPalette.m3onSurfaceVariant
+            text: Paths.shortenHome(FileManagerService.currentPath)
+            color: Theme.palette.m3onSurfaceVariant
             font.pointSize: Theme.font.size.small
             elide: Text.ElideMiddle
             Layout.maximumWidth: root.width * 0.3

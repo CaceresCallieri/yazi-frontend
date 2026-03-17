@@ -10,7 +10,7 @@ StyledRect {
     id: root
 
     implicitWidth: Config.fileManager.sizes.sidebarWidth
-    color: Theme.tPalette.m3surfaceContainer
+    color: Theme.palette.m3surfaceContainer
 
     readonly property var _places: [
         { name: "Home",      icon: "home",             path: Paths.home },
@@ -25,11 +25,9 @@ StyledRect {
     ColumnLayout {
         id: inner
 
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
+        anchors.fill: parent
         anchors.margins: Theme.padding.normal
-        spacing: 2
+        spacing: Theme.spacing.tiny
 
         StyledText {
             Layout.alignment: Qt.AlignHCenter
@@ -60,10 +58,7 @@ StyledRect {
 
                 StateLayer {
                     color: place.selected ? Theme.palette.m3onSecondaryContainer : Theme.palette.m3onSurface
-
-                    function onClicked(): void {
-                        FileManagerService.navigate(place.modelData.path);
-                    }
+                    onClicked: FileManagerService.navigate(place.modelData.path)
                 }
 
                 RowLayout {

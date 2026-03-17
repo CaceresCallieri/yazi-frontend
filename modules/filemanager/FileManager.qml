@@ -30,7 +30,7 @@ Item {
             StyledRect {
                 Layout.fillHeight: true
                 implicitWidth: 1
-                color: Theme.tPalette.m3outlineVariant
+                color: Theme.palette.m3outlineVariant
             }
 
             FileList {
@@ -45,7 +45,6 @@ Item {
             Layout.fillWidth: true
             fileCount: fileList.fileCount
             currentEntry: fileList.currentEntry
-            currentPath: FileManagerService.currentPath
         }
     }
 }

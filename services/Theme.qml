@@ -28,9 +28,6 @@ Singleton {
         readonly property color m3shadow: "#000000"
     }
 
-    // In Symmetria, tPalette applies transparency. Standalone has no transparency.
-    readonly property alias tPalette: root.palette
-
     // === Typography ===
     readonly property QtObject font: QtObject {
         readonly property QtObject family: QtObject {
@@ -55,6 +52,7 @@ Singleton {
     }
 
     readonly property QtObject spacing: QtObject {
+        readonly property int tiny: 2
         readonly property int small: 7
         readonly property int normal: 12
     }
@@ -68,7 +66,6 @@ Singleton {
     // === Animation tokens ===
     readonly property int animDuration: 400
     readonly property list<real> animCurveStandard: [0.2, 0, 0, 1, 1, 1]
-    readonly property list<real> animCurveStandardAccel: [0.3, 0, 1, 1, 1, 1]
     readonly property list<real> animCurveStandardDecel: [0, 0, 0, 1, 1, 1]
 
     // === Misc ===

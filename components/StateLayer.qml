@@ -8,10 +8,8 @@ MouseArea {
     property bool showHoverBackground: true
     property color color: Theme.palette.m3onSurface
     property real radius: parent?.radius ?? 0
-    property alias rect: hoverLayer
 
-    function onClicked(): void {
-    }
+    signal clicked()
 
     anchors.fill: parent
 
@@ -32,7 +30,7 @@ MouseArea {
         rippleAnim.restart();
     }
 
-    onClicked: event => !disabled && onClicked(event)
+    onClicked: event => { if (!disabled) root.clicked() }
 
     SequentialAnimation {
         id: rippleAnim

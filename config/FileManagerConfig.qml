@@ -1,7 +1,6 @@
 import QtQuick
 
 QtObject {
-    property bool enabled: true
     property bool showHidden: false
     property bool sortReverse: false
     property Sizes sizes: Sizes {}

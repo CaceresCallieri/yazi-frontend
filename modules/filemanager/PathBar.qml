@@ -10,7 +10,7 @@ StyledRect {
     id: root
 
     implicitHeight: inner.implicitHeight + Theme.padding.normal * 2
-    color: Theme.tPalette.m3surfaceContainer
+    color: Theme.palette.m3surfaceContainer
 
     // Build breadcrumb segments: [{name, path, isHome}]
     readonly property var _segments: {
@@ -57,10 +57,7 @@ StyledRect {
             StateLayer {
                 radius: Theme.rounding.small
                 disabled: !FileManagerService.canGoUp
-
-                function onClicked(): void {
-                    FileManagerService.goUp();
-                }
+                onClicked: FileManagerService.goUp()
             }
 
             MaterialIcon {
@@ -77,7 +74,7 @@ StyledRect {
         StyledRect {
             Layout.fillWidth: true
             radius: Theme.rounding.small
-            color: Theme.tPalette.m3surfaceContainerHigh
+            color: Theme.palette.m3surfaceContainerHigh
             implicitHeight: breadcrumbs.implicitHeight + breadcrumbs.anchors.margins * 2
 
             RowLayout {
@@ -119,10 +116,7 @@ StyledRect {
                                 active: segment.index < root._segments.length - 1
                                 sourceComponent: StateLayer {
                                     radius: Theme.rounding.small
-
-                                    function onClicked(): void {
-                                        FileManagerService.navigate(segment.modelData.path);
-                                    }
+                                    onClicked: FileManagerService.navigate(segment.modelData.path)
                                 }
                             }
 

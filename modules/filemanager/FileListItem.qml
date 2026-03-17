@@ -20,14 +20,12 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Theme.rounding.small
-        color: Theme.tPalette.m3surfaceContainerHighest
+        color: Theme.palette.m3surfaceContainerHighest
         opacity: root.ListView.isCurrentItem ? 1 : 0
     }
 
     StateLayer {
-        function onClicked(): void {
-            root.ListView.view.currentIndex = root.index;
-        }
+        onClicked: root.ListView.view.currentIndex = root.index
 
         onDoubleClicked: root.activated()
     }

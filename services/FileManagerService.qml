@@ -41,7 +41,7 @@ Singleton {
         currentPath = _history[_historyIndex];
     }
 
-    function formatSize(bytes: int): string {
+    function formatSize(bytes: double): string {
         if (bytes < 1024)
             return bytes + " B";
         if (bytes < 1024 * 1024)

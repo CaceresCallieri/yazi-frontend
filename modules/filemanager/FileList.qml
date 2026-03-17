@@ -28,13 +28,13 @@ Item {
         if (root.currentEntry.isDir)
             FileManagerService.navigate(root.currentEntry.path);
         else
-            Qt.openUrlExternally(Qt.resolvedUrl(root.currentEntry.path));
+            Qt.openUrlExternally("file://" + root.currentEntry.path);
     }
 
     // Background
     StyledRect {
         anchors.fill: parent
-        color: Theme.tPalette.m3surfaceContainerLow
+        color: Theme.palette.m3surfaceContainerLow
     }
 
     // Empty state
@@ -77,6 +77,7 @@ Item {
 
         clip: true
         focus: true
+        keyNavigationEnabled: false
         boundsBehavior: Flickable.StopAtBounds
         Component.onCompleted: view.forceActiveFocus()
 
