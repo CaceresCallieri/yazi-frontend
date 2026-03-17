@@ -1,0 +1,14 @@
+# QML cache
+qmlcache/
+
+# Build artifacts
+build/
+*.o
+*.so
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
