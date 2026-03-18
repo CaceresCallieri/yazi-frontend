@@ -9,13 +9,15 @@ import QtQuick.Layouts
 Item {
     id: root
 
-    readonly property var currentEntry: view.currentIndex >= 0 && view.currentIndex < view.count ? view.currentItem?.modelData ?? null : null
+    readonly property var currentEntry: view.currentIndex >= 0 && view.currentIndex < view.count ? fsModel.entries[view.currentIndex] ?? null : null
     readonly property int fileCount: view.count
     signal closeRequested()
 
     // gg chord state
     property bool _gPending: false
-    // Flag to defer currentIndex reset until async model load completes
+    // Set by onPathChanged (sync, before C++ async scan starts), cleared by
+    // onEntriesChanged (async, after QtConcurrent scan and applyChanges complete).
+    // Ensures currentIndex resets only after new entries are populated.
     property bool _pathJustChanged: false
 
     Timer {
@@ -31,6 +33,10 @@ Item {
             FileManagerService.navigate(root.currentEntry.path);
         else
             Qt.openUrlExternally("file://" + root.currentEntry.path);
+    }
+
+    function _halfPageCount(): int {
+        return Math.max(1, Math.floor(view.height / Config.fileManager.sizes.itemHeight / 2));
     }
 
     // Background
@@ -98,7 +104,7 @@ Item {
                 if (root._pathJustChanged) {
                     root._pathJustChanged = false;
                     view.currentIndex = 0;
-                    view.positionViewAtBeginning();
+                    view.positionViewAtIndex(0, ListView.Beginning);
                 }
             }
         }
@@ -119,6 +125,7 @@ Item {
                 gTimer.stop();
                 if (key === Qt.Key_G && !(mods & Qt.ShiftModifier)) {
                     view.currentIndex = 0;
+                    view.positionViewAtIndex(0, ListView.Beginning);
                 }
                 // Always consume the second keypress — it belongs to the chord sequence.
                 event.accepted = true;
@@ -157,8 +164,10 @@ Item {
             case Qt.Key_G:
                 if (mods & Qt.ShiftModifier) {
                     // G — jump to last
-                    if (view.count > 0)
+                    if (view.count > 0) {
                         view.currentIndex = view.count - 1;
+                        view.positionViewAtIndex(view.count - 1, ListView.End);
+                    }
                 } else {
                     // g — start gg chord
                     root._gPending = true;
@@ -169,16 +178,16 @@ Item {
 
             case Qt.Key_D:
                 if ((mods & Qt.ControlModifier) && view.count > 0) {
-                    const halfPage = Math.max(1, Math.floor(view.height / Config.fileManager.sizes.itemHeight / 2));
-                    view.currentIndex = Math.min(view.currentIndex + halfPage, view.count - 1);
+                    view.currentIndex = Math.min(view.currentIndex + root._halfPageCount(), view.count - 1);
+                    view.positionViewAtIndex(view.currentIndex, ListView.Contain);
                     event.accepted = true;
                 }
                 break;
 
             case Qt.Key_U:
                 if ((mods & Qt.ControlModifier) && view.count > 0) {
-                    const halfPage = Math.max(1, Math.floor(view.height / Config.fileManager.sizes.itemHeight / 2));
-                    view.currentIndex = Math.max(view.currentIndex - halfPage, 0);
+                    view.currentIndex = Math.max(view.currentIndex - root._halfPageCount(), 0);
+                    view.positionViewAtIndex(view.currentIndex, ListView.Contain);
                     event.accepted = true;
                 }
                 break;
