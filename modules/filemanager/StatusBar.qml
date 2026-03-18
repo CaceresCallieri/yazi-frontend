@@ -92,6 +92,12 @@ StyledRect {
                     FileManagerService.searchCancelled();
                     FileManagerService.clearSearch();
                     event.accepted = true;
+                } else if (event.key === Qt.Key_Down) {
+                    FileManagerService.nextMatch();
+                    event.accepted = true;
+                } else if (event.key === Qt.Key_Up) {
+                    FileManagerService.previousMatch();
+                    event.accepted = true;
                 }
             }
 
