@@ -15,6 +15,17 @@ Singleton {
     readonly property bool canGoForward: _historyIndex < _history.length - 1
     readonly property bool canGoUp: currentPath !== "/"
 
+    // Per-directory cursor position cache: { path → index }
+    property var _cursorCache: ({})
+
+    function saveCursor(path: string, index: int): void {
+        _cursorCache[path] = index;
+    }
+
+    function restoreCursor(path: string): int {
+        return _cursorCache[path] ?? 0;
+    }
+
     function navigate(path: string): void {
         if (path === currentPath)
             return;

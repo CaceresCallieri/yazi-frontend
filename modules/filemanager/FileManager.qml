@@ -33,8 +33,8 @@ Item {
                 color: Theme.palette.m3outlineVariant
             }
 
-            FileList {
-                id: fileList
+            MillerColumns {
+                id: millerColumns
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 onCloseRequested: root.closeRequested()
@@ -43,8 +43,8 @@ Item {
 
         StatusBar {
             Layout.fillWidth: true
-            fileCount: fileList.fileCount
-            currentEntry: fileList.currentEntry
+            fileCount: millerColumns.fileCount
+            currentEntry: millerColumns.currentEntry
         }
     }
 }

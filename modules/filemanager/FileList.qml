@@ -26,11 +26,16 @@ Item {
         onTriggered: root._gPending = false
     }
 
+    function _saveCursorAndNavigate(navigateFn: var): void {
+        FileManagerService.saveCursor(FileManagerService.currentPath, view.currentIndex);
+        navigateFn();
+    }
+
     function _activateCurrentItem(): void {
         if (!root.currentEntry)
             return;
         if (root.currentEntry.isDir)
-            FileManagerService.navigate(root.currentEntry.path);
+            _saveCursorAndNavigate(() => FileManagerService.navigate(root.currentEntry.path));
         else
             Qt.openUrlExternally("file://" + root.currentEntry.path);
     }
@@ -103,8 +108,10 @@ Item {
             onEntriesChanged: {
                 if (root._pathJustChanged) {
                     root._pathJustChanged = false;
-                    view.currentIndex = 0;
-                    view.positionViewAtIndex(0, ListView.Beginning);
+                    const restored = FileManagerService.restoreCursor(fsModel.path);
+                    const safeIndex = Math.min(restored, Math.max(view.count - 1, 0));
+                    view.currentIndex = safeIndex;
+                    view.positionViewAtIndex(safeIndex, ListView.Beginning);
                 }
             }
         }
@@ -149,7 +156,7 @@ Item {
 
             case Qt.Key_H:
             case Qt.Key_Left:
-                FileManagerService.goUp();
+                root._saveCursorAndNavigate(() => FileManagerService.goUp());
                 event.accepted = true;
                 break;
 
@@ -204,17 +211,17 @@ Item {
                 break;
 
             case Qt.Key_AsciiTilde:
-                FileManagerService.navigate(Paths.home);
+                root._saveCursorAndNavigate(() => FileManagerService.navigate(Paths.home));
                 event.accepted = true;
                 break;
 
             case Qt.Key_Minus:
-                FileManagerService.back();
+                root._saveCursorAndNavigate(() => FileManagerService.back());
                 event.accepted = true;
                 break;
 
             case Qt.Key_Equal:
-                FileManagerService.forward();
+                root._saveCursorAndNavigate(() => FileManagerService.forward());
                 event.accepted = true;
                 break;
             }
