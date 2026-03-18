@@ -4,7 +4,6 @@ import "../../config"
 import Symmetria.Models
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
 
 Item {
     id: root
@@ -47,7 +46,7 @@ Item {
         return Math.max(1, Math.floor(view.height / Config.fileManager.sizes.itemHeight / 2));
     }
 
-    function _computeMatches(): void {
+    function _computeMatches(preservePosition: bool): void {
         const query = FileManagerService.searchQuery.toLowerCase();
         if (query === "") {
             FileManagerService.matchIndices = [];
@@ -63,7 +62,16 @@ Item {
         }
 
         FileManagerService.matchIndices = indices;
-        FileManagerService.currentMatchIndex = indices.length > 0 ? 0 : -1;
+
+        if (indices.length === 0) {
+            FileManagerService.currentMatchIndex = -1;
+        } else if (preservePosition) {
+            const previousTarget = view.currentIndex;
+            const newPos = indices.indexOf(previousTarget);
+            FileManagerService.currentMatchIndex = newPos >= 0 ? newPos : 0;
+        } else {
+            FileManagerService.currentMatchIndex = 0;
+        }
     }
 
     function _jumpToCurrentMatch(): void {
@@ -79,8 +87,7 @@ Item {
         target: FileManagerService
 
         function onSearchQueryChanged() {
-            root._computeMatches();
-            root._jumpToCurrentMatch();
+            root._computeMatches(false);
         }
 
         function onCurrentMatchIndexChanged() {
@@ -88,14 +95,13 @@ Item {
         }
 
         function onSearchCancelled() {
-            FileManagerService.clearSearch();
             view.currentIndex = root._preSearchIndex;
             view.positionViewAtIndex(view.currentIndex, ListView.Contain);
-            view.forceActiveFocus();
+            Qt.callLater(() => view.forceActiveFocus());
         }
 
         function onSearchConfirmed() {
-            view.forceActiveFocus();
+            Qt.callLater(() => view.forceActiveFocus());
         }
     }
 
@@ -170,13 +176,14 @@ Item {
                 }
                 // Re-compute matches if search is active (handles async model reload)
                 if (FileManagerService.searchQuery !== "")
-                    root._computeMatches();
+                    root._computeMatches(true);
             }
         }
 
         delegate: FileListItem {
             width: view.width
             searchQuery: FileManagerService.searchQuery
+            isSearchMatch: FileManagerService.matchIndices.indexOf(index) !== -1
             onActivated: root._activateCurrentItem()
         }
 
@@ -286,10 +293,7 @@ Item {
 
             case Qt.Key_Slash:
                 root._preSearchIndex = view.currentIndex;
-                FileManagerService.searchQuery = "";
-                FileManagerService.matchIndices = [];
-                FileManagerService.currentMatchIndex = -1;
-                FileManagerService.searchActive = true;
+                FileManagerService.startSearch();
                 event.accepted = true;
                 break;
 

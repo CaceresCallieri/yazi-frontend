@@ -23,6 +23,13 @@ Singleton {
         currentMatchIndex = -1;
     }
 
+    function startSearch(): void {
+        searchQuery = "";
+        matchIndices = [];
+        currentMatchIndex = -1;
+        searchActive = true;
+    }
+
     function nextMatch(): void {
         if (matchIndices.length === 0)
             return;

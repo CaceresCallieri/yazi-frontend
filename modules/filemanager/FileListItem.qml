@@ -20,25 +20,28 @@ Item {
 
         const lowerName = name.toLowerCase();
         const lowerQuery = query.toLowerCase();
-        const matchPos = lowerName.indexOf(lowerQuery);
-        if (matchPos === -1)
-            return root._htmlEscape(name);
+        const qLen = query.length;
+        const spanOpen = "<span style=\"background-color: " + Theme.palette.m3secondaryContainer
+                       + "; color: " + Theme.palette.m3onSecondaryContainer + ";\">";
+        const spanClose = "</span>";
 
-        const before = root._htmlEscape(name.substring(0, matchPos));
-        const matched = root._htmlEscape(name.substring(matchPos, matchPos + query.length));
-        const after = root._htmlEscape(name.substring(matchPos + query.length));
-        return before + "<span style=\"background-color: " + Theme.palette.m3secondaryContainer + "; color: " + Theme.palette.m3onSecondaryContainer + ";\">" + matched + "</span>" + after;
+        let result = "";
+        let pos = 0;
+        let matchPos;
+        while ((matchPos = lowerName.indexOf(lowerQuery, pos)) !== -1) {
+            result += root._htmlEscape(name.substring(pos, matchPos));
+            result += spanOpen + root._htmlEscape(name.substring(matchPos, matchPos + qLen)) + spanClose;
+            pos = matchPos + qLen;
+        }
+        result += root._htmlEscape(name.substring(pos));
+        return result;
     }
 
     function _htmlEscape(str: string): string {
-        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
 
-    readonly property bool _isSearchMatch: {
-        if (root.searchQuery === "" || !root.modelData)
-            return false;
-        return root.modelData.name.toLowerCase().indexOf(root.searchQuery.toLowerCase()) !== -1;
-    }
+    property bool isSearchMatch: false
 
     implicitHeight: Config.fileManager.sizes.itemHeight
 
@@ -47,7 +50,7 @@ Item {
         anchors.fill: parent
         radius: Theme.rounding.small
         color: Theme.palette.m3onSurface
-        opacity: root._isSearchMatch ? 0.06 : 0
+        opacity: root.isSearchMatch ? 0.06 : 0
         Behavior on opacity { Anim {} }
     }
 
@@ -98,16 +101,17 @@ Item {
         // File name
         StyledText {
             Layout.fillWidth: true
-            textFormat: root.searchQuery !== "" ? Text.RichText : Text.PlainText
+            clip: root.isSearchMatch
+            textFormat: root.isSearchMatch ? Text.RichText : Text.PlainText
+            elide: root.isSearchMatch ? Text.ElideNone : Text.ElideRight
             text: {
                 const name = root.modelData?.name ?? "";
-                if (root.searchQuery !== "")
+                if (root.isSearchMatch)
                     return root._highlightMatches(name, root.searchQuery);
                 return name;
             }
             color: Theme.palette.m3onSurface
             font.pointSize: Theme.font.size.normal
-            elide: Text.ElideRight
         }
 
         // File size (hidden for directories)

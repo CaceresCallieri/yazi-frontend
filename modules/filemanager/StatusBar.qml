@@ -67,6 +67,8 @@ StyledRect {
         TextInput {
             id: searchInput
 
+            property bool _suppressTextSync: false
+
             visible: FileManagerService.searchActive
             Layout.fillWidth: true
             color: Theme.palette.m3onSurface
@@ -76,7 +78,10 @@ StyledRect {
             selectedTextColor: Theme.palette.m3onPrimary
             clip: true
 
-            onTextChanged: FileManagerService.searchQuery = text
+            onTextChanged: {
+                if (!_suppressTextSync)
+                    FileManagerService.searchQuery = text;
+            }
 
             Keys.onPressed: function(event) {
                 if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
@@ -84,8 +89,8 @@ StyledRect {
                     FileManagerService.searchConfirmed();
                     event.accepted = true;
                 } else if (event.key === Qt.Key_Escape) {
-                    FileManagerService.searchActive = false;
                     FileManagerService.searchCancelled();
+                    FileManagerService.clearSearch();
                     event.accepted = true;
                 }
             }
@@ -96,7 +101,9 @@ StyledRect {
 
                 function onSearchActiveChanged() {
                     if (FileManagerService.searchActive) {
+                        searchInput._suppressTextSync = true;
                         searchInput.text = "";
+                        searchInput._suppressTextSync = false;
                         searchInput.forceActiveFocus();
                     }
                 }
