@@ -15,6 +15,8 @@ Item {
 
     // gg chord state
     property bool _gPending: false
+    // Flag to defer currentIndex reset until async model load completes
+    property bool _pathJustChanged: false
 
     Timer {
         id: gTimer
@@ -91,7 +93,14 @@ Item {
             showHidden: Config.fileManager.showHidden
             sortReverse: Config.fileManager.sortReverse
             watchChanges: true
-            onPathChanged: view.currentIndex = 0
+            onPathChanged: root._pathJustChanged = true
+            onEntriesChanged: {
+                if (root._pathJustChanged) {
+                    root._pathJustChanged = false;
+                    view.currentIndex = 0;
+                    view.positionViewAtBeginning();
+                }
+            }
         }
 
         delegate: FileListItem {
