@@ -8,7 +8,7 @@ Singleton {
     id: root
 
     // === Symmetria integration state ===
-    property bool _symmetriaAvailable: false
+    property bool _pendingRequery: false
     readonly property string _configDir: Paths.home + "/.config/quickshell/symmetria/config"
 
     // === M3 Palette (defaults from Symmetria M3Palette; overwritten by IPC) ===
@@ -89,13 +89,13 @@ Singleton {
 
     // Simplified layer function matching Symmetria's approach:
     // layer 0 = base transparency (window background)
-    // layer 1+ = slightly more opaque (containers)
+    // layer 1+ = container transparency (layers value is the target alpha)
     function layer(c: color, depth: int): color {
         if (!transparency.enabled)
             return c;
         return depth === 0
             ? Qt.alpha(c, transparency.base)
-            : Qt.alpha(c, Math.min(1, transparency.base + transparency.layers * depth));
+            : Qt.alpha(c, transparency.layers);
     }
 
     // === Misc ===
@@ -109,11 +109,19 @@ Singleton {
             onStreamFinished: root._applyTheme(text)
         }
         onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0)
-                root._symmetriaAvailable = false;
+            if (exitCode !== 0) {
+                console.warn("Theme: Symmetria IPC unavailable, using defaults");
+            }
+            if (root._pendingRequery) {
+                root._pendingRequery = false;
+                themeQuery.running = true;
+            }
         }
     }
 
+    // file:// + absolute path = file:///path (triple-slash is correct per RFC 3986)
+    // This FileView triggers the initial IPC query via onLoaded; the shell.json
+    // watcher below only monitors for changes (appearance tokens update less often)
     FileView {
         path: "file://" + root._configDir + "/color-scheme.json"
         watchChanges: true
@@ -130,14 +138,18 @@ Singleton {
     Timer {
         id: queryDebounce
         interval: 100
-        onTriggered: themeQuery.running = true
+        onTriggered: {
+            if (themeQuery.running)
+                root._pendingRequery = true;
+            else
+                themeQuery.running = true;
+        }
     }
 
     // === Apply theme data from IPC JSON response ===
     function _applyTheme(json: string): void {
         try {
             const t = JSON.parse(json);
-            root._symmetriaAvailable = true;
             root.light = t.meta.light;
 
             // Apply palette colors — only set properties that exist locally
@@ -147,15 +159,15 @@ Singleton {
 
             // Apply appearance tokens
             const a = t.appearance;
-            _applyObject(root.rounding, a.rounding);
-            _applyObject(root.spacing, a.spacing);
-            _applyObject(root.padding, a.padding);
-            _applyObject(root.font.family, a.font.family);
-            _applyObject(root.font.size, a.font.size);
-            root.animDuration = a.anim.duration;
-            root.animCurveStandard = a.anim.curves.standard;
-            root.animCurveStandardDecel = a.anim.curves.standardDecel;
-            _applyObject(root.transparency, a.transparency);
+            if (a?.rounding) _applyObject(root.rounding, a.rounding);
+            if (a?.spacing) _applyObject(root.spacing, a.spacing);
+            if (a?.padding) _applyObject(root.padding, a.padding);
+            if (a?.font?.family) _applyObject(root.font.family, a.font.family);
+            if (a?.font?.size) _applyObject(root.font.size, a.font.size);
+            if (a?.anim?.duration !== undefined) root.animDuration = a.anim.duration;
+            if (a?.anim?.curves?.standard) root.animCurveStandard = a.anim.curves.standard;
+            if (a?.anim?.curves?.standardDecel) root.animCurveStandardDecel = a.anim.curves.standardDecel;
+            if (a?.transparency) _applyObject(root.transparency, a.transparency);
         } catch (e) {
             console.warn("Theme: failed to parse IPC response:", e);
         }

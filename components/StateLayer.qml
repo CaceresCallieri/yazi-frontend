@@ -9,8 +9,6 @@ MouseArea {
     property color color: Theme.palette.m3onSurface
     property real radius: parent?.radius ?? 0
 
-    signal clicked()
-
     anchors.fill: parent
 
     enabled: !disabled
@@ -18,9 +16,6 @@ MouseArea {
     hoverEnabled: true
 
     onPressed: event => {
-        if (disabled)
-            return;
-
         rippleAnim.x = event.x;
         rippleAnim.y = event.y;
 
@@ -29,8 +24,6 @@ MouseArea {
 
         rippleAnim.restart();
     }
-
-    onClicked: event => { if (!disabled) root.clicked() }
 
     SequentialAnimation {
         id: rippleAnim
