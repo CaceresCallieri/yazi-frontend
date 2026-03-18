@@ -24,18 +24,22 @@ StyledRect {
 
         spacing: Theme.spacing.normal
 
-        // Left: file count
+        // Left: file count (hidden during search)
         StyledText {
+            visible: !FileManagerService.searchActive
             text: root.fileCount + (root.fileCount === 1 ? " item" : " items")
             color: Theme.palette.m3onSurfaceVariant
             font.pointSize: Theme.font.size.small
         }
 
-        Item { Layout.fillWidth: true }
+        Item {
+            visible: !FileManagerService.searchActive
+            Layout.fillWidth: true
+        }
 
-        // Center: current entry info
+        // Center: current entry info (hidden during search)
         StyledText {
-            visible: root.currentEntry !== null
+            visible: !FileManagerService.searchActive && root.currentEntry !== null
             text: {
                 if (root.currentEntry?.isDir)
                     return root.currentEntry.name + "/";
@@ -46,9 +50,80 @@ StyledRect {
             font.family: Theme.font.family.mono
         }
 
-        Item { Layout.fillWidth: true }
+        Item {
+            visible: !FileManagerService.searchActive
+            Layout.fillWidth: true
+        }
 
-        // Right: abbreviated path
+        // Search input (visible during search)
+        StyledText {
+            visible: FileManagerService.searchActive
+            text: "/"
+            color: Theme.palette.m3primary
+            font.pointSize: Theme.font.size.small
+            font.family: Theme.font.family.mono
+        }
+
+        TextInput {
+            id: searchInput
+
+            visible: FileManagerService.searchActive
+            Layout.fillWidth: true
+            color: Theme.palette.m3onSurface
+            font.pointSize: Theme.font.size.small
+            font.family: Theme.font.family.mono
+            selectionColor: Theme.palette.m3primary
+            selectedTextColor: Theme.palette.m3onPrimary
+            clip: true
+
+            onTextChanged: FileManagerService.searchQuery = text
+
+            Keys.onPressed: function(event) {
+                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                    FileManagerService.searchActive = false;
+                    FileManagerService.searchConfirmed();
+                    event.accepted = true;
+                } else if (event.key === Qt.Key_Escape) {
+                    FileManagerService.searchActive = false;
+                    FileManagerService.searchCancelled();
+                    event.accepted = true;
+                }
+            }
+
+            // Grab focus when search activates
+            Connections {
+                target: FileManagerService
+
+                function onSearchActiveChanged() {
+                    if (FileManagerService.searchActive) {
+                        searchInput.text = "";
+                        searchInput.forceActiveFocus();
+                    }
+                }
+            }
+        }
+
+        // Match count indicator (visible during search)
+        StyledText {
+            visible: FileManagerService.searchActive
+            text: {
+                const matches = FileManagerService.matchIndices;
+                if (FileManagerService.searchQuery === "")
+                    return "";
+                if (matches.length === 0)
+                    return "No matches";
+                return (FileManagerService.currentMatchIndex + 1) + "/" + matches.length;
+            }
+            color: {
+                if (FileManagerService.searchQuery !== "" && FileManagerService.matchIndices.length === 0)
+                    return Theme.palette.m3error;
+                return Theme.palette.m3onSurfaceVariant;
+            }
+            font.pointSize: Theme.font.size.small
+            font.family: Theme.font.family.mono
+        }
+
+        // Right: abbreviated path (always visible)
         StyledText {
             text: Paths.shortenHome(FileManagerService.currentPath)
             color: Theme.palette.m3onSurfaceVariant

@@ -10,10 +10,46 @@ Item {
 
     required property int index
     required property FileSystemEntry modelData
+    property string searchQuery: ""
 
     signal activated()
 
+    function _highlightMatches(name: string, query: string): string {
+        if (query === "")
+            return name;
+
+        const lowerName = name.toLowerCase();
+        const lowerQuery = query.toLowerCase();
+        const matchPos = lowerName.indexOf(lowerQuery);
+        if (matchPos === -1)
+            return root._htmlEscape(name);
+
+        const before = root._htmlEscape(name.substring(0, matchPos));
+        const matched = root._htmlEscape(name.substring(matchPos, matchPos + query.length));
+        const after = root._htmlEscape(name.substring(matchPos + query.length));
+        return before + "<span style=\"background-color: " + Theme.palette.m3secondaryContainer + "; color: " + Theme.palette.m3onSecondaryContainer + ";\">" + matched + "</span>" + after;
+    }
+
+    function _htmlEscape(str: string): string {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    readonly property bool _isSearchMatch: {
+        if (root.searchQuery === "" || !root.modelData)
+            return false;
+        return root.modelData.name.toLowerCase().indexOf(root.searchQuery.toLowerCase()) !== -1;
+    }
+
     implicitHeight: Config.fileManager.sizes.itemHeight
+
+    // Search match highlight — subtle gray tint behind matching rows
+    Rectangle {
+        anchors.fill: parent
+        radius: Theme.rounding.small
+        color: Theme.palette.m3onSurface
+        opacity: root._isSearchMatch ? 0.06 : 0
+        Behavior on opacity { Anim {} }
+    }
 
     // Selection highlight — separate Rectangle avoids StyledRect's color animation
     // which would cause visible stutter during rapid j/k navigation
@@ -62,7 +98,13 @@ Item {
         // File name
         StyledText {
             Layout.fillWidth: true
-            text: root.modelData?.name ?? ""
+            textFormat: root.searchQuery !== "" ? Text.RichText : Text.PlainText
+            text: {
+                const name = root.modelData?.name ?? "";
+                if (root.searchQuery !== "")
+                    return root._highlightMatches(name, root.searchQuery);
+                return name;
+            }
             color: Theme.palette.m3onSurface
             font.pointSize: Theme.font.size.normal
             elide: Text.ElideRight

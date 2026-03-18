@@ -7,6 +7,34 @@ Singleton {
 
     property string currentPath: Paths.home
 
+    // Search state
+    property bool searchActive: false
+    property string searchQuery: ""
+    property var matchIndices: []
+    property int currentMatchIndex: -1
+
+    signal searchConfirmed()
+    signal searchCancelled()
+
+    function clearSearch(): void {
+        searchActive = false;
+        searchQuery = "";
+        matchIndices = [];
+        currentMatchIndex = -1;
+    }
+
+    function nextMatch(): void {
+        if (matchIndices.length === 0)
+            return;
+        currentMatchIndex = (currentMatchIndex + 1) % matchIndices.length;
+    }
+
+    function previousMatch(): void {
+        if (matchIndices.length === 0)
+            return;
+        currentMatchIndex = (currentMatchIndex - 1 + matchIndices.length) % matchIndices.length;
+    }
+
     // Navigation history — array of path strings
     property var _history: [Paths.home]
     property int _historyIndex: 0
@@ -30,6 +58,8 @@ Singleton {
         if (path === currentPath)
             return;
 
+        clearSearch();
+
         // Truncate forward history and append new path
         _history = _history.slice(0, _historyIndex + 1).concat([path]);
         _historyIndex = _history.length - 1;
@@ -40,6 +70,7 @@ Singleton {
         if (!canGoBack)
             return;
 
+        clearSearch();
         _historyIndex--;
         currentPath = _history[_historyIndex];
     }
@@ -48,6 +79,7 @@ Singleton {
         if (!canGoForward)
             return;
 
+        clearSearch();
         _historyIndex++;
         currentPath = _history[_historyIndex];
     }
@@ -66,6 +98,7 @@ Singleton {
         if (!canGoUp)
             return;
 
+        clearSearch();
         const parentPath = currentPath.replace(/\/[^/]+$/, "") || "/";
         navigate(parentPath);
     }

@@ -20,6 +20,9 @@ Item {
     // Ensures currentIndex resets only after new entries are populated.
     property bool _pathJustChanged: false
 
+    // Search: cursor position saved before entering search mode
+    property int _preSearchIndex: 0
+
     Timer {
         id: gTimer
         interval: 500
@@ -42,6 +45,58 @@ Item {
 
     function _halfPageCount(): int {
         return Math.max(1, Math.floor(view.height / Config.fileManager.sizes.itemHeight / 2));
+    }
+
+    function _computeMatches(): void {
+        const query = FileManagerService.searchQuery.toLowerCase();
+        if (query === "") {
+            FileManagerService.matchIndices = [];
+            FileManagerService.currentMatchIndex = -1;
+            return;
+        }
+
+        const entries = fsModel.entries;
+        let indices = [];
+        for (let i = 0; i < entries.length; i++) {
+            if (entries[i].name.toLowerCase().indexOf(query) !== -1)
+                indices.push(i);
+        }
+
+        FileManagerService.matchIndices = indices;
+        FileManagerService.currentMatchIndex = indices.length > 0 ? 0 : -1;
+    }
+
+    function _jumpToCurrentMatch(): void {
+        const idx = FileManagerService.currentMatchIndex;
+        const matches = FileManagerService.matchIndices;
+        if (idx >= 0 && idx < matches.length) {
+            view.currentIndex = matches[idx];
+            view.positionViewAtIndex(view.currentIndex, ListView.Contain);
+        }
+    }
+
+    Connections {
+        target: FileManagerService
+
+        function onSearchQueryChanged() {
+            root._computeMatches();
+            root._jumpToCurrentMatch();
+        }
+
+        function onCurrentMatchIndexChanged() {
+            root._jumpToCurrentMatch();
+        }
+
+        function onSearchCancelled() {
+            FileManagerService.clearSearch();
+            view.currentIndex = root._preSearchIndex;
+            view.positionViewAtIndex(view.currentIndex, ListView.Contain);
+            view.forceActiveFocus();
+        }
+
+        function onSearchConfirmed() {
+            view.forceActiveFocus();
+        }
     }
 
     // Background
@@ -113,11 +168,15 @@ Item {
                     view.currentIndex = safeIndex;
                     view.positionViewAtIndex(safeIndex, ListView.Beginning);
                 }
+                // Re-compute matches if search is active (handles async model reload)
+                if (FileManagerService.searchQuery !== "")
+                    root._computeMatches();
             }
         }
 
         delegate: FileListItem {
             width: view.width
+            searchQuery: FileManagerService.searchQuery
             onActivated: root._activateCurrentItem()
         }
 
@@ -223,6 +282,25 @@ Item {
             case Qt.Key_Equal:
                 root._saveCursorAndNavigate(() => FileManagerService.forward());
                 event.accepted = true;
+                break;
+
+            case Qt.Key_Slash:
+                root._preSearchIndex = view.currentIndex;
+                FileManagerService.searchQuery = "";
+                FileManagerService.matchIndices = [];
+                FileManagerService.currentMatchIndex = -1;
+                FileManagerService.searchActive = true;
+                event.accepted = true;
+                break;
+
+            case Qt.Key_N:
+                if (!FileManagerService.searchActive && FileManagerService.matchIndices.length > 0) {
+                    if (mods & Qt.ShiftModifier)
+                        FileManagerService.previousMatch();
+                    else
+                        FileManagerService.nextMatch();
+                    event.accepted = true;
+                }
                 break;
             }
         }
