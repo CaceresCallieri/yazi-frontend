@@ -9,7 +9,7 @@ import QtQuick.Layouts
 Item {
     id: root
 
-    readonly property var currentEntry: view.currentIndex >= 0 && view.currentIndex < view.count ? fsModel.entries[view.currentIndex] ?? null : null
+    readonly property var currentEntry: view.currentIndex >= 0 && view.currentIndex < view.count ? fsModel.entries[view.currentIndex] : null
     readonly property int fileCount: view.count
     signal closeRequested()
 
@@ -200,13 +200,14 @@ Item {
                     const safeIndex = Math.min(restored, Math.max(view.count - 1, 0));
                     view.currentIndex = safeIndex;
                     view.positionViewAtIndex(safeIndex, ListView.Beginning);
+                } else {
+                    // Clamp cursor after file deletion or external changes
+                    if (view.currentIndex >= view.count && view.count > 0)
+                        view.currentIndex = view.count - 1;
                 }
                 // Re-compute matches if search is active (handles async model reload)
                 if (FileManagerService.searchQuery !== "")
                     root._computeMatches(true);
-                // Clamp cursor after file deletion or external changes
-                if (!root._pathJustChanged && view.currentIndex >= view.count && view.count > 0)
-                    view.currentIndex = view.count - 1;
             }
         }
 

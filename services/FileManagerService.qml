@@ -17,6 +17,7 @@ Singleton {
     signal searchCancelled()
 
     // === Delete confirmation ===
+    // Empty string means no pending deletion
     property string deleteConfirmPath: ""
 
     function requestDelete(path: string): void {

@@ -10,12 +10,18 @@ Loader {
     anchors.fill: parent
 
     opacity: FileManagerService.deleteConfirmPath !== "" ? 1 : 0
-    active: opacity > 0
+    // Drive active from the source property, not from animated opacity — avoids
+    // a race where the Loader activates mid-fade-out with an already-empty path.
+    active: FileManagerService.deleteConfirmPath !== ""
     asynchronous: true
 
     sourceComponent: FocusScope {
         id: popupScope
 
+        // Snapshot path on creation — this component is destroyed/recreated each
+        // time the Loader reactivates (active flips false→true), so onCompleted
+        // always captures the correct path even though deleteConfirmPath is
+        // cleared before the component is destroyed.
         property string targetPath
 
         Component.onCompleted: targetPath = FileManagerService.deleteConfirmPath
@@ -56,7 +62,7 @@ Loader {
                 }
             }
 
-            // Block clicks from passing through to scrim
+            // Prevent clicks on the card from reaching the scrim MouseArea behind it
             MouseArea {
                 anchors.fill: parent
             }
@@ -65,11 +71,17 @@ Loader {
             Keys.onPressed: function(event) {
                 switch (event.key) {
                 case Qt.Key_Y:
+                    // Y always confirms, regardless of which button has focus
+                    if (!trashProcess.running)
+                        trashProcess.running = true;
+                    event.accepted = true;
+                    break;
                 case Qt.Key_Return:
                 case Qt.Key_Enter:
+                    // Return/Enter is focus-aware: confirms on Yes, cancels on No
                     if (noButton.activeFocus)
                         FileManagerService.cancelDelete();
-                    else
+                    else if (!trashProcess.running)
                         trashProcess.running = true;
                     event.accepted = true;
                     break;
@@ -172,7 +184,10 @@ Loader {
 
                         StateLayer {
                             color: Theme.palette.m3error
-                            onClicked: trashProcess.running = true
+                            onClicked: {
+                                if (!trashProcess.running)
+                                    trashProcess.running = true;
+                            }
                         }
                     }
 
@@ -227,6 +242,8 @@ Loader {
                     FileManagerService.cancelDelete();
                 } else {
                     console.warn("DeleteConfirmPopup: gio trash failed with exit code", exitCode);
+                    // Dismiss the popup even on failure — user can retry via D again
+                    FileManagerService.cancelDelete();
                 }
             }
         }
