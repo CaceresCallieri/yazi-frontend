@@ -86,7 +86,7 @@ Item {
                 anchors.fill: parent
                 anchors.margins: Theme.padding.small / 2
                 anchors.leftMargin: 0
-                spacing: Theme.spacing.small
+                spacing: 0
 
                 Repeater {
                     model: root._segments
@@ -101,7 +101,7 @@ Item {
 
                         // Separator "/"
                         StyledText {
-                            Layout.rightMargin: Theme.spacing.small
+                            Layout.rightMargin: 0
                             visible: segment.index > 0
                             text: "/"
                             color: Theme.palette.m3onSurfaceVariant
@@ -110,7 +110,7 @@ Item {
 
                         // Clickable segment
                         Item {
-                            implicitWidth: homeIcon.implicitWidth + (homeIcon.visible ? Theme.padding.small : 0) + segmentName.implicitWidth + Theme.padding.normal * 2
+                            implicitWidth: (homeIcon.visible ? homeIcon.implicitWidth + Theme.padding.small : 0) + segmentName.implicitWidth + Theme.padding.small * 2
                             implicitHeight: segmentName.implicitHeight + Theme.padding.small * 2
 
                             // Clickable only if not the last segment
@@ -123,15 +123,18 @@ Item {
                                 }
                             }
 
-                            // Home icon
+                            // Home icon — collapse width when hidden so anchors
+                            // and implicitWidth don't include ghost icon space
+                            // (QML visible:false hides visually but retains geometry)
                             MaterialIcon {
                                 id: homeIcon
 
                                 anchors.left: parent.left
                                 anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: Theme.padding.normal
+                                anchors.leftMargin: Theme.padding.small
 
                                 visible: segment.modelData.isHome
+                                width: visible ? implicitWidth : 0
                                 text: "home"
                                 color: segment.index < root._segments.length - 1 ? Theme.palette.m3onSurfaceVariant : Theme.palette.m3onSurface
                                 fill: 1
@@ -140,9 +143,9 @@ Item {
                             StyledText {
                                 id: segmentName
 
-                                anchors.left: homeIcon.right
+                                anchors.left: homeIcon.visible ? homeIcon.right : parent.left
                                 anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: homeIcon.visible ? Theme.padding.small : 0
+                                anchors.leftMargin: homeIcon.visible ? Theme.padding.small : Theme.padding.small
 
                                 text: segment.modelData.name
                                 color: segment.index < root._segments.length - 1 ? Theme.palette.m3onSurfaceVariant : Theme.palette.m3onSurface
