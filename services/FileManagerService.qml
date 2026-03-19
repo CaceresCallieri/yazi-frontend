@@ -16,6 +16,22 @@ Singleton {
     signal searchConfirmed()
     signal searchCancelled()
 
+    // === Chord / which-key state ===
+    property string activeChordPrefix: ""
+
+    readonly property var chordBindings: ({
+        "g": {
+            label: "go to",
+            binds: [
+                { key: "g", label: "Top", icon: "vertical_align_top" },
+                { key: "h", label: "Home", icon: "home" },
+                { key: "d", label: "Downloads", icon: "download" },
+                { key: "s", label: "Screenshots", icon: "screenshot_monitor" },
+                { key: "v", label: "Videos", icon: "video_library" },
+            ]
+        }
+    })
+
     function clearSearch(): void {
         searchActive = false;
         searchQuery = "";

@@ -14,11 +14,24 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        // Left: passive parent directory listing
-        ParentPanel {
+        // Left: parent directory listing + which-key overlay
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.preferredWidth: 2
+
+            ParentPanel {
+                anchors.fill: parent
+                opacity: FileManagerService.activeChordPrefix !== "" ? 0 : 1
+
+                Behavior on opacity {
+                    Anim {}
+                }
+            }
+
+            WhichKeyPopup {
+                anchors.fill: parent
+            }
         }
 
         // Separator

@@ -13,8 +13,6 @@ Item {
     readonly property int fileCount: view.count
     signal closeRequested()
 
-    // gg chord state
-    property bool _gPending: false
     // Set by onPathChanged (sync, before C++ async scan starts), cleared by
     // onEntriesChanged (async, after QtConcurrent scan and applyChanges complete).
     // Ensures currentIndex resets only after new entries are populated.
@@ -23,11 +21,6 @@ Item {
     // Search: cursor position saved before entering search mode
     property int _preSearchIndex: 0
 
-    Timer {
-        id: gTimer
-        interval: 500
-        onTriggered: root._gPending = false
-    }
 
     function _saveCursorAndNavigate(navigateFn: var): void {
         FileManagerService.saveCursor(FileManagerService.currentPath, view.currentIndex);
@@ -41,6 +34,29 @@ Item {
             _saveCursorAndNavigate(() => FileManagerService.navigate(root.currentEntry.path));
         else
             Qt.openUrlExternally("file://" + root.currentEntry.path);
+    }
+
+    function _executeChord(prefix: string, keyChar: string): void {
+        if (prefix === "g") {
+            switch (keyChar) {
+            case "g":
+                view.currentIndex = 0;
+                view.positionViewAtIndex(0, ListView.Beginning);
+                break;
+            case "h":
+                _saveCursorAndNavigate(() => FileManagerService.navigate(Paths.home));
+                break;
+            case "d":
+                _saveCursorAndNavigate(() => FileManagerService.navigate(Paths.home + "/Downloads"));
+                break;
+            case "s":
+                _saveCursorAndNavigate(() => FileManagerService.navigate(Paths.home + "/Pictures/Screenshots"));
+                break;
+            case "v":
+                _saveCursorAndNavigate(() => FileManagerService.navigate(Paths.home + "/Videos"));
+                break;
+            }
+        }
     }
 
     function _halfPageCount(): int {
@@ -198,15 +214,15 @@ Item {
             const key = event.key;
             const mods = event.modifiers;
 
-            // Handle gg chord — second g within timeout
-            if (root._gPending) {
-                root._gPending = false;
-                gTimer.stop();
-                if (key === Qt.Key_G && !(mods & Qt.ShiftModifier)) {
-                    view.currentIndex = 0;
-                    view.positionViewAtIndex(0, ListView.Beginning);
+            // Resolve active chord — any keypress completes or cancels it
+            if (FileManagerService.activeChordPrefix !== "") {
+                const prefix = FileManagerService.activeChordPrefix;
+                FileManagerService.activeChordPrefix = "";
+
+                if (key !== Qt.Key_Escape) {
+                    const keyChar = String.fromCharCode(key).toLowerCase();
+                    root._executeChord(prefix, keyChar);
                 }
-                // Always consume the second keypress — it belongs to the chord sequence.
                 event.accepted = true;
                 return;
             }
@@ -248,9 +264,9 @@ Item {
                         view.positionViewAtIndex(view.count - 1, ListView.End);
                     }
                 } else {
-                    // g — start gg chord
-                    root._gPending = true;
-                    gTimer.restart();
+                    // g — start "go to" chord, show which-key popup
+                    FileManagerService.activeChordPrefix = "g";
+
                 }
                 event.accepted = true;
                 break;
