@@ -1,8 +1,11 @@
+pragma ComponentBehavior: Bound
+
 import "../../components"
 import "../../services"
 import "../../config"
 import Symmetria.Models
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 
 Item {
@@ -64,13 +67,16 @@ Item {
         visible: root._parentPath !== ""
         clip: true
         focus: false
-        interactive: false
         keyNavigationEnabled: false
         boundsBehavior: Flickable.StopAtBounds
 
+        ScrollBar.vertical: ScrollBar {
+            policy: ScrollBar.AsNeeded
+        }
+
         model: FileSystemModel {
             id: parentModel
-            path: root._parentPath !== "" ? root._parentPath : ""
+            path: root._parentPath
             showHidden: Config.fileManager.showHidden
             sortReverse: Config.fileManager.sortReverse
             watchChanges: true
@@ -78,6 +84,12 @@ Item {
 
         delegate: FileListItem {
             width: parentView.width
+            onActivated: {
+                if (modelData.isDir)
+                    FileManagerService.navigate(modelData.path);
+                else
+                    Qt.openUrlExternally("file://" + modelData.path);
+            }
         }
 
         // Highlight the entry that matches the current directory name
@@ -87,6 +99,10 @@ Item {
                 root._syncHighlight();
             }
         }
+
+        // Prevent single-click from desyncing the highlight — the parent
+        // panel's highlight always tracks the current directory, not user clicks
+        onCurrentIndexChanged: Qt.callLater(root._syncHighlight)
     }
 
     function _syncHighlight(): void {
