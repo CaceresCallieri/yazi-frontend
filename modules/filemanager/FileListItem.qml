@@ -54,12 +54,19 @@ Item {
         Behavior on opacity { Anim {} }
     }
 
-    // Selection highlight — separate Rectangle avoids StyledRect's color animation
+    // Selection highlight — matte pill for active item
+    // Separate Rectangle avoids StyledRect's color animation
     // which would cause visible stutter during rapid j/k navigation
     Rectangle {
+        id: selectionHighlight
+
+        readonly property var _matteStyle: Theme.mattePill(Theme.palette.m3surfaceContainerHigh, Theme.matte.strong)
+
         anchors.fill: parent
         radius: Theme.rounding.small
-        color: Theme.palette.m3surfaceContainerHighest
+        color: _matteStyle.background
+        border.color: _matteStyle.border
+        border.width: root.ListView.isCurrentItem ? 1 : 0
         opacity: root.ListView.isCurrentItem ? 1 : 0
     }
 

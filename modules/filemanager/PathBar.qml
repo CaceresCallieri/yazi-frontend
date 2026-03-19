@@ -10,7 +10,7 @@ StyledRect {
     id: root
 
     implicitHeight: inner.implicitHeight + Theme.padding.normal * 2
-    color: Theme.layer(Theme.palette.m3surfaceContainer, 1)
+    color: "transparent"
 
     // Build breadcrumb segments: [{name, path, isHome}]
     readonly property var _segments: {
@@ -72,9 +72,15 @@ StyledRect {
 
         // Breadcrumb bar
         StyledRect {
+            id: breadcrumbContainer
+
+            readonly property var _matteStyle: Theme.mattePill(Theme.palette.m3surfaceContainerHigh, Theme.matte.medium)
+
             Layout.fillWidth: true
             radius: Theme.rounding.small
-            color: Theme.palette.m3surfaceContainerHigh
+            color: _matteStyle.background
+            border.color: _matteStyle.border
+            border.width: 1
             implicitHeight: breadcrumbs.implicitHeight + breadcrumbs.anchors.margins * 2
 
             RowLayout {

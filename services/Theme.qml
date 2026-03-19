@@ -98,6 +98,39 @@ Singleton {
             : Qt.alpha(c, transparency.layers);
     }
 
+    // === Matte pill effect ===
+    // Opaque dark charcoal background with subtle white edge — ported from Symmetria
+    readonly property QtObject matteConstants: QtObject {
+        readonly property real baseLightness: 0.10
+        readonly property real lightnessRange: 0.08
+        readonly property real colorTint: 0.12
+        readonly property color borderColor: "#ffffff"
+        readonly property real borderOpacity: 0.12
+    }
+
+    // Intensity presets (0 = deep black, 1 = slightly lighter charcoal)
+    readonly property QtObject matte: QtObject {
+        readonly property real subtle: 0.3
+        readonly property real medium: 0.5
+        readonly property real strong: 0.7
+    }
+
+    function mattePill(baseColor: color, intensity: real): var {
+        const clampedIntensity = Math.max(0, Math.min(1, intensity));
+        const lightness = matteConstants.baseLightness + clampedIntensity * matteConstants.lightnessRange;
+        const tint = matteConstants.colorTint;
+
+        const background = Qt.hsla(
+            baseColor.hslHue,
+            baseColor.hslSaturation * tint,
+            lightness,
+            1.0
+        );
+        const border = Qt.alpha(matteConstants.borderColor, matteConstants.borderOpacity);
+
+        return { background: background, border: border };
+    }
+
     // === Misc ===
     property bool light: false
 
