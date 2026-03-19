@@ -19,7 +19,8 @@ Item {
     readonly property int _typeNone: 0
     readonly property int _typeDirectory: 1
     readonly property int _typeImage: 2
-    readonly property int _typeFallback: 3
+    readonly property int _typeVideo: 3
+    readonly property int _typeFallback: 4
 
     readonly property int _previewType: {
         if (!_committedEntry)
@@ -28,13 +29,18 @@ Item {
             return _typeDirectory;
         if (_committedEntry.isImage)
             return _typeImage;
+        if (_committedEntry.isVideo)
+            return _typeVideo;
         return _typeFallback;
     }
 
-    // Image natural dimensions — declarative binding so it updates reactively
-    // as the Image decodes (implicitWidth/Height change on Image.Ready)
+    // Media natural dimensions — declarative bindings so they update reactively
     readonly property size _imageNaturalSize: imageLoader.item
         ? imageLoader.item.naturalSize
+        : Qt.size(0, 0)
+
+    readonly property size _videoNaturalSize: videoLoader.item
+        ? videoLoader.item.naturalSize
         : Qt.size(0, 0)
 
     // --- Debounce ---
@@ -177,7 +183,20 @@ Item {
                 }
             }
 
-            // Fallback preview (non-image, non-directory files)
+            // Video preview
+            Loader {
+                id: videoLoader
+
+                anchors.fill: parent
+                active: _previewType === _typeVideo
+                asynchronous: true
+
+                sourceComponent: VideoPreview {
+                    entry: root._committedEntry
+                }
+            }
+
+            // Fallback preview (non-image, non-directory, non-video files)
             Loader {
                 anchors.fill: parent
                 active: _previewType === _typeFallback
@@ -193,7 +212,11 @@ Item {
         PreviewMetadata {
             Layout.fillWidth: true
             entry: root._committedEntry
-            imageDimensions: root._imageNaturalSize
+            imageDimensions: _previewType === _typeImage
+                ? root._imageNaturalSize
+                : _previewType === _typeVideo
+                    ? root._videoNaturalSize
+                    : Qt.size(0, 0)
         }
     }
 }
