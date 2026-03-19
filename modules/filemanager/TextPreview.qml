@@ -20,27 +20,24 @@ Item {
         document: textEdit.textDocument
     }
 
-    // QUIRK: Must use explicit x/y/width/height instead of anchors.fill + anchors.margins.
-    // When a Loader with anchors.fill creates a sourceComponent, it force-sets the loaded
-    // item's geometry. This breaks the anchor chain for children: anchors.margins on a
-    // Flickable (or wrapper Item) inside the loaded root are silently ignored — the margin
-    // evaluates but has no visual effect. Explicit positioning bypasses the anchor system
-    // entirely and works reliably. See also: QUIRKS.md in project root.
+    // QUIRK: explicit x/y/width/height required — anchors.margins silently ignored inside
+    // Loader sourceComponent. See QUIRKS.md §1 for full explanation.
     Flickable {
+        id: textFlickable
+
         x: Theme.padding.large
         y: Theme.padding.normal
         width: parent.width - Theme.padding.large * 2
         height: parent.height - Theme.padding.normal * 2
         clip: true
-        contentWidth: textEdit.contentWidth
-        contentHeight: textEdit.contentHeight
+        contentWidth: Math.max(textEdit.implicitWidth, textFlickable.width)
+        contentHeight: textEdit.implicitHeight
         boundsBehavior: Flickable.StopAtBounds
         interactive: false
 
         TextEdit {
             id: textEdit
 
-            width: Math.max(contentWidth, parent.width)
             readOnly: true
             selectByMouse: false
             activeFocusOnPress: false
@@ -54,7 +51,7 @@ Item {
             renderType: TextEdit.QtRendering
         }
 
-        opacity: helper.content !== "" && !helper.loading ? 1 : 0
+        opacity: helper.content !== "" ? 1 : 0
 
         Behavior on opacity {
             Anim {}

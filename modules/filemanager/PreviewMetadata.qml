@@ -71,7 +71,7 @@ Item {
         // Text line count (only shown for text previews)
         StyledText {
             visible: root.textLineCount > 0
-            text: root.textLineCount + " lines"
+            text: qsTr("%1 lines").arg(root.textLineCount)
             color: Theme.palette.m3outline
             font.pointSize: Theme.font.size.small
             font.family: Theme.font.family.mono

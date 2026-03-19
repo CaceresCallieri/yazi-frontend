@@ -55,7 +55,7 @@ to explicit positioning.
 
 ---
 
-## 2. Missing `import "../../services"` — Theme Works by Accident
+## 2. Missing `import "../../services"` Causes ReferenceError in Explicit Bindings
 
 **Symptom:** A QML file uses `Theme.*` properties without importing the
 services directory, and it appears to work — until it doesn't. Specifically,
