@@ -59,6 +59,7 @@ Item {
 
         // Modified date
         StyledText {
+            visible: !!root.entry
             text: root.entry ? FileManagerService.formatDate(root.entry.modifiedDate) : ""
             color: Theme.palette.m3outline
             font.pointSize: Theme.font.size.small

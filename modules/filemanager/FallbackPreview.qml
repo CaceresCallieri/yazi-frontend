@@ -8,6 +8,11 @@ Item {
 
     required property var entry
 
+    // Derived visibility flags — avoids repeating the same null-guard expression
+    // on both the label and value cells of each optional grid row.
+    readonly property bool _showOwner: (root.entry?.owner ?? "") !== ""
+    readonly property bool _showSymlinkTarget: root.entry?.isSymlink ?? false
+
     ColumnLayout {
         anchors.centerIn: parent
         width: parent.width - Theme.padding.large * 2
@@ -116,14 +121,14 @@ Item {
 
             // Owner (hidden when empty)
             StyledText {
-                visible: (root.entry?.owner ?? "") !== ""
+                visible: root._showOwner
                 text: qsTr("Owner")
                 color: Theme.palette.m3outline
                 font.pointSize: Theme.font.size.small
                 font.family: Theme.font.family.mono
             }
             StyledText {
-                visible: (root.entry?.owner ?? "") !== ""
+                visible: root._showOwner
                 text: root.entry?.owner ?? ""
                 color: Theme.palette.m3onSurfaceVariant
                 font.pointSize: Theme.font.size.small
@@ -132,14 +137,15 @@ Item {
 
             // Symlink target (only for symlinks)
             StyledText {
-                visible: root.entry?.isSymlink ?? false
+                visible: root._showSymlinkTarget
                 text: qsTr("Target")
                 color: Theme.palette.m3outline
                 font.pointSize: Theme.font.size.small
                 font.family: Theme.font.family.mono
             }
             StyledText {
-                visible: root.entry?.isSymlink ?? false
+                visible: root._showSymlinkTarget
+                // Constrain width: two sides × two levels of padding (column + outer item)
                 Layout.maximumWidth: root.width - Theme.padding.large * 4
                 text: root.entry?.symlinkTarget ?? ""
                 color: Theme.palette.m3onSurfaceVariant
