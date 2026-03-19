@@ -10,13 +10,11 @@ Item {
     required property int fileCount
     required property var currentEntry
 
-    implicitHeight: pill.implicitHeight + Theme.padding.small * 2
+    implicitHeight: inner.implicitHeight + Theme.padding.small * 4
 
     // Matte pill container with fully rounded corners
     StyledRect {
         id: pill
-
-        readonly property var _matteStyle: Theme.mattePill(Theme.palette.m3surfaceContainerHigh, Theme.matte.medium)
 
         anchors.fill: parent
         anchors.topMargin: Theme.padding.small
@@ -24,10 +22,9 @@ Item {
         anchors.leftMargin: Theme.padding.normal
         anchors.rightMargin: Theme.padding.normal
         radius: Theme.rounding.full
-        color: _matteStyle.background
-        border.color: _matteStyle.border
+        color: Theme.pillMedium.background
+        border.color: Theme.pillMedium.border
         border.width: 1
-        implicitHeight: inner.implicitHeight + Theme.padding.small * 2
 
         RowLayout {
             id: inner

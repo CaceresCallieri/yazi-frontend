@@ -60,12 +60,10 @@ Item {
     Rectangle {
         id: selectionHighlight
 
-        readonly property var _matteStyle: Theme.mattePill(Theme.palette.m3surfaceContainerHigh, Theme.matte.strong)
-
         anchors.fill: parent
         radius: Theme.rounding.small
-        color: _matteStyle.background
-        border.color: _matteStyle.border
+        color: Theme.pillStrong.background
+        border.color: Theme.pillStrong.border
         border.width: root.ListView.isCurrentItem ? 1 : 0
         opacity: root.ListView.isCurrentItem ? 1 : 0
     }

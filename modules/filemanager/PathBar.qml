@@ -6,11 +6,10 @@ import "../../config"
 import QtQuick
 import QtQuick.Layouts
 
-StyledRect {
+Item {
     id: root
 
     implicitHeight: inner.implicitHeight + Theme.padding.normal * 2
-    color: "transparent"
 
     // Build breadcrumb segments: [{name, path, isHome}]
     readonly property var _segments: {
@@ -74,12 +73,10 @@ StyledRect {
         StyledRect {
             id: breadcrumbContainer
 
-            readonly property var _matteStyle: Theme.mattePill(Theme.palette.m3surfaceContainerHigh, Theme.matte.medium)
-
             Layout.fillWidth: true
             radius: Theme.rounding.small
-            color: _matteStyle.background
-            border.color: _matteStyle.border
+            color: Theme.pillMedium.background
+            border.color: Theme.pillMedium.border
             border.width: 1
             implicitHeight: breadcrumbs.implicitHeight + breadcrumbs.anchors.margins * 2
 

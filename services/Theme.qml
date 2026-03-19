@@ -100,13 +100,6 @@ Singleton {
 
     // === Matte pill effect ===
     // Opaque dark charcoal background with subtle white edge — ported from Symmetria
-    readonly property QtObject matteConstants: QtObject {
-        readonly property real baseLightness: 0.10
-        readonly property real lightnessRange: 0.08
-        readonly property real colorTint: 0.12
-        readonly property color borderColor: "#ffffff"
-        readonly property real borderOpacity: 0.12
-    }
 
     // Intensity presets (0 = deep black, 1 = slightly lighter charcoal)
     readonly property QtObject matte: QtObject {
@@ -117,19 +110,22 @@ Singleton {
 
     function mattePill(baseColor: color, intensity: real): var {
         const clampedIntensity = Math.max(0, Math.min(1, intensity));
-        const lightness = matteConstants.baseLightness + clampedIntensity * matteConstants.lightnessRange;
-        const tint = matteConstants.colorTint;
+        const lightness = 0.10 + clampedIntensity * 0.08;
 
         const background = Qt.hsla(
             baseColor.hslHue,
-            baseColor.hslSaturation * tint,
+            baseColor.hslSaturation * 0.12,
             lightness,
             1.0
         );
-        const border = Qt.alpha(matteConstants.borderColor, matteConstants.borderOpacity);
+        const border = Qt.alpha("#ffffff", 0.12);
 
         return { background: background, border: border };
     }
+
+    // Precomputed matte styles for current consumers
+    readonly property var pillMedium: mattePill(palette.m3surfaceContainerHigh, matte.medium)
+    readonly property var pillStrong: mattePill(palette.m3surfaceContainerHigh, matte.strong)
 
     // === Misc ===
     property bool light: false
