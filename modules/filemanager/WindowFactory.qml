@@ -59,20 +59,25 @@ Singleton {
                 return;
             }
 
-            // 4-layer FIFO path validation (matches askpass pattern)
+            // 4-layer FIFO path validation — guards against a malicious IPC caller
+            // providing a FIFO path that could redirect picker output to an arbitrary file.
             const fifoPath = options.fifo || "";
+            // Layer 1: Prefix check — only accept our own temp files
             if (!fifoPath.startsWith(_validFifoPrefix)) {
                 console.error("FileManager: Invalid FIFO path prefix:", fifoPath);
                 return;
             }
+            // Layer 2: Traversal check — prevent /tmp/symmetria-picker-../../etc/passwd
             if (fifoPath.includes("..") || fifoPath.includes("\0")) {
                 console.error("FileManager: Suspicious FIFO path rejected:", fifoPath);
                 return;
             }
+            // Layer 3: Length check — prevent excessively long paths
             if (fifoPath.length > 128) {
                 console.error("FileManager: FIFO path too long:", fifoPath.substring(0, 50) + "...");
                 return;
             }
+            // Layer 4: Charset check — suffix must be alphanumeric (uuid4 hex + dashes)
             const suffix = fifoPath.substring(_validFifoPrefix.length);
             if (!/^[a-zA-Z0-9._-]+$/.test(suffix)) {
                 console.error("FileManager: FIFO path contains invalid characters:", fifoPath);
@@ -115,7 +120,8 @@ Singleton {
         property string fifoPath: ""
         property string payload: ""
 
-        command: ["sh", "-c", "printf '%s' \"$1\" > \"$2\"", "--", payload, fifoPath]
+        // Use python3 directly — avoids sh surface and handles paths with special characters
+        command: ["python3", "-c", "import sys; open(sys.argv[2], 'w').write(sys.argv[1])", payload, fifoPath]
 
         onRunningChanged: {
             if (running) fifoWriteTimeout.start();
@@ -148,7 +154,8 @@ Singleton {
 
         property string fifoPath: ""
 
-        command: ["sh", "-c", "printf '%s' '__PICKER_CANCELLED__' > \"$1\"", "--", fifoPath]
+        // Use python3 directly — avoids sh surface and handles paths with special characters
+        command: ["python3", "-c", "open(sys.argv[1], 'w').write('__PICKER_CANCELLED__')", fifoPath]
 
         onRunningChanged: {
             if (running) fifoCancelTimeout.start();
@@ -251,10 +258,11 @@ Singleton {
                 anchors.fill: parent
 
                 onCloseRequested: {
-                    if (FileManagerService.pickerMode)
-                        FileManagerService.cancelPickerMode();
-                    else
-                        pickerWin.visible = false;
+                    // Always route through visible=false so onVisibleChanged is
+                    // the single close handler. It will call cancelPickerMode()
+                    // if picker state is still active (i.e. not already cancelled
+                    // via FIFO path), preventing double-destroy.
+                    pickerWin.visible = false;
                 }
             }
 

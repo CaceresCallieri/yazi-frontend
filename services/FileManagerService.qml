@@ -78,7 +78,9 @@ Singleton {
         pickerFifoPath = options.fifo || "";
         pickerTitle = options.title || "Select a File";
         pickerAcceptLabel = options.acceptLabel || "";
-        pickerMultiple = options.multiple || false;  // TODO: multi-select not yet implemented
+        pickerMultiple = options.multiple || false;  // TODO: multi-select not yet implemented.
+        // Protocol note: returning a single URI when multiple=true is conformant —
+        // the FileChooser spec does not require returning the maximum requested count.
         pickerDirectory = options.directory || false;
         pickerSaveMode = options.saveMode || false;
         pickerSuggestedName = options.suggestedName || "";
@@ -87,13 +89,17 @@ Singleton {
     }
 
     function completePickerMode(paths: var): void {
-        const fifo = pickerFifoPath;  // capture before reset
+        // Capture fifo path before _resetPickerState() clears it.
+        // Signal emission must happen after reset so pickerMode=false
+        // is already observable by the time listeners react.
+        const fifo = pickerFifoPath;
         _resetPickerState();
         pickerCompleted(fifo, paths);
     }
 
     function cancelPickerMode(): void {
-        const fifo = pickerFifoPath;  // capture before reset
+        // Same capture-before-reset invariant as completePickerMode.
+        const fifo = pickerFifoPath;
         _resetPickerState();
         pickerCancelled(fifo);
     }

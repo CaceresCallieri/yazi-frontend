@@ -16,24 +16,36 @@ if ! python3.12 -c "import dbus_fast" 2>/dev/null; then
     python3.12 -m pip install dbus-fast
 fi
 
-# 2. Install portal definition
-echo "Installing portal definition..."
-sudo cp "$SCRIPT_DIR/symmetria.portal" /usr/share/xdg-desktop-portal/portals/symmetria.portal
+# 2. Install portal Python backend to a fixed system path (not dev repo path)
+#    Service files reference /usr/lib/symmetria/ so the portal works for any user.
+echo "Installing portal backend..."
+sudo -A mkdir -p /usr/lib/symmetria
+sudo -A cp "$SCRIPT_DIR/symmetria_portal.py" /usr/lib/symmetria/symmetria_portal.py
+sudo -A chmod 755 /usr/lib/symmetria/symmetria_portal.py
 
-# 3. Install D-Bus service file
+# 3. Install portal definition
+echo "Installing portal definition..."
+sudo -A cp "$SCRIPT_DIR/symmetria.portal" /usr/share/xdg-desktop-portal/portals/symmetria.portal
+
+# 4. Install D-Bus service file
 echo "Installing D-Bus service file..."
-sudo cp "$SCRIPT_DIR/org.freedesktop.impl.portal.desktop.symmetria.service" \
+sudo -A cp "$SCRIPT_DIR/org.freedesktop.impl.portal.desktop.symmetria.service" \
     /usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.symmetria.service
 
-# 4. Install systemd user service
+# 5. Install systemd user service
 echo "Installing systemd user service..."
 mkdir -p ~/.config/systemd/user
 cp "$SCRIPT_DIR/xdg-desktop-portal-symmetria.service" ~/.config/systemd/user/
 
-# 5. Update portals.conf to route FileChooser to our backend
+# 6. Update portals.conf to route FileChooser to our backend
 PORTALS_CONF="$HOME/.config/xdg-desktop-portal/portals.conf"
 echo "Updating $PORTALS_CONF..."
 mkdir -p "$(dirname "$PORTALS_CONF")"
+# Back up existing config before overwriting to preserve custom settings
+if [ -f "$PORTALS_CONF" ]; then
+    cp "$PORTALS_CONF" "${PORTALS_CONF}.bak"
+    echo "Backed up existing portals.conf to ${PORTALS_CONF}.bak"
+fi
 cat > "$PORTALS_CONF" << 'EOF'
 [preferred]
 default=hyprland;gtk
@@ -41,7 +53,7 @@ org.freedesktop.impl.portal.FileChooser=symmetria
 org.freedesktop.impl.portal.Settings=gtk
 EOF
 
-# 6. Reload and restart
+# 7. Reload and restart
 echo "Reloading systemd and restarting portal..."
 systemctl --user daemon-reload
 systemctl --user restart xdg-desktop-portal
@@ -53,7 +65,8 @@ echo "IMPORTANT: Restart your browsers and Electron apps to use the new file pic
 echo "To test: open any file upload dialog in Firefox or Chrome."
 echo ""
 echo "To uninstall:"
-echo "  sudo rm /usr/share/xdg-desktop-portal/portals/symmetria.portal"
-echo "  sudo rm /usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.symmetria.service"
+echo "  sudo -A rm /usr/lib/symmetria/symmetria_portal.py"
+echo "  sudo -A rm /usr/share/xdg-desktop-portal/portals/symmetria.portal"
+echo "  sudo -A rm /usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.symmetria.service"
 echo "  rm ~/.config/systemd/user/xdg-desktop-portal-symmetria.service"
-echo "  # Restore portals.conf to remove the FileChooser override"
+echo "  # Restore portals.conf from backup: cp ~/.config/xdg-desktop-portal/portals.conf.bak ~/.config/xdg-desktop-portal/portals.conf"

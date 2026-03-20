@@ -22,6 +22,9 @@ Item {
     // Search: cursor position saved before entering search mode
     property int _preSearchIndex: 0
 
+    // Keys suppressed in picker mode (file operations have no meaning in a file chooser)
+    readonly property var _pickerSuppressedKeys: [Qt.Key_D, Qt.Key_Y, Qt.Key_X, Qt.Key_P, Qt.Key_A]
+
     // Filename to focus once the model refreshes (set by paste, create, etc.)
     property string _pendingFocusName: ""
 
@@ -40,23 +43,27 @@ Item {
         if (!root.currentEntry)
             return;
 
+        // Picker mode — four behavioural cases based on mode flags:
+        //   saveMode=true  → navigate dirs, select file as "overwrite" target
+        //   directory=true → select dirs only, ignore files
+        //   (default)      → navigate dirs, select files
+        //   (saveMode+dir is handled by SaveFiles in the portal: directory=true,
+        //    saveMode=true → a directory picker where Enter selects the dir)
         if (FileManagerService.pickerMode) {
             if (FileManagerService.pickerSaveMode) {
-                // Save mode: Enter on dir navigates into it,
-                // the save target is the current directory + suggested name
+                // Save mode: Enter on a dir navigates into it so the user can
+                // choose a target directory. Enter on a file selects it as the
+                // overwrite target (returns that file's path to the caller).
                 if (root.currentEntry.isDir)
                     _navigateIntoCurrentItem();
                 else
-                    // Entering on a file in save mode: use that file's path
-                    // (effectively "overwrite this file")
                     FileManagerService.completePickerMode([root.currentEntry.path]);
             } else if (FileManagerService.pickerDirectory) {
-                // Directory picker: Enter on dir selects it
+                // Directory picker: only dirs are selectable; ignore Enter on files.
                 if (root.currentEntry.isDir)
                     FileManagerService.completePickerMode([root.currentEntry.path]);
-                // Ignore Enter on files in directory picker
             } else {
-                // Open file picker: Enter on dir navigates, Enter on file selects
+                // Open file picker: navigate into dirs, select files.
                 if (root.currentEntry.isDir)
                     _navigateIntoCurrentItem();
                 else
@@ -308,11 +315,10 @@ Item {
                     event.accepted = true;
                     return;
                 }
-                // Suppress file operations — they don't belong in a picker
-                const suppressedKeys = [Qt.Key_D, Qt.Key_Y, Qt.Key_X, Qt.Key_P, Qt.Key_A];
-                if (suppressedKeys.indexOf(event.key) !== -1
-                    && !(event.modifiers & Qt.ControlModifier && event.key === Qt.Key_D)) {
-                    // Allow Ctrl+D (half-page down) but suppress bare D (delete)
+                // Suppress file operations — they don't belong in a picker.
+                // Ctrl+D (half-page down) is allowed; bare D (delete) is suppressed.
+                const isCtrlD = event.key === Qt.Key_D && (event.modifiers & Qt.ControlModifier);
+                if (!isCtrlD && root._pickerSuppressedKeys.indexOf(event.key) !== -1) {
                     event.accepted = true;
                     return;
                 }

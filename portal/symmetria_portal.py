@@ -1,4 +1,7 @@
 #!/usr/bin/env python3.12
+# NOTE: python3.12 is pinned explicitly because dbus-fast was installed for that
+# interpreter via `python3.12 -m pip install dbus-fast` (see install-portal.sh).
+# If you change the interpreter, reinstall dbus-fast for the new version.
 """Symmetria XDG Desktop Portal FileChooser backend.
 
 Implements org.freedesktop.impl.portal.FileChooser by delegating to
@@ -13,6 +16,7 @@ import logging
 import os
 import signal
 import subprocess
+import threading
 import uuid
 
 from dbus_fast import Variant
@@ -56,7 +60,7 @@ def get_option(options: dict, key: str, default=None):
 
 async def read_fifo(fifo_path: str, timeout: float) -> str:
     """Read from a FIFO with a timeout. Returns the content or raises TimeoutError."""
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()  # get_event_loop() is deprecated in Python 3.10+
 
     def _blocking_read():
         with open(fifo_path, "r") as f:
@@ -80,14 +84,24 @@ def create_fifo() -> str:
 
 
 def launch_picker_ipc(options_json: str) -> None:
-    """Fire-and-forget IPC call to open the picker window."""
+    """Fire-and-forget IPC call to open the picker window.
+
+    Uses Popen + communicate() in a daemon thread so the process is fully
+    reaped and no zombie is left behind, without blocking the event loop.
+    """
     cmd = QS_IPC_CMD + [options_json]
     log.info("Launching picker: %s", " ".join(cmd))
-    subprocess.Popen(
-        cmd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+
+    def _run():
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        proc.communicate()  # Reap the process so no zombie is created
+
+    thread = threading.Thread(target=_run, daemon=True)
+    thread.start()
 
 
 class FileChooserBackend(ServiceInterface):

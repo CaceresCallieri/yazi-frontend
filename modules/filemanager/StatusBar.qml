@@ -40,6 +40,7 @@ Item {
             // Left: Accept button (picker mode) or file count (normal mode)
             // — hidden during search in both modes
             StyledRect {
+                id: acceptBtn
                 visible: FileManagerService.pickerMode && !FileManagerService.searchActive
                 color: _acceptEnabled ? Theme.palette.m3primary : Theme.palette.m3surfaceVariant
                 radius: Theme.rounding.full
@@ -60,16 +61,16 @@ Item {
                     id: acceptLabel
                     anchors.centerIn: parent
                     text: FileManagerService.pickerAcceptLabel || (FileManagerService.pickerSaveMode ? "Save" : "Select")
-                    color: parent._acceptEnabled ? Theme.palette.m3onPrimary : Theme.palette.m3onSurfaceVariant
+                    color: acceptBtn._acceptEnabled ? Theme.palette.m3onPrimary : Theme.palette.m3onSurfaceVariant
                     font.pointSize: Theme.font.size.xs
                     font.weight: Font.Medium
                 }
 
                 MouseArea {
                     anchors.fill: parent
-                    cursorShape: parent._acceptEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    cursorShape: acceptBtn._acceptEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: {
-                        if (!parent._acceptEnabled)
+                        if (!acceptBtn._acceptEnabled)
                             return;
                         if (FileManagerService.pickerSaveMode) {
                             // Save mode: return current directory path
