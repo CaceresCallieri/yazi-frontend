@@ -59,19 +59,15 @@ Singleton {
     }
 
     property QtObject spacing: QtObject {
-        property real tiny: 1
         property real small: 4
         property real smaller: 6
         property real normal: 8
-        property real larger: 10
         property real large: 12
     }
 
     property QtObject padding: QtObject {
         property real small: 3
-        property real smaller: 5
         property real normal: 6
-        property real larger: 8
         property real large: 10
     }
 
@@ -103,12 +99,11 @@ Singleton {
 
     // Intensity presets (0 = deep black, 1 = slightly lighter charcoal)
     readonly property QtObject matte: QtObject {
-        readonly property real subtle: 0.3
         readonly property real medium: 0.5
         readonly property real strong: 0.7
     }
 
-    function mattePill(baseColor: color, intensity: real): var {
+    function _mattePill(baseColor: color, intensity: real): var {
         const clampedIntensity = Math.max(0, Math.min(1, intensity));
         const lightness = 0.10 + clampedIntensity * 0.08;
 
@@ -124,8 +119,8 @@ Singleton {
     }
 
     // Precomputed matte styles for current consumers
-    readonly property var pillMedium: mattePill(palette.m3surfaceContainerHigh, matte.medium)
-    readonly property var pillStrong: mattePill(palette.m3surfaceContainerHigh, matte.strong)
+    readonly property var pillMedium: _mattePill(palette.m3surfaceContainerHigh, matte.medium)
+    readonly property var pillStrong: _mattePill(palette.m3surfaceContainerHigh, matte.strong)
 
     // === Misc ===
     property bool light: false

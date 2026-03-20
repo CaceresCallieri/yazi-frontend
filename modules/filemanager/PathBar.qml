@@ -84,7 +84,7 @@ Item {
                 id: breadcrumbs
 
                 anchors.fill: parent
-                anchors.margins: Theme.padding.small / 2
+                anchors.margins: Math.round(Theme.padding.small / 2)
                 anchors.leftMargin: 0
                 spacing: 0
 
@@ -145,7 +145,7 @@ Item {
 
                                 anchors.left: homeIcon.visible ? homeIcon.right : parent.left
                                 anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: homeIcon.visible ? Theme.padding.small : Theme.padding.small
+                                anchors.leftMargin: Theme.padding.small
 
                                 text: segment.modelData.name
                                 color: segment.index < root._segments.length - 1 ? Theme.palette.m3onSurfaceVariant : Theme.palette.m3onSurface
