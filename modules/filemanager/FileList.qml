@@ -39,6 +39,13 @@ Item {
             Qt.openUrlExternally("file://" + root.currentEntry.path);
     }
 
+    function _navigateIntoCurrentItem(): void {
+        if (!root.currentEntry)
+            return;
+        if (root.currentEntry.isDir)
+            _saveCursorAndNavigate(() => FileManagerService.navigate(root.currentEntry.path));
+    }
+
     function _executeChord(prefix: string, keyChar: string): void {
         if (prefix === "g") {
             switch (keyChar) {
@@ -308,6 +315,10 @@ Item {
 
             case Qt.Key_L:
             case Qt.Key_Right:
+                root._navigateIntoCurrentItem();
+                event.accepted = true;
+                break;
+
             case Qt.Key_Return:
             case Qt.Key_Enter:
                 root._activateCurrentItem();
