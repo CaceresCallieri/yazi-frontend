@@ -179,5 +179,29 @@ Item {
                 Item { Layout.fillWidth: true }
             }
         }
+
+        // Hidden files toggle
+        Item {
+            implicitWidth: implicitHeight
+            implicitHeight: Math.max(hiddenIcon.implicitHeight + Theme.padding.sm * 2, Theme.padding.md)
+            opacity: Config.fileManager.showHidden ? 1.0 : 0.5
+
+            StateLayer {
+                radius: Theme.rounding.sm
+                onClicked: {
+                    Config.fileManager.showHidden = !Config.fileManager.showHidden;
+                    Config.save();
+                }
+            }
+
+            MaterialIcon {
+                id: hiddenIcon
+
+                anchors.centerIn: parent
+                text: Config.fileManager.showHidden ? "visibility" : "visibility_off"
+                color: Theme.palette.m3onSurfaceVariant
+                grade: 200
+            }
+        }
     }
 }
