@@ -184,7 +184,6 @@ Item {
         Item {
             implicitWidth: implicitHeight
             implicitHeight: Math.max(hiddenIcon.implicitHeight + Theme.padding.sm * 2, Theme.padding.md)
-            opacity: Config.fileManager.showHidden ? 1.0 : 0.5
 
             StateLayer {
                 radius: Theme.rounding.sm
@@ -199,7 +198,7 @@ Item {
 
                 anchors.centerIn: parent
                 text: Config.fileManager.showHidden ? "visibility" : "visibility_off"
-                color: Theme.palette.m3onSurfaceVariant
+                color: Config.fileManager.showHidden ? Theme.palette.m3onSurface : Theme.palette.m3outline
                 grade: 200
             }
         }
