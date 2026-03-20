@@ -10,15 +10,14 @@ import QtQuick
 Singleton {
     id: root
 
-    property var _activeWindow: null
+    property var _activeWindows: []
     property var _activePickerWindow: null
 
     function create(initialPath: string): void {
-        if (_activeWindow)
-            return;
-        if (initialPath)
-            FileManagerService.navigate(initialPath);
-        _activeWindow = fileManagerWindow.createObject(dummy);
+        // Always navigate — default to home so each new window starts fresh
+        FileManagerService.navigate(initialPath || Paths.home);
+        const win = fileManagerWindow.createObject(dummy);
+        _activeWindows = _activeWindows.concat([win]);
     }
 
     QtObject {
@@ -207,7 +206,7 @@ Singleton {
 
             onVisibleChanged: {
                 if (!visible) {
-                    root._activeWindow = null;
+                    root._activeWindows = root._activeWindows.filter(w => w !== win);
                     destroy();
                 }
             }
