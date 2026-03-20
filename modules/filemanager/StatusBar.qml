@@ -37,9 +37,54 @@ Item {
 
             spacing: Theme.spacing.md
 
-            // Left: file count (hidden during search)
+            // Left: Accept button (picker mode) or file count (normal mode)
+            // — hidden during search in both modes
+            StyledRect {
+                visible: FileManagerService.pickerMode && !FileManagerService.searchActive
+                color: _acceptEnabled ? Theme.palette.m3primary : Theme.palette.m3surfaceVariant
+                radius: Theme.rounding.full
+                implicitWidth: acceptLabel.implicitWidth + Theme.padding.lg * 2
+                implicitHeight: acceptLabel.implicitHeight + Theme.padding.xs * 2
+
+                readonly property bool _acceptEnabled: {
+                    if (FileManagerService.pickerSaveMode)
+                        return true;  // In save mode, always enabled (saves to current dir)
+                    if (root.currentEntry === null)
+                        return false;
+                    if (FileManagerService.pickerDirectory)
+                        return root.currentEntry.isDir;
+                    return !root.currentEntry.isDir;
+                }
+
+                StyledText {
+                    id: acceptLabel
+                    anchors.centerIn: parent
+                    text: FileManagerService.pickerAcceptLabel || (FileManagerService.pickerSaveMode ? "Save" : "Select")
+                    color: parent._acceptEnabled ? Theme.palette.m3onPrimary : Theme.palette.m3onSurfaceVariant
+                    font.pointSize: Theme.font.size.xs
+                    font.weight: Font.Medium
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: parent._acceptEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: {
+                        if (!parent._acceptEnabled)
+                            return;
+                        if (FileManagerService.pickerSaveMode) {
+                            // Save mode: return current directory path
+                            FileManagerService.completePickerMode([FileManagerService.currentPath]);
+                        } else if (root.currentEntry) {
+                            FileManagerService.completePickerMode([root.currentEntry.path]);
+                        }
+                    }
+                }
+
+                Behavior on color { CAnim {} }
+            }
+
             StyledText {
-                visible: !FileManagerService.searchActive
+                visible: !FileManagerService.searchActive && !FileManagerService.pickerMode
                 text: root.fileCount + (root.fileCount === 1 ? " item" : " items")
                 color: Theme.palette.m3onSurfaceVariant
                 font.pointSize: Theme.font.size.xs
@@ -50,9 +95,19 @@ Item {
                 Layout.fillWidth: true
             }
 
-            // Center: current entry info (hidden during search)
+            // Center: save filename (save mode) or current entry info (normal/open picker)
             StyledText {
-                visible: !FileManagerService.searchActive && root.currentEntry !== null
+                visible: !FileManagerService.searchActive && FileManagerService.pickerSaveMode
+                    && FileManagerService.pickerSuggestedName !== ""
+                text: "Save as: " + FileManagerService.pickerSuggestedName
+                color: Theme.palette.m3primary
+                font.pointSize: Theme.font.size.xs
+                font.family: Theme.font.family.mono
+            }
+
+            StyledText {
+                visible: !FileManagerService.searchActive && !FileManagerService.pickerSaveMode
+                    && root.currentEntry !== null
                 text: {
                     if (root.currentEntry?.isDir)
                         return root.currentEntry.name + "/";
@@ -66,6 +121,32 @@ Item {
             Item {
                 visible: !FileManagerService.searchActive
                 Layout.fillWidth: true
+            }
+
+            // Cancel button (picker mode only)
+            StyledRect {
+                visible: FileManagerService.pickerMode && !FileManagerService.searchActive
+                color: Theme.palette.m3surfaceVariant
+                radius: Theme.rounding.full
+                implicitWidth: cancelLabel.implicitWidth + Theme.padding.lg * 2
+                implicitHeight: cancelLabel.implicitHeight + Theme.padding.xs * 2
+
+                StyledText {
+                    id: cancelLabel
+                    anchors.centerIn: parent
+                    text: "Cancel"
+                    color: Theme.palette.m3onSurfaceVariant
+                    font.pointSize: Theme.font.size.xs
+                    font.weight: Font.Medium
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: FileManagerService.cancelPickerMode()
+                }
+
+                Behavior on color { CAnim {} }
             }
 
             // Search input (visible during search)

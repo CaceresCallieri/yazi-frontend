@@ -39,6 +39,32 @@ Item {
     function _activateCurrentItem(): void {
         if (!root.currentEntry)
             return;
+
+        if (FileManagerService.pickerMode) {
+            if (FileManagerService.pickerSaveMode) {
+                // Save mode: Enter on dir navigates into it,
+                // the save target is the current directory + suggested name
+                if (root.currentEntry.isDir)
+                    _navigateIntoCurrentItem();
+                else
+                    // Entering on a file in save mode: use that file's path
+                    // (effectively "overwrite this file")
+                    FileManagerService.completePickerMode([root.currentEntry.path]);
+            } else if (FileManagerService.pickerDirectory) {
+                // Directory picker: Enter on dir selects it
+                if (root.currentEntry.isDir)
+                    FileManagerService.completePickerMode([root.currentEntry.path]);
+                // Ignore Enter on files in directory picker
+            } else {
+                // Open file picker: Enter on dir navigates, Enter on file selects
+                if (root.currentEntry.isDir)
+                    _navigateIntoCurrentItem();
+                else
+                    FileManagerService.completePickerMode([root.currentEntry.path]);
+            }
+            return;
+        }
+
         if (root.currentEntry.isDir)
             _navigateIntoCurrentItem();
         else
@@ -273,6 +299,28 @@ Item {
             if (FileManagerService.deleteConfirmPath !== "" || FileManagerService.createInputActive) {
                 event.accepted = true;
                 return;
+            }
+
+            // Picker mode: Escape cancels, suppress file-op keys
+            if (FileManagerService.pickerMode) {
+                if (event.key === Qt.Key_Escape) {
+                    FileManagerService.cancelPickerMode();
+                    event.accepted = true;
+                    return;
+                }
+                // Suppress file operations — they don't belong in a picker
+                const suppressedKeys = [Qt.Key_D, Qt.Key_Y, Qt.Key_X, Qt.Key_P, Qt.Key_A];
+                if (suppressedKeys.indexOf(event.key) !== -1
+                    && !(event.modifiers & Qt.ControlModifier && event.key === Qt.Key_D)) {
+                    // Allow Ctrl+D (half-page down) but suppress bare D (delete)
+                    event.accepted = true;
+                    return;
+                }
+                // Suppress Ctrl+V (paste) in picker mode
+                if (event.key === Qt.Key_V && (event.modifiers & Qt.ControlModifier)) {
+                    event.accepted = true;
+                    return;
+                }
             }
 
             const key = event.key;

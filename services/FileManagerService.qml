@@ -60,6 +60,55 @@ Singleton {
         createInputActive = false;
     }
 
+    // === Picker mode (portal file chooser) ===
+    property bool pickerMode: false
+    property string pickerFifoPath: ""
+    property string pickerTitle: ""
+    property string pickerAcceptLabel: ""
+    property bool pickerMultiple: false
+    property bool pickerDirectory: false
+    property bool pickerSaveMode: false
+    property string pickerSuggestedName: ""
+
+    signal pickerCompleted(fifoPath: string, paths: var)
+    signal pickerCancelled(fifoPath: string)
+
+    function startPickerMode(options: var): void {
+        pickerMode = true;
+        pickerFifoPath = options.fifo || "";
+        pickerTitle = options.title || "Select a File";
+        pickerAcceptLabel = options.acceptLabel || "";
+        pickerMultiple = options.multiple || false;  // TODO: multi-select not yet implemented
+        pickerDirectory = options.directory || false;
+        pickerSaveMode = options.saveMode || false;
+        pickerSuggestedName = options.suggestedName || "";
+        if (options.currentFolder)
+            navigate(options.currentFolder);
+    }
+
+    function completePickerMode(paths: var): void {
+        const fifo = pickerFifoPath;  // capture before reset
+        _resetPickerState();
+        pickerCompleted(fifo, paths);
+    }
+
+    function cancelPickerMode(): void {
+        const fifo = pickerFifoPath;  // capture before reset
+        _resetPickerState();
+        pickerCancelled(fifo);
+    }
+
+    function _resetPickerState(): void {
+        pickerMode = false;
+        pickerFifoPath = "";
+        pickerTitle = "";
+        pickerAcceptLabel = "";
+        pickerMultiple = false;
+        pickerDirectory = false;
+        pickerSaveMode = false;
+        pickerSuggestedName = "";
+    }
+
     // === Chord / which-key state ===
     property string activeChordPrefix: ""
     readonly property bool chordActive: activeChordPrefix !== ""

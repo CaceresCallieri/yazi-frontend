@@ -31,7 +31,15 @@ Item {
         }
     }
 
-    // Modal overlays — render above the entire layout
-    DeleteConfirmPopup {}
-    CreateFilePopup {}
+    // Modal overlays — render above the entire layout (hidden in picker mode)
+    Loader {
+        anchors.fill: parent
+        active: !FileManagerService.pickerMode
+        sourceComponent: DeleteConfirmPopup {}
+    }
+    Loader {
+        anchors.fill: parent
+        active: !FileManagerService.pickerMode
+        sourceComponent: CreateFilePopup {}
+    }
 }
