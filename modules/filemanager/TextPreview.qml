@@ -17,7 +17,6 @@ Item {
     SyntaxHighlightHelper {
         id: helper
         filePath: root.entry ? root.entry.path : ""
-        document: textEdit.textDocument
     }
 
     // QUIRK: explicit x/y/width/height required — anchors.margins silently ignored inside
@@ -42,8 +41,8 @@ Item {
             selectByMouse: false
             activeFocusOnPress: false
             focus: false
-            text: helper.content
-            textFormat: TextEdit.PlainText
+            text: helper.highlightedContent
+            textFormat: TextEdit.RichText
             font.family: Theme.font.family.mono
             font.pointSize: Theme.font.size.small
             wrapMode: TextEdit.NoWrap
@@ -51,7 +50,7 @@ Item {
             renderType: TextEdit.QtRendering
         }
 
-        opacity: helper.content !== "" ? 1 : 0
+        opacity: helper.hasContent ? 1 : 0
 
         Behavior on opacity {
             Anim {}

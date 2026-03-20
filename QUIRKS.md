@@ -96,3 +96,140 @@ rm -rf ~/.cache/quickshell/qmlcache
 
 But if running the shell directly (not via `run.sh`), always clear the cache
 manually after any C++ plugin rebuild + install.
+
+---
+
+## 4. QSyntaxHighlighter Disrupts QQuickTextEdit Rendering on Subsequent Loads
+
+**Symptom:** A `QSyntaxHighlighter` is attached to a QML `TextEdit`'s
+`QTextDocument` via `textEdit.textDocument`. The first file previewed renders
+correctly with syntax highlighting. When the user navigates to a second file of
+the same type, the text **vanishes** — the preview appears blank.
+
+**Root cause:** `QSyntaxHighlighter::rehighlight()` calls
+`QTextDocument::markContentsDirty()`, which disrupts `QQuickTextEdit`'s internal
+rendering state (layout cache, implicit size, content tracking). This is a
+fundamental incompatibility: `QSyntaxHighlighter` was designed for `QTextEdit`
+(widget-based), not `QQuickTextEdit` (scene graph-based).
+
+The first file works because the highlighter attaches via `setDocument()` after
+QML has already processed the `text:` binding and rendered the TextEdit. On
+subsequent loads, `setFilePath()` triggers `loadFile()` which emits
+`contentChanged` and immediately calls `attachHighlighter()` — the highlighter
+runs before QQuickTextEdit has finished processing the new content.
+
+**Working pattern:** Generate highlighted HTML on a **temporary** QTextDocument
+(completely isolated from the QML TextEdit), then display it via
+`textFormat: TextEdit.RichText`:
+
+```cpp
+// In C++: highlight on a temp document, extract HTML
+QTextDocument tempDoc;
+tempDoc.setPlainText(text);
+KSyntaxHighlighting::SyntaxHighlighter highlighter(&tempDoc);
+highlighter.setTheme(theme);
+highlighter.setDefinition(def);
+// Read formats from tempDoc blocks, build <span> HTML
+```
+
+```qml
+// In QML: display the pre-rendered HTML
+TextEdit {
+    text: helper.highlightedContent
+    textFormat: TextEdit.RichText    // NOT PlainText
+}
+```
+
+**DO NOT:**
+```cpp
+// Never attach a QSyntaxHighlighter to the QML TextEdit's document:
+highlighter = new KSyntaxHighlighting::SyntaxHighlighter(
+    qmlTextDocument->textDocument()  // ← breaks QQuickTextEdit
+);
+```
+
+**Discovered in:** `TextPreview.qml` / `SyntaxHighlightHelper` — text vanished
+on every file after the first when the highlighter was on the TextEdit's document.
+
+---
+
+## 5. QSyntaxHighlighter Formats Live on QTextLayout, Not QTextFragment
+
+**Symptom:** After highlighting a `QTextDocument` with `QSyntaxHighlighter`, you
+iterate `QTextBlock::begin()` → `QTextFragment::charFormat()` to extract colors
+— but every fragment returns a default `QTextCharFormat` with no foreground color.
+The highlighting appears to not have worked.
+
+**Root cause:** `QTextDocument` has **two separate formatting layers**:
+
+| Layer | Written by | Read via |
+|-------|-----------|----------|
+| Document fragments | `QTextCursor::setCharFormat()` | `QTextBlock::begin()` → `QTextFragment::charFormat()` |
+| Layout additional formats | `QSyntaxHighlighter::setFormat()` | `QTextBlock::layout()->formats()` |
+
+`QSyntaxHighlighter` stores its output exclusively on the **layout layer** via
+`QTextLayout::setFormats()`. The document's fragment layer is never modified.
+
+**Working pattern:**
+```cpp
+QTextBlock block = doc.begin();
+while (block.isValid()) {
+    // CORRECT: read from the layout layer
+    const auto formats = block.layout()->formats();
+    for (const auto& range : formats) {
+        QColor fg = range.format.foreground().color();
+        // range.start, range.length, fg, bold, italic...
+    }
+    block = block.next();
+}
+```
+
+**DO NOT:**
+```cpp
+// WRONG: QTextFragment has NO syntax highlighting data
+for (auto it = block.begin(); !it.atEnd(); ++it) {
+    QTextFragment fragment = it.fragment();
+    fragment.charFormat().foreground().color();  // ← always default/empty
+}
+```
+
+**Discovered in:** `SyntaxHighlightHelper::buildHighlightedHtml()` — all text
+rendered in the theme's default color because fragment iteration found no formats.
+
+---
+
+## 6. KSyntaxHighlighting: setTheme() Must Be Called Before setDefinition()
+
+**Symptom:** You create a `KSyntaxHighlighting::SyntaxHighlighter`, call
+`setDefinition()` then `setTheme()`, but all format ranges have foreground
+color `#000000` (black) regardless of the theme.
+
+**Root cause:** `setDefinition()` triggers `rehighlight()`. Without a valid
+theme, `KSyntaxHighlighting::Format::toTextCharFormat(invalidTheme)` resolves
+all colors to `#000000`. These black format ranges are written to the
+`QTextLayout` via `setFormats()`.
+
+When `setTheme()` subsequently triggers another `rehighlight()`, Qt's internal
+`applyFormatChanges()` compares the new format ranges against the old ones. Due
+to a comparison optimization, the stale black ranges are not always detected as
+"changed" and persist in the layout.
+
+**Working pattern:**
+```cpp
+KSyntaxHighlighting::SyntaxHighlighter highlighter(&doc);
+highlighter.setTheme(theme);       // FIRST — theme is ready
+highlighter.setDefinition(def);    // SECOND — rehighlight uses correct theme
+```
+
+**DO NOT:**
+```cpp
+highlighter.setDefinition(def);    // rehighlight with NO theme → #000000
+highlighter.setTheme(theme);       // rehighlight, but stale black persists
+```
+
+**Verified via standalone test** — `test_highlight.cpp` confirmed that
+definition-first produces `#000000` for all ranges, while theme-first produces
+correct colors (`#8e44ad` headings, `#2980b9` keywords, `#f44f4f` strings).
+
+**Discovered in:** `SyntaxHighlightHelper::buildHighlightedHtml()` — all text
+was black-on-dark-background until the call order was reversed.
