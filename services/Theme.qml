@@ -41,38 +41,38 @@ Singleton {
             property string material: "Material Symbols Rounded"
         }
         property QtObject size: QtObject {
-            property real small: 11
-            property real smaller: 12
-            property real normal: 13
-            property real larger: 15
-            property real large: 18
-            property real extraLarge: 28
+            property real small: 9
+            property real smaller: 10
+            property real normal: 11
+            property real larger: 12
+            property real large: 14
+            property real extraLarge: 22
         }
     }
 
     // === Layout tokens ===
     property QtObject rounding: QtObject {
-        property int small: 12
-        property int normal: 17
-        property int large: 25
+        property int small: 8
+        property int normal: 12
+        property int large: 20
         property int full: 1000
     }
 
     property QtObject spacing: QtObject {
-        property real tiny: 2
-        property real small: 7
-        property real smaller: 10
-        property real normal: 12
-        property real larger: 15
-        property real large: 20
+        property real tiny: 1
+        property real small: 4
+        property real smaller: 6
+        property real normal: 8
+        property real larger: 10
+        property real large: 12
     }
 
     property QtObject padding: QtObject {
-        property real small: 5
-        property real smaller: 7
-        property real normal: 10
-        property real larger: 12
-        property real large: 15
+        property real small: 3
+        property real smaller: 5
+        property real normal: 6
+        property real larger: 8
+        property real large: 10
     }
 
     // === Animation tokens ===

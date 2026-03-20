@@ -8,6 +8,6 @@ QtObject {
     component Sizes: QtObject {
         property int windowWidth: 1000
         property int windowHeight: 600
-        property int itemHeight: 36
+        property int itemHeight: 24
     }
 }
