@@ -23,6 +23,7 @@ Item {
     readonly property int _typeText: 4
     readonly property int _typeFallback: 5
     readonly property int _typeArchive: 6
+    readonly property int _typeSpreadsheet: 7
 
     function _isTextFile(entry) {
         if (!entry) return false;
@@ -72,6 +73,19 @@ Item {
         ].includes(mime);
     }
 
+    function _isSpreadsheetFile(entry) {
+        if (!entry) return false;
+        const mime = entry.mimeType;
+        return [
+            "application/vnd.ms-excel",                                              // .xls
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",     // .xlsx
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.template",  // .xltx
+            "application/vnd.ms-excel.sheet.macroEnabled.12",                        // .xlsm
+            "application/vnd.ms-excel.template.macroEnabled.12",                     // .xltm
+            "application/vnd.ms-excel.sheet.binary.macroEnabled.12",                 // .xlsb
+        ].includes(mime);
+    }
+
     readonly property int _previewType: {
         if (!_committedEntry)
             return _typeNone;
@@ -85,6 +99,8 @@ Item {
             return _typeText;
         if (_isArchiveFile(_committedEntry))
             return _typeArchive;
+        if (_isSpreadsheetFile(_committedEntry))
+            return _typeSpreadsheet;
         return _typeFallback;
     }
 
@@ -111,6 +127,12 @@ Item {
     // Archive preview metadata — file and directory counts
     readonly property int _archiveFileCount: archiveLoader.item?.fileCount ?? 0
     readonly property int _archiveDirCount: archiveLoader.item?.dirCount ?? 0
+
+    // Spreadsheet preview metadata — sheet info and dimensions
+    readonly property int _spreadsheetSheetCount: spreadsheetLoader.item?.sheetCount ?? 0
+    readonly property int _spreadsheetActiveSheet: spreadsheetLoader.item?.activeSheet ?? 0
+    readonly property int _spreadsheetTotalRows: spreadsheetLoader.item?.totalRows ?? 0
+    readonly property int _spreadsheetTotalCols: spreadsheetLoader.item?.totalCols ?? 0
 
     // --- Debounce ---
 
@@ -291,6 +313,19 @@ Item {
                 }
             }
 
+            // Spreadsheet preview (.xls, .xlsx)
+            Loader {
+                id: spreadsheetLoader
+
+                anchors.fill: parent
+                active: _previewType === _typeSpreadsheet
+                asynchronous: true
+
+                sourceComponent: SpreadsheetPreview {
+                    entry: root._committedEntry
+                }
+            }
+
             // Fallback preview (non-image, non-directory, non-video, non-text files)
             Loader {
                 anchors.fill: parent
@@ -312,6 +347,10 @@ Item {
             textLineCount: root._textLineCount
             archiveFileCount: root._archiveFileCount
             archiveDirCount: root._archiveDirCount
+            spreadsheetSheetCount: root._spreadsheetSheetCount
+            spreadsheetActiveSheet: root._spreadsheetActiveSheet
+            spreadsheetTotalRows: root._spreadsheetTotalRows
+            spreadsheetTotalCols: root._spreadsheetTotalCols
         }
     }
 }

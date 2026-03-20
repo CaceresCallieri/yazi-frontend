@@ -12,6 +12,10 @@ Item {
     property int textLineCount: 0
     property int archiveFileCount: 0
     property int archiveDirCount: 0
+    property int spreadsheetSheetCount: 0
+    property int spreadsheetActiveSheet: 0
+    property int spreadsheetTotalRows: 0
+    property int spreadsheetTotalCols: 0
 
     visible: !!entry
     implicitHeight: metaLayout.implicitHeight + Theme.padding.small * 2
@@ -74,6 +78,20 @@ Item {
         StyledText {
             visible: root.textLineCount > 0
             text: qsTr("%1 lines").arg(root.textLineCount)
+            color: Theme.palette.m3outline
+            font.pointSize: Theme.font.size.small
+            font.family: Theme.font.family.mono
+        }
+
+        // Spreadsheet metadata (only shown for spreadsheet previews)
+        StyledText {
+            visible: root.spreadsheetTotalRows > 0
+            text: {
+                let info = root.spreadsheetTotalRows + "\u00d7" + root.spreadsheetTotalCols;
+                if (root.spreadsheetSheetCount > 1)
+                    info = qsTr("Sheet %1 of %2").arg(root.spreadsheetActiveSheet + 1).arg(root.spreadsheetSheetCount) + " \u00b7 " + info;
+                return info;
+            }
             color: Theme.palette.m3outline
             font.pointSize: Theme.font.size.small
             font.family: Theme.font.family.mono
