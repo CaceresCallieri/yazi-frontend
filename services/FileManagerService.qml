@@ -96,7 +96,6 @@ Singleton {
 
     readonly property bool canGoBack: _historyIndex > 0
     readonly property bool canGoForward: _historyIndex < _history.length - 1
-    readonly property bool canGoUp: currentPath !== "/"
 
     // Per-directory cursor position cache: { path → index }
     property var _cursorCache: ({})
@@ -173,7 +172,7 @@ Singleton {
     }
 
     function goUp(): void {
-        if (!canGoUp)
+        if (currentPath === "/")
             return;
 
         clearSearch();

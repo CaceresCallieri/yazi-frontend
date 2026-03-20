@@ -51,7 +51,7 @@ Item {
         // Back button
         Item {
             implicitWidth: implicitHeight
-            implicitHeight: backIcon.implicitHeight + Theme.padding.sm * 2
+            implicitHeight: Math.max(backIcon.implicitHeight + Theme.padding.sm * 2, Theme.padding.md)
 
             StateLayer {
                 radius: Theme.rounding.sm
@@ -64,7 +64,7 @@ Item {
 
                 anchors.centerIn: parent
                 text: "arrow_back"
-                color: !FileManagerService.canGoBack ? Theme.palette.m3outline : Theme.palette.m3onSurface
+                color: FileManagerService.canGoBack ? Theme.palette.m3onSurface : Theme.palette.m3outline
                 grade: 200
             }
         }
@@ -72,7 +72,7 @@ Item {
         // Forward button
         Item {
             implicitWidth: implicitHeight
-            implicitHeight: forwardIcon.implicitHeight + Theme.padding.sm * 2
+            implicitHeight: Math.max(forwardIcon.implicitHeight + Theme.padding.sm * 2, Theme.padding.md)
 
             StateLayer {
                 radius: Theme.rounding.sm
@@ -85,7 +85,7 @@ Item {
 
                 anchors.centerIn: parent
                 text: "arrow_forward"
-                color: !FileManagerService.canGoForward ? Theme.palette.m3outline : Theme.palette.m3onSurface
+                color: FileManagerService.canGoForward ? Theme.palette.m3onSurface : Theme.palette.m3outline
                 grade: 200
             }
         }
