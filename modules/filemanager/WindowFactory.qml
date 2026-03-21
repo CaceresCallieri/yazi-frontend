@@ -211,6 +211,10 @@ Singleton {
             onVisibleChanged: {
                 if (!visible) {
                     root._activeWindows = root._activeWindows.filter(w => w !== win);
+                    // Clear shared state when the last window closes — prevents
+                    // stale clipboard indicators from appearing in future sessions.
+                    if (root._activeWindows.length === 0)
+                        FileManagerService.clearClipboard();
                     destroy();
                 }
             }

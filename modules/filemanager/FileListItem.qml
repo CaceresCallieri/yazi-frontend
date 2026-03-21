@@ -42,6 +42,7 @@ Item {
     }
 
     property bool isSearchMatch: false
+    property bool isSelected: false
 
     implicitHeight: Config.fileManager.sizes.itemHeight
 
@@ -86,8 +87,35 @@ Item {
             width: parent.width + Theme.rounding.sm
             radius: Theme.rounding.sm
             color: FileManagerService.clipboardMode === "cut" ? "#e57373" : "#4caf7d"
-            opacity: (root.modelData?.path ?? "") === FileManagerService.clipboardPath
-                     && FileManagerService.clipboardPath !== "" ? 0.85 : 0
+            // Read _clipboardSet directly so QML tracks the dependency and
+            // re-evaluates when the set object reference changes.
+            opacity: FileManagerService._clipboardSet[root.modelData?.path ?? ""]
+                     ? 0.85 : 0
+
+            Behavior on opacity { Anim {} }
+        }
+    }
+
+    // Selection indicator strip — left edge, yellow.
+    // Same visual pattern as the clipboard strip but takes precedence visually
+    // when both are present (selection is the active user intent).
+    // Hardcoded color for the same reason as clipboard: Symmetria's _applyTheme
+    // IPC loop overwrites m3* palette tokens with wallpaper-derived values.
+    Item {
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: 5
+        clip: true
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: parent.width + Theme.rounding.sm
+            radius: Theme.rounding.sm
+            color: "#f0c674"
+            opacity: root.isSelected ? 0.85 : 0
 
             Behavior on opacity { Anim {} }
         }

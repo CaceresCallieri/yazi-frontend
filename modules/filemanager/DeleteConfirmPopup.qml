@@ -11,24 +11,24 @@ Loader {
 
     anchors.fill: parent
 
-    opacity: windowState && windowState.deleteConfirmPath !== "" ? 1 : 0
+    opacity: windowState && windowState.deleteConfirmPaths.length > 0 ? 1 : 0
     // Drive active from the source property, not from animated opacity — avoids
     // a race where the Loader activates mid-fade-out with an already-empty path.
     // Also suppressed in picker mode (file ops not allowed).
     active: windowState && !FileManagerService.pickerMode
-        && windowState.deleteConfirmPath !== ""
+        && windowState.deleteConfirmPaths.length > 0
     asynchronous: true
 
     sourceComponent: FocusScope {
         id: popupScope
 
-        // Snapshot path on creation — this component is destroyed/recreated each
+        // Snapshot paths on creation — this component is destroyed/recreated each
         // time the Loader reactivates (active flips false→true), so onCompleted
-        // always captures the correct path even though deleteConfirmPath is
+        // always captures the correct paths even though deleteConfirmPaths is
         // cleared before the component is destroyed.
-        property string targetPath
+        property var targetPaths: []
 
-        Component.onCompleted: targetPath = root.windowState.deleteConfirmPath
+        Component.onCompleted: targetPaths = root.windowState.deleteConfirmPaths
 
         // Scrim backdrop — click to cancel
         MouseArea {
@@ -55,7 +55,7 @@ Loader {
 
             scale: 0.1
             Component.onCompleted: scale = Qt.binding(
-                () => root.windowState && root.windowState.deleteConfirmPath !== "" ? 1 : 0
+                () => root.windowState && root.windowState.deleteConfirmPaths.length > 0 ? 1 : 0
             )
 
             Behavior on scale {
@@ -128,7 +128,9 @@ Loader {
 
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
-                    text: qsTr("Trash this file?")
+                    text: popupScope.targetPaths.length === 1
+                        ? qsTr("Trash this file?")
+                        : qsTr("Trash %1 files?").arg(popupScope.targetPaths.length)
                     font.pointSize: Theme.font.size.xl
                     font.weight: 600
                 }
@@ -136,7 +138,14 @@ Loader {
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.maximumWidth: 280
-                    text: popupScope.targetPath.split("/").pop()
+                    text: {
+                        const paths = popupScope.targetPaths;
+                        if (paths.length === 0) return "";
+                        const names = paths.map(p => p.split("/").pop());
+                        if (names.length <= 3)
+                            return names.join("\n");
+                        return names.slice(0, 3).join("\n") + "\n\u2026 and " + (names.length - 3) + " more";
+                    }
                     color: Theme.palette.m3onSurfaceVariant
                     font.pointSize: Theme.font.size.sm
                     font.family: Theme.font.family.mono
@@ -240,7 +249,7 @@ Loader {
         // gio trash process
         Process {
             id: trashProcess
-            command: ["gio", "trash", popupScope.targetPath]
+            command: ["gio", "trash", "--"].concat(popupScope.targetPaths)
             onExited: (exitCode, exitStatus) => {
                 if (exitCode === 0) {
                     root.windowState.cancelDelete();

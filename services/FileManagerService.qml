@@ -6,21 +6,32 @@ Singleton {
     id: root
 
     // === Clipboard (yank/cut) — shared across all windows ===
-    property string clipboardPath: ""    // Absolute path of yanked/cut file, "" when empty
+    property var clipboardPaths: []      // Array of absolute paths, [] when empty
     property string clipboardMode: ""    // "" | "yank" | "cut"
 
-    function yank(path: string): void {
-        clipboardPath = path;
+    // Materialized Set for O(1) delegate lookups — rebuilt whenever clipboardPaths changes.
+    // Without this, each FileListItem delegate would call indexOf (O(n) per item per render).
+    property var _clipboardSet: ({})
+
+    onClipboardPathsChanged: {
+        const s = {};
+        for (let i = 0; i < clipboardPaths.length; i++)
+            s[clipboardPaths[i]] = true;
+        _clipboardSet = s;
+    }
+
+    function yank(paths: var): void {
+        clipboardPaths = paths;
         clipboardMode = "yank";
     }
 
-    function cut(path: string): void {
-        clipboardPath = path;
+    function cut(paths: var): void {
+        clipboardPaths = paths;
         clipboardMode = "cut";
     }
 
     function clearClipboard(): void {
-        clipboardPath = "";
+        clipboardPaths = [];
         clipboardMode = "";
     }
 

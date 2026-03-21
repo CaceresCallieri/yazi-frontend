@@ -90,8 +90,19 @@ Item {
 
             StyledText {
                 visible: !root._searchActive && !FileManagerService.pickerMode
-                text: root.fileCount + (root.fileCount === 1 ? " item" : " items")
-                color: Theme.palette.m3onSurfaceVariant
+                text: {
+                    const count = root.fileCount + (root.fileCount === 1 ? " item" : " items");
+                    const sel = root.windowState ? root.windowState.selectedCount : 0;
+                    if (sel > 0)
+                        return count + "  ·  " + sel + " selected";
+                    return count;
+                }
+                color: {
+                    const sel = root.windowState ? root.windowState.selectedCount : 0;
+                    if (sel > 0)
+                        return "#f0c674";
+                    return Theme.palette.m3onSurfaceVariant;
+                }
                 font.pointSize: Theme.font.size.xs
             }
 

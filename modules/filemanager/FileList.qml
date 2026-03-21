@@ -25,7 +25,7 @@ Item {
     property int _preSearchIndex: 0
 
     // Keys suppressed in picker mode (file operations have no meaning in a file chooser)
-    readonly property var _pickerSuppressedKeys: [Qt.Key_D, Qt.Key_Y, Qt.Key_X, Qt.Key_P, Qt.Key_A]
+    readonly property var _pickerSuppressedKeys: [Qt.Key_D, Qt.Key_Y, Qt.Key_X, Qt.Key_P, Qt.Key_A, Qt.Key_Space]
 
     // Filename to focus once the model refreshes (set by paste, create, etc.)
     property string _pendingFocusName: ""
@@ -104,19 +104,21 @@ Item {
     }
 
     function _executePaste(): void {
-        if (FileManagerService.clipboardPath === "" || pasteProcess.running)
+        if (FileManagerService.clipboardPaths.length === 0 || pasteProcess.running)
             return;
 
-        const sourcePath = FileManagerService.clipboardPath;
+        const paths = FileManagerService.clipboardPaths;
         const destDir = windowState.currentPath;
 
-        // Extract basename to focus after model refreshes
-        root._pendingFocusName = sourcePath.substring(sourcePath.lastIndexOf("/") + 1);
+        // Focus the first pasted item after model refreshes
+        root._pendingFocusName = paths[0].substring(paths[0].lastIndexOf("/") + 1);
 
+        // cp and mv both accept multiple source args before a single destination:
+        //   cp -r -- file1 file2 file3 destDir
         if (FileManagerService.clipboardMode === "yank")
-            pasteProcess.command = ["cp", "-r", "--", sourcePath, destDir];
+            pasteProcess.command = ["cp", "-r", "--"].concat(paths).concat([destDir]);
         else
-            pasteProcess.command = ["mv", "--", sourcePath, destDir];
+            pasteProcess.command = ["mv", "--"].concat(paths).concat([destDir]);
 
         pasteProcess.running = true;
     }
@@ -188,8 +190,8 @@ Item {
             Qt.callLater(() => view.forceActiveFocus());
         }
 
-        function onDeleteConfirmPathChanged() {
-            if (windowState.deleteConfirmPath === "")
+        function onDeleteConfirmPathsChanged() {
+            if (windowState.deleteConfirmPaths.length === 0)
                 Qt.callLater(() => view.forceActiveFocus());
         }
 
@@ -299,13 +301,18 @@ Item {
             width: view.width
             searchQuery: root.windowState ? root.windowState.searchQuery : ""
             isSearchMatch: root.windowState ? root.windowState.matchIndices.indexOf(index) !== -1 : false
+            // Reading selectedPaths in the expression makes QML re-evaluate
+            // this binding whenever the object reference changes (toggleSelection
+            // assigns a new object each time, triggering the notify signal).
+            isSelected: root.windowState && root.windowState.selectedPaths
+                        ? !!root.windowState.selectedPaths[modelData.path] : false
             onActivated: root._activateCurrentItem()
         }
 
         // Vim-style keyboard navigation
         Keys.onPressed: function(event) {
             // Block all keys while a modal popup is visible
-            if (windowState.deleteConfirmPath !== "" || windowState.createInputActive) {
+            if (windowState.deleteConfirmPaths.length > 0 || windowState.createInputActive) {
                 event.accepted = true;
                 return;
             }
@@ -401,9 +408,14 @@ Item {
                         view.currentIndex = Math.min(view.currentIndex + root._halfPageCount(), view.count - 1);
                         view.positionViewAtIndex(view.currentIndex, ListView.Contain);
                     }
-                } else if (root.currentEntry) {
-                    // D — trash file (request confirmation)
-                    windowState.requestDelete(root.currentEntry.path);
+                } else {
+                    // D — trash file(s) (request confirmation)
+                    if (windowState.selectedCount > 0) {
+                        windowState.requestDelete(windowState.getSelectedPathsArray());
+                        windowState.clearSelection();
+                    } else if (root.currentEntry) {
+                        windowState.requestDelete([root.currentEntry.path]);
+                    }
                 }
                 event.accepted = true;
                 break;
@@ -449,14 +461,22 @@ Item {
                 break;
 
             case Qt.Key_Y:
-                if (root.currentEntry)
-                    FileManagerService.yank(root.currentEntry.path);
+                if (windowState.selectedCount > 0) {
+                    FileManagerService.yank(windowState.getSelectedPathsArray());
+                    windowState.clearSelection();
+                } else if (root.currentEntry) {
+                    FileManagerService.yank([root.currentEntry.path]);
+                }
                 event.accepted = true;
                 break;
 
             case Qt.Key_X:
-                if (root.currentEntry)
-                    FileManagerService.cut(root.currentEntry.path);
+                if (windowState.selectedCount > 0) {
+                    FileManagerService.cut(windowState.getSelectedPathsArray());
+                    windowState.clearSelection();
+                } else if (root.currentEntry) {
+                    FileManagerService.cut([root.currentEntry.path]);
+                }
                 event.accepted = true;
                 break;
 
@@ -483,6 +503,23 @@ Item {
                 }
                 break;
 
+            case Qt.Key_Space:
+                if (root.currentEntry) {
+                    windowState.toggleSelection(root.currentEntry.path);
+                    // Advance cursor after toggling, like Yazi
+                    if (view.currentIndex < view.count - 1)
+                        view.currentIndex++;
+                }
+                event.accepted = true;
+                break;
+
+            case Qt.Key_Escape:
+                if (windowState.selectedCount > 0) {
+                    windowState.clearSelection();
+                    event.accepted = true;
+                }
+                break;
+
             case Qt.Key_A:
                 windowState.requestCreate();
                 event.accepted = true;
@@ -500,8 +537,7 @@ Item {
         id: pasteProcess
         onExited: (exitCode, exitStatus) => {
             if (exitCode === 0 && exitStatus === Process.NormalExit) {
-                if (FileManagerService.clipboardMode === "cut")
-                    FileManagerService.clearClipboard();
+                FileManagerService.clearClipboard();
             } else {
                 console.warn("FileList: paste failed — exitCode:", exitCode, "exitStatus:", exitStatus);
                 root._pendingFocusName = "";

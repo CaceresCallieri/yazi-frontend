@@ -118,16 +118,43 @@ QtObject {
         }
     })
 
-    // === Delete confirmation ===
-    // Empty string means no pending deletion
-    property string deleteConfirmPath: ""
+    // === Selection (Space-toggled marks) ===
+    // Stores absolute paths as keys: { "/home/user/file.txt": true, ... }
+    // Persists across directory changes — cleared explicitly by the user.
+    property var selectedPaths: ({})
+    readonly property int selectedCount: Object.keys(selectedPaths).length
 
-    function requestDelete(path: string): void {
-        deleteConfirmPath = path;
+    function toggleSelection(path: string): void {
+        const copy = Object.assign({}, selectedPaths);
+        if (copy[path])
+            delete copy[path];
+        else
+            copy[path] = true;
+        selectedPaths = copy;
+    }
+
+    function clearSelection(): void {
+        selectedPaths = {};
+    }
+
+    function isSelected(path: string): bool {
+        return !!selectedPaths[path];
+    }
+
+    function getSelectedPathsArray(): var {
+        return Object.keys(selectedPaths);
+    }
+
+    // === Delete confirmation ===
+    // Empty array means no pending deletion
+    property var deleteConfirmPaths: []
+
+    function requestDelete(paths: var): void {
+        deleteConfirmPaths = paths;
     }
 
     function cancelDelete(): void {
-        deleteConfirmPath = "";
+        deleteConfirmPaths = [];
     }
 
     // === Create file/folder ===
