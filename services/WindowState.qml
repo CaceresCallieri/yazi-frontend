@@ -122,23 +122,26 @@ QtObject {
     // Stores absolute paths as keys: { "/home/user/file.txt": true, ... }
     // Persists across directory changes — cleared explicitly by the user.
     property var selectedPaths: ({})
-    readonly property int selectedCount: Object.keys(selectedPaths).length
+    // Explicit counter avoids allocating a temporary array via Object.keys()
+    // on every read of selectedCount (StatusBar + FileList both bind to it).
+    property int _selectionCount: 0
+    readonly property int selectedCount: _selectionCount
 
     function toggleSelection(path: string): void {
         const copy = Object.assign({}, selectedPaths);
-        if (copy[path])
+        if (copy[path]) {
             delete copy[path];
-        else
+            _selectionCount--;
+        } else {
             copy[path] = true;
+            _selectionCount++;
+        }
         selectedPaths = copy;
     }
 
     function clearSelection(): void {
         selectedPaths = {};
-    }
-
-    function isSelected(path: string): bool {
-        return !!selectedPaths[path];
+        _selectionCount = 0;
     }
 
     function getSelectedPathsArray(): var {

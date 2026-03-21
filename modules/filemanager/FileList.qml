@@ -116,9 +116,9 @@ Item {
         // cp and mv both accept multiple source args before a single destination:
         //   cp -r -- file1 file2 file3 destDir
         if (FileManagerService.clipboardMode === "yank")
-            pasteProcess.command = ["cp", "-r", "--"].concat(paths).concat([destDir]);
+            pasteProcess.command = ["cp", "-r", "--", ...paths, destDir];
         else
-            pasteProcess.command = ["mv", "--"].concat(paths).concat([destDir]);
+            pasteProcess.command = ["mv", "--", ...paths, destDir];
 
         pasteProcess.running = true;
     }
@@ -514,10 +514,9 @@ Item {
                 break;
 
             case Qt.Key_Escape:
-                if (windowState.selectedCount > 0) {
+                if (windowState.selectedCount > 0)
                     windowState.clearSelection();
-                    event.accepted = true;
-                }
+                event.accepted = true;
                 break;
 
             case Qt.Key_A:

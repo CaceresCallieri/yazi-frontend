@@ -13,6 +13,7 @@ Item {
 
     // Collapses the repeated null-guard pattern used throughout this file.
     readonly property bool _searchActive: windowState ? windowState.searchActive : false
+    readonly property int _selectedCount: windowState ? windowState.selectedCount : 0
 
     implicitHeight: inner.implicitHeight + Theme.padding.sm * 4
 
@@ -92,14 +93,12 @@ Item {
                 visible: !root._searchActive && !FileManagerService.pickerMode
                 text: {
                     const count = root.fileCount + (root.fileCount === 1 ? " item" : " items");
-                    const sel = root.windowState ? root.windowState.selectedCount : 0;
-                    if (sel > 0)
-                        return count + "  ·  " + sel + " selected";
+                    if (root._selectedCount > 0)
+                        return count + "  ·  " + root._selectedCount + " selected";
                     return count;
                 }
                 color: {
-                    const sel = root.windowState ? root.windowState.selectedCount : 0;
-                    if (sel > 0)
+                    if (root._selectedCount > 0)
                         return "#f0c674";
                     return Theme.palette.m3onSurfaceVariant;
                 }

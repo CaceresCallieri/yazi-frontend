@@ -15,8 +15,7 @@ Singleton {
 
     onClipboardPathsChanged: {
         const s = {};
-        for (let i = 0; i < clipboardPaths.length; i++)
-            s[clipboardPaths[i]] = true;
+        clipboardPaths.forEach(p => s[p] = true);
         _clipboardSet = s;
     }
 

@@ -129,7 +129,7 @@ Loader {
                 StyledText {
                     Layout.alignment: Qt.AlignHCenter
                     text: popupScope.targetPaths.length === 1
-                        ? qsTr("Trash this file?")
+                        ? qsTr("Trash this item?")
                         : qsTr("Trash %1 files?").arg(popupScope.targetPaths.length)
                     font.pointSize: Theme.font.size.xl
                     font.weight: 600
