@@ -104,7 +104,7 @@ QtObject {
     property bool sortReverse: true
 
     readonly property var _sortLabels: ["Alphabetical", "Modified", "Size", "Extension", "Natural"]
-    readonly property string sortLabel: _sortLabels[sortBy] || "Natural"
+    readonly property string sortLabel: _sortLabels[sortBy] ?? "?"
 
     // === Chord / which-key state ===
     property string activeChordPrefix: ""

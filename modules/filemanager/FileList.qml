@@ -137,15 +137,16 @@ Item {
             clipboardCopyProcess.command = ["wl-copy", "--", textToCopy];
             clipboardCopyProcess.running = true;
         } else if (prefix === ",") {
+            if (keyChar === "")
+                return;
             // Lowercase = ascending, Uppercase = descending
             const isReverse = keyChar === keyChar.toUpperCase();
             const sortKey = keyChar.toLowerCase();
-            switch (sortKey) {
-            case "a": windowState.sortBy = 0; windowState.sortReverse = isReverse; break;
-            case "m": windowState.sortBy = 1; windowState.sortReverse = isReverse; break;
-            case "s": windowState.sortBy = 2; windowState.sortReverse = isReverse; break;
-            case "e": windowState.sortBy = 3; windowState.sortReverse = isReverse; break;
-            case "n": windowState.sortBy = 4; windowState.sortReverse = isReverse; break;
+            // Integer values MUST match C++ FileSystemModel::SortBy enum order
+            const sortMap = { a: 0, m: 1, s: 2, e: 3, n: 4 };
+            if (sortMap[sortKey] !== undefined) {
+                windowState.sortBy = sortMap[sortKey];
+                windowState.sortReverse = isReverse;
             }
         }
     }
@@ -319,7 +320,7 @@ Item {
             id: fsModel
             path: root.windowState ? root.windowState.currentPath : Paths.home
             showHidden: Config.fileManager.showHidden
-            sortBy: root.windowState ? root.windowState.sortBy : 4
+            sortBy: root.windowState ? root.windowState.sortBy : 1
             sortReverse: root.windowState ? root.windowState.sortReverse : false
             watchChanges: true
             onPathChanged: root._pathJustChanged = true

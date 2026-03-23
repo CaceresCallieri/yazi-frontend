@@ -82,7 +82,8 @@ Item {
             id: parentModel
             path: root._parentPath
             showHidden: Config.fileManager.showHidden
-            sortReverse: Config.fileManager.sortReverse
+            sortBy: root.windowState ? root.windowState.sortBy : 1
+            sortReverse: root.windowState ? root.windowState.sortReverse : false
             watchChanges: true
         }
 
