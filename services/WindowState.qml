@@ -99,6 +99,13 @@ QtObject {
         currentMatchIndex = (currentMatchIndex - 1 + matchIndices.length) % matchIndices.length;
     }
 
+    // === Sort (per-window, ephemeral) ===
+    property int sortBy: 1          // Default: Modified (matches C++ SortBy::Modified = 1)
+    property bool sortReverse: true
+
+    readonly property var _sortLabels: ["Alphabetical", "Modified", "Size", "Extension", "Natural"]
+    readonly property string sortLabel: _sortLabels[sortBy] || "Natural"
+
     // === Chord / which-key state ===
     property string activeChordPrefix: ""
     readonly property bool chordActive: activeChordPrefix !== ""
@@ -123,6 +130,16 @@ QtObject {
                 { key: "f", label: "Filename", icon: "description" },
                 { key: "n", label: "Name without extension", icon: "label" },
                 { key: "d", label: "Directory path", icon: "folder" }
+            ]
+        },
+        ",": {
+            label: "sort by",
+            binds: [
+                { key: "a/A", label: "Alphabetical", icon: "sort_by_alpha" },
+                { key: "m/M", label: "Modified date", icon: "schedule" },
+                { key: "s/S", label: "Size", icon: "straighten" },
+                { key: "e/E", label: "Extension", icon: "extension" },
+                { key: "n/N", label: "Natural", icon: "format_list_numbered" }
             ]
         }
     })

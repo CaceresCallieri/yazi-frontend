@@ -136,6 +136,17 @@ Item {
             }
             clipboardCopyProcess.command = ["wl-copy", "--", textToCopy];
             clipboardCopyProcess.running = true;
+        } else if (prefix === ",") {
+            // Lowercase = ascending, Uppercase = descending
+            const isReverse = keyChar === keyChar.toUpperCase();
+            const sortKey = keyChar.toLowerCase();
+            switch (sortKey) {
+            case "a": windowState.sortBy = 0; windowState.sortReverse = isReverse; break;
+            case "m": windowState.sortBy = 1; windowState.sortReverse = isReverse; break;
+            case "s": windowState.sortBy = 2; windowState.sortReverse = isReverse; break;
+            case "e": windowState.sortBy = 3; windowState.sortReverse = isReverse; break;
+            case "n": windowState.sortBy = 4; windowState.sortReverse = isReverse; break;
+            }
         }
     }
 
@@ -308,7 +319,8 @@ Item {
             id: fsModel
             path: root.windowState ? root.windowState.currentPath : Paths.home
             showHidden: Config.fileManager.showHidden
-            sortReverse: Config.fileManager.sortReverse
+            sortBy: root.windowState ? root.windowState.sortBy : 4
+            sortReverse: root.windowState ? root.windowState.sortReverse : false
             watchChanges: true
             onPathChanged: root._pathJustChanged = true
             onEntriesChanged: {
@@ -388,11 +400,18 @@ Item {
 
             // Resolve active chord — any keypress completes or cancels it
             if (windowState.activeChordPrefix !== "") {
+                // Ignore bare modifier keys (Shift, Ctrl, Alt, Meta) — they don't
+                // resolve a chord, they're just held to modify the next real key.
+                if (key === Qt.Key_Shift || key === Qt.Key_Control
+                    || key === Qt.Key_Alt || key === Qt.Key_Meta) {
+                    event.accepted = true;
+                    return;
+                }
                 const prefix = windowState.activeChordPrefix;
                 windowState.activeChordPrefix = "";
                 // In picker mode, cancel the chord without executing it
                 if (!FileManagerService.pickerMode && key !== Qt.Key_Escape) {
-                    const keyChar = event.text.toLowerCase();
+                    const keyChar = prefix === "," ? event.text : event.text.toLowerCase();
                     root._executeChord(prefix, keyChar);
                 }
                 event.accepted = true;
@@ -580,6 +599,11 @@ Item {
                     const includeExt = (mods & Qt.ShiftModifier) !== 0;
                     windowState.requestRename(root.currentEntry.path, includeExt);
                 }
+                event.accepted = true;
+                break;
+
+            case Qt.Key_Comma:
+                windowState.activeChordPrefix = ",";
                 event.accepted = true;
                 break;
             }

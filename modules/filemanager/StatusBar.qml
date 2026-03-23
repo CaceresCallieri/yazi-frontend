@@ -105,6 +105,19 @@ Item {
                 font.pointSize: Theme.font.size.xs
             }
 
+            // Sort mode indicator
+            StyledText {
+                visible: !root._searchActive && !FileManagerService.pickerMode
+                text: {
+                    if (!root.windowState) return "";
+                    const arrow = root.windowState.sortReverse ? " ↑" : " ↓";
+                    return root.windowState.sortLabel + arrow;
+                }
+                color: Theme.palette.m3onSurfaceVariant
+                font.pointSize: Theme.font.size.xs
+                font.family: Theme.font.family.mono
+            }
+
             Item {
                 visible: !root._searchActive
                 Layout.fillWidth: true
