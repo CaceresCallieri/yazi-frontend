@@ -181,4 +181,19 @@ QtObject {
     function cancelCreate(): void {
         createInputActive = false;
     }
+
+    // === Rename ===
+    property string renameTargetPath: ""
+    property bool renameIncludeExtension: false
+
+    signal renameCompleted(newName: string)
+
+    function requestRename(path: string, includeExtension: bool): void {
+        renameTargetPath = path;
+        renameIncludeExtension = includeExtension;
+    }
+
+    function cancelRename(): void {
+        renameTargetPath = "";
+    }
 }

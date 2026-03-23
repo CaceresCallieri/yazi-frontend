@@ -25,10 +25,18 @@ Item {
     property int _preSearchIndex: 0
 
     // Keys suppressed in picker mode (file operations have no meaning in a file chooser)
-    readonly property var _pickerSuppressedKeys: [Qt.Key_D, Qt.Key_Y, Qt.Key_X, Qt.Key_P, Qt.Key_A, Qt.Key_Space, Qt.Key_C]
+    readonly property var _pickerSuppressedKeys: [Qt.Key_D, Qt.Key_Y, Qt.Key_X, Qt.Key_P, Qt.Key_A, Qt.Key_R, Qt.Key_Space, Qt.Key_C]
 
-    // Filename to focus once the model refreshes (set by paste, create, etc.)
+    // Filename to focus once the model refreshes (set by paste, create, rename, etc.)
     property string _pendingFocusName: ""
+
+    // Y of the bottom edge of the current item, relative to FileList root.
+    // Used by RenamePopup for contextual positioning below the selected item.
+    readonly property real currentItemBottomY: {
+        if (view.currentIndex < 0 || view.count === 0) return 0;
+        const itemY = view.currentIndex * Config.fileManager.sizes.itemHeight - view.contentY;
+        return itemY + Config.fileManager.sizes.itemHeight + view.anchors.margins;
+    }
 
     function _saveCursorAndNavigate(navigateFn: var): void {
         windowState.saveCursor(windowState.currentPath, view.currentIndex);
@@ -231,6 +239,15 @@ Item {
         function onCreateCompleted(filename: string) {
             root._pendingFocusName = filename;
         }
+
+        function onRenameTargetPathChanged() {
+            if (windowState.renameTargetPath === "")
+                Qt.callLater(() => view.forceActiveFocus());
+        }
+
+        function onRenameCompleted(newName: string) {
+            root._pendingFocusName = newName;
+        }
     }
 
     // Background
@@ -340,7 +357,7 @@ Item {
         // Vim-style keyboard navigation
         Keys.onPressed: function(event) {
             // Block all keys while a modal popup is visible
-            if (windowState.deleteConfirmPaths.length > 0 || windowState.createInputActive) {
+            if (windowState.deleteConfirmPaths.length > 0 || windowState.createInputActive || windowState.renameTargetPath !== "") {
                 event.accepted = true;
                 return;
             }
@@ -555,6 +572,14 @@ Item {
 
             case Qt.Key_A:
                 windowState.requestCreate();
+                event.accepted = true;
+                break;
+
+            case Qt.Key_R:
+                if (root.currentEntry) {
+                    const includeExt = !!(mods & Qt.ShiftModifier);
+                    windowState.requestRename(root.currentEntry.path, includeExt);
+                }
                 event.accepted = true;
                 break;
             }

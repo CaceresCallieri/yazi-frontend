@@ -54,4 +54,11 @@ Item {
         anchors.fill: parent
         windowState: windowState
     }
+    RenamePopup {
+        anchors.fill: parent
+        windowState: windowState
+        targetItemY: millerColumns.y + millerColumns.currentItemBottomY
+        targetColumnX: millerColumns.x + millerColumns.currentColumnX
+        targetColumnWidth: millerColumns.currentColumnWidth
+    }
 }

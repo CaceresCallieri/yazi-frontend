@@ -10,6 +10,9 @@ Item {
 
     readonly property var currentEntry: currentPanel.currentEntry
     readonly property int fileCount: currentPanel.fileCount
+    readonly property real currentItemBottomY: currentPanel.currentItemBottomY
+    readonly property real currentColumnX: currentPanel.x
+    readonly property real currentColumnWidth: currentPanel.width
     signal closeRequested()
 
     RowLayout {
