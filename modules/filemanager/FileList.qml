@@ -35,7 +35,7 @@ Item {
     readonly property real currentItemBottomY: {
         if (view.currentIndex < 0 || view.count === 0) return 0;
         const itemY = view.currentIndex * Config.fileManager.sizes.itemHeight - view.contentY;
-        return itemY + Config.fileManager.sizes.itemHeight + view.anchors.margins;
+        return itemY + Config.fileManager.sizes.itemHeight + Theme.padding.sm;
     }
 
     function _saveCursorAndNavigate(navigateFn: var): void {
@@ -577,7 +577,7 @@ Item {
 
             case Qt.Key_R:
                 if (root.currentEntry) {
-                    const includeExt = !!(mods & Qt.ShiftModifier);
+                    const includeExt = (mods & Qt.ShiftModifier) !== 0;
                     windowState.requestRename(root.currentEntry.path, includeExt);
                 }
                 event.accepted = true;

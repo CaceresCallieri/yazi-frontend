@@ -195,5 +195,6 @@ QtObject {
 
     function cancelRename(): void {
         renameTargetPath = "";
+        renameIncludeExtension = false;
     }
 }

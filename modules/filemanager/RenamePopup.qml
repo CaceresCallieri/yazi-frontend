@@ -80,16 +80,6 @@ Loader {
             color: Theme.palette.m3surfaceContainerHigh
             implicitHeight: renameLayout.implicitHeight + Theme.padding.lg * 3
 
-            scale: 1
-
-            Behavior on scale {
-                NumberAnimation {
-                    duration: Theme.animDuration
-                    easing.type: Easing.OutBack
-                    easing.overshoot: 1.5
-                }
-            }
-
             // Block clicks from reaching the dismiss MouseArea
             MouseArea {
                 anchors.fill: parent
@@ -179,7 +169,7 @@ Loader {
         function _attemptRename(): void {
             const newName = renameInput.text.trim();
 
-            if (newName === "" || newName.indexOf("/") !== -1)
+            if (newName === "" || newName === "." || newName === ".." || newName.indexOf("/") !== -1)
                 return;
             if (newName === originalName) {
                 root.windowState.cancelRename();
@@ -210,16 +200,13 @@ Loader {
                 if (exitCode === 0) {
                     errorLabel.text = qsTr("'%1' already exists").arg(pendingNewName);
                 } else {
-                    popupScope._runRename(pendingNewPath, pendingNewName);
+                    popupScope._runRename();
                 }
             }
         }
 
-        function _runRename(newPath: string, newName: string): void {
-            // Signal focus before rename — QFileSystemWatcher fires immediately
-            root.windowState.renameCompleted(newName);
-
-            renameProcess.command = ["mv", "--", originalPath, newPath];
+        function _runRename(): void {
+            renameProcess.command = ["mv", "--", originalPath, checkProcess.pendingNewPath];
             renameProcess.running = true;
         }
 
@@ -228,6 +215,7 @@ Loader {
             id: renameProcess
             onExited: (exitCode, exitStatus) => {
                 if (exitCode === 0) {
+                    root.windowState.renameCompleted(checkProcess.pendingNewName);
                     root.windowState.cancelRename();
                 } else {
                     errorLabel.text = qsTr("Rename failed (exit code %1)").arg(exitCode);
