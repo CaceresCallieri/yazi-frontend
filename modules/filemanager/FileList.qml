@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import "../../components"
 import "../../services"
 import "../../config"
@@ -311,15 +313,7 @@ Item {
         boundsBehavior: Flickable.StopAtBounds
         Component.onCompleted: view.forceActiveFocus()
 
-        ScrollBar.vertical: ScrollBar {
-            policy: ScrollBar.AlwaysOn
-            contentItem: Rectangle {
-                implicitWidth: 5
-                radius: width / 2
-                color: Theme.palette.m3onSurfaceVariant
-                opacity: 0.4
-            }
-        }
+        ScrollBar.vertical: StyledScrollBar {}
 
         model: FileSystemModel {
             id: fsModel
