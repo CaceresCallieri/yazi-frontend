@@ -78,7 +78,7 @@ Item {
     // Search match highlight — subtle gray tint behind matching rows
     Rectangle {
         anchors.fill: parent
-        radius: Theme.rounding.sm
+        radius: Theme.rounding.full
         color: Theme.palette.m3onSurface
         opacity: root.isSearchMatch ? 0.06 : 0
         Behavior on opacity { Anim {} }
@@ -91,7 +91,7 @@ Item {
         id: selectionHighlight
 
         anchors.fill: parent
-        radius: Theme.rounding.sm
+        radius: Theme.rounding.full
         color: Theme.pillStrong.background
         border.color: Theme.pillStrong.border
         border.width: root.ListView.isCurrentItem ? 1 : 0

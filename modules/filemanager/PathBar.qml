@@ -49,6 +49,8 @@ Item {
 
         anchors.fill: parent
         anchors.margins: Theme.padding.md
+        anchors.leftMargin: Theme.padding.lg + Theme.padding.md
+        anchors.rightMargin: Theme.padding.lg + Theme.padding.md
         spacing: Theme.spacing.sm
 
         // Back button
@@ -98,7 +100,7 @@ Item {
             id: breadcrumbContainer
 
             Layout.fillWidth: true
-            radius: Theme.rounding.sm
+            radius: Theme.rounding.full
             color: Theme.pillMedium.background
             border.color: Theme.pillMedium.border
             border.width: 1
@@ -109,8 +111,9 @@ Item {
 
                 anchors.fill: parent
                 anchors.margins: Math.round(Theme.padding.sm / 2)
-                anchors.leftMargin: 0
                 spacing: 0
+
+                Item { Layout.fillWidth: true }
 
                 Repeater {
                     model: root._segments

@@ -25,8 +25,8 @@ Item {
         anchors.fill: parent
         anchors.topMargin: Theme.padding.sm
         anchors.bottomMargin: Theme.padding.sm
-        anchors.leftMargin: Theme.padding.md
-        anchors.rightMargin: Theme.padding.md
+        anchors.leftMargin: Theme.padding.lg + Theme.padding.md
+        anchors.rightMargin: Theme.padding.lg + Theme.padding.md
         radius: Theme.rounding.full
         color: Theme.pillMedium.background
         border.color: Theme.pillMedium.border
