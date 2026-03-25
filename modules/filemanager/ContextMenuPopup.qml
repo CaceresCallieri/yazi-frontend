@@ -15,8 +15,6 @@ Loader {
     opacity: windowState && windowState.contextMenuTargetPath !== "" ? 1 : 0
     active: windowState && !FileManagerService.pickerMode
         && windowState.contextMenuTargetPath !== ""
-    asynchronous: true
-
     sourceComponent: FocusScope {
         id: popupScope
 
@@ -63,6 +61,7 @@ Loader {
             if (actionId === "openWith") {
                 viewMode = "openWith";
                 if (targetMimeType !== "") {
+                    mimeQueryProcess.command = ["gio", "mime", targetMimeType];
                     mimeQueryProcess.running = true;
                 } else {
                     appList = [];
@@ -70,6 +69,7 @@ Loader {
                 }
             } else if (actionId === "extract") {
                 viewMode = "extracting";
+                extractionError = "";
                 archiveCounter.filePath = targetPath;
             }
         }
@@ -81,6 +81,7 @@ Loader {
             const apps = [];
             for (const line of lines) {
                 const trimmed = line.trim();
+                // Reject header lines like "Registered associations:" which contain spaces
                 if (trimmed.endsWith(".desktop") && !trimmed.includes(" ") && !seen[trimmed]) {
                     seen[trimmed] = true;
                     apps.push({ desktopId: trimmed, name: _desktopIdToName(trimmed) });
@@ -101,13 +102,13 @@ Loader {
 
         function _updateFilteredApps(): void {
             if (appFilterQuery === "") {
-                filteredApps = appList;
+                filteredApps = appList.slice();
                 return;
             }
             const q = appFilterQuery.toLowerCase();
             filteredApps = appList.filter(app =>
-                app.name.toLowerCase().indexOf(q) !== -1
-                || app.desktopId.toLowerCase().indexOf(q) !== -1
+                app.name.toLowerCase().includes(q)
+                || app.desktopId.toLowerCase().includes(q)
             );
             // Clamp index
             if (appIndex >= filteredApps.length)
@@ -120,13 +121,100 @@ Loader {
             // Handle double extensions like .tar.gz, .tar.bz2, etc.
             const tarMatch = /\.tar\.[^.]+$/.exec(targetName);
             const stripIndex = tarMatch ? tarMatch.index : (dotIndex > 0 ? dotIndex : -1);
-            const folderName = stripIndex > 0 ? targetName.substring(0, stripIndex) : targetName;
+            const baseName = stripIndex >= 0 ? targetName.substring(0, stripIndex) : "";
+            const folderName = baseName !== "" ? baseName : targetName;
             const parentDir = targetPath.substring(0, targetPath.lastIndexOf("/"));
             const destDir = parentDir + "/" + folderName;
 
             mkdirProcess.destDir = destDir;
             mkdirProcess.command = ["mkdir", "-p", "--", destDir];
             mkdirProcess.running = true;
+        }
+
+        function _handleActionsKeys(event): void {
+            switch (event.key) {
+            case Qt.Key_Escape:
+                root.windowState.cancelContextMenu();
+                event.accepted = true;
+                break;
+            case Qt.Key_J:
+            case Qt.Key_Down:
+                if (actionIndex < actionItems.length - 1)
+                    actionIndex++;
+                event.accepted = true;
+                break;
+            case Qt.Key_K:
+            case Qt.Key_Up:
+                if (actionIndex > 0)
+                    actionIndex--;
+                event.accepted = true;
+                break;
+            case Qt.Key_Return:
+            case Qt.Key_Enter:
+                _executeAction(actionItems[actionIndex].actionId);
+                event.accepted = true;
+                break;
+            case Qt.Key_O:
+                _executeAction("openWith");
+                event.accepted = true;
+                break;
+            case Qt.Key_E:
+                if (isArchive)
+                    _executeAction("extract");
+                event.accepted = true;
+                break;
+            default:
+                // Only consume bare letter keys to prevent them reaching the file list;
+                // let modifier+key combinations (e.g. Ctrl+W) bubble through.
+                if (!event.modifiers || event.modifiers === Qt.ShiftModifier)
+                    event.accepted = true;
+                break;
+            }
+        }
+
+        function _handleOpenWithKeys(event): void {
+            switch (event.key) {
+            case Qt.Key_Escape:
+                // Go back to actions list
+                viewMode = "actions";
+                appFilterQuery = "";
+                appIndex = 0;
+                dialog.forceActiveFocus();
+                event.accepted = true;
+                break;
+            case Qt.Key_Down:
+                if (appIndex < filteredApps.length - 1)
+                    appIndex++;
+                event.accepted = true;
+                break;
+            case Qt.Key_Up:
+                if (appIndex > 0)
+                    appIndex--;
+                event.accepted = true;
+                break;
+            case Qt.Key_Return:
+            case Qt.Key_Enter:
+                if (filteredApps.length > 0) {
+                    const app = filteredApps[appIndex];
+                    openWithProcess.command = ["gio", "launch", app.desktopId, targetPath];
+                    openWithProcess.running = true;
+                    root.windowState.cancelContextMenu();
+                }
+                event.accepted = true;
+                break;
+            default:
+                // J/K intentionally absent — alphabetic keys feed the search filter.
+                // Only arrow keys navigate the list; all other keys pass to TextInput.
+                break;
+            }
+        }
+
+        function _handleExtractingKeys(event): void {
+            if ((event.key === Qt.Key_Escape || event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
+                && (extractionDone || extractionError !== "")) {
+                root.windowState.cancelContextMenu();
+            }
+            event.accepted = true;
         }
 
         // Scrim backdrop — click to cancel (only when not extracting)
@@ -155,11 +243,7 @@ Loader {
             width: Math.min(parent.width - Theme.padding.lg * 4, 400)
             implicitHeight: dialogContent.implicitHeight + Theme.padding.lg * 3
 
-            scale: 0.1
-            Component.onCompleted: scale = Qt.binding(
-                () => root.windowState
-                    && root.windowState.contextMenuTargetPath !== "" ? 1 : 0
-            )
+            scale: root.windowState && root.windowState.contextMenuTargetPath !== "" ? 1 : 0.1
 
             Behavior on scale {
                 NumberAnimation {
@@ -176,94 +260,11 @@ Loader {
 
             Keys.onPressed: function(event) {
                 if (popupScope.viewMode === "actions")
-                    _handleActionsKeys(event);
+                    popupScope._handleActionsKeys(event);
                 else if (popupScope.viewMode === "openWith")
-                    _handleOpenWithKeys(event);
+                    popupScope._handleOpenWithKeys(event);
                 else if (popupScope.viewMode === "extracting")
-                    _handleExtractingKeys(event);
-            }
-
-            function _handleActionsKeys(event): void {
-                switch (event.key) {
-                case Qt.Key_Escape:
-                    root.windowState.cancelContextMenu();
-                    event.accepted = true;
-                    break;
-                case Qt.Key_J:
-                case Qt.Key_Down:
-                    if (popupScope.actionIndex < popupScope.actionItems.length - 1)
-                        popupScope.actionIndex++;
-                    event.accepted = true;
-                    break;
-                case Qt.Key_K:
-                case Qt.Key_Up:
-                    if (popupScope.actionIndex > 0)
-                        popupScope.actionIndex--;
-                    event.accepted = true;
-                    break;
-                case Qt.Key_Return:
-                case Qt.Key_Enter:
-                    popupScope._executeAction(popupScope.actionItems[popupScope.actionIndex].actionId);
-                    event.accepted = true;
-                    break;
-                case Qt.Key_O:
-                    popupScope._executeAction("openWith");
-                    event.accepted = true;
-                    break;
-                case Qt.Key_E:
-                    if (popupScope.isArchive)
-                        popupScope._executeAction("extract");
-                    event.accepted = true;
-                    break;
-                default:
-                    event.accepted = true;
-                    break;
-                }
-            }
-
-            function _handleOpenWithKeys(event): void {
-                switch (event.key) {
-                case Qt.Key_Escape:
-                    // Go back to actions list
-                    popupScope.viewMode = "actions";
-                    popupScope.appFilterQuery = "";
-                    popupScope.appIndex = 0;
-                    dialog.forceActiveFocus();
-                    event.accepted = true;
-                    break;
-                case Qt.Key_Down:
-                    if (popupScope.appIndex < popupScope.filteredApps.length - 1)
-                        popupScope.appIndex++;
-                    event.accepted = true;
-                    break;
-                case Qt.Key_Up:
-                    if (popupScope.appIndex > 0)
-                        popupScope.appIndex--;
-                    event.accepted = true;
-                    break;
-                case Qt.Key_Return:
-                case Qt.Key_Enter:
-                    if (popupScope.filteredApps.length > 0) {
-                        const app = popupScope.filteredApps[popupScope.appIndex];
-                        openWithProcess.command = ["gio", "launch", app.desktopId, popupScope.targetPath];
-                        openWithProcess.running = true;
-                        root.windowState.cancelContextMenu();
-                    }
-                    event.accepted = true;
-                    break;
-                default:
-                    // J/K intentionally absent — alphabetic keys feed the search filter.
-                    // Only arrow keys navigate the list; all other keys pass to TextInput.
-                    break;
-                }
-            }
-
-            function _handleExtractingKeys(event): void {
-                if ((event.key === Qt.Key_Escape || event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
-                    && (popupScope.extractionDone || popupScope.extractionError !== "")) {
-                    root.windowState.cancelContextMenu();
-                }
-                event.accepted = true;
+                    popupScope._handleExtractingKeys(event);
             }
 
             ColumnLayout {
@@ -417,7 +418,6 @@ Loader {
                                     selectionColor: Theme.palette.m3primary
                                     selectedTextColor: Theme.palette.m3onPrimary
                                     clip: true
-                                    focus: true
                                     Component.onCompleted: forceActiveFocus()
 
                                     onTextChanged: {
@@ -608,7 +608,6 @@ Loader {
         // Query registered applications for the MIME type
         Process {
             id: mimeQueryProcess
-            command: ["gio", "mime", popupScope.targetMimeType]
             stdout: StdioCollector {
                 onStreamFinished: popupScope._parseMimeOutput(text)
             }
