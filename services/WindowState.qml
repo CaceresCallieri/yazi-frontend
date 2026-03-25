@@ -124,8 +124,8 @@ QtObject {
     signal flashJump(string column, int index, string path)
 
     function startFlash(): void {
-        clearFlash();
         clearSearch();
+        clearFlash();
         flashActive = true;
     }
 

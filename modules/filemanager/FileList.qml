@@ -223,6 +223,8 @@ Item {
     function _recomputeFlash(): void {
         const query = windowState.flashQuery.toLowerCase();
         if (query === "") {
+            // Reset result state only — flash remains active, just with no matches yet.
+            // Do not clear flashActive or flashPendingLabel here.
             windowState.flashMatches = [];
             windowState.flashLabelChars = {};
             windowState.flashContinuations = {};
@@ -259,16 +261,14 @@ Item {
         }
 
         const parEntries = root.parentEntries;
-        if (parEntries) {
-            for (let i = 0; i < parEntries.length; i++) {
-                allEntries.push({
-                    name:   parEntries[i].name,
-                    column: "parent",
-                    index:  i,
-                    path:   parEntries[i].path,
-                    isDir:  parEntries[i].isDir
-                });
-            }
+        for (let i = 0; i < parEntries.length; i++) {
+            allEntries.push({
+                name:   parEntries[i].name,
+                column: "parent",
+                index:  i,
+                path:   parEntries[i].path,
+                isDir:  parEntries[i].isDir
+            });
         }
 
         const result = FlashLogic.computeFlash(query, allEntries, view.currentIndex);
@@ -276,13 +276,15 @@ Item {
         windowState.flashLabelChars = result.labelChars;
         windowState.flashContinuations = result.continuations;
 
-        const contKeys = Object.keys(result.continuations).join("");
-        const labelKeys = Object.keys(result.labelChars).join("");
-        const labelList = result.matches.map(m => m.label + "→" + m.name.substring(0, 15)).join(", ");
-        Logger.debug("Flash", "Recompute query='" + query + "' | entries=" + allEntries.length
-            + " | matches=" + result.matches.length
-            + " | continuations=[" + contKeys + "] | labelPool=[" + labelKeys + "]"
-            + " | labels: " + labelList);
+        if (Logger.minLevel <= Logger.levelDebug) {
+            const contKeys = Object.keys(result.continuations).join("");
+            const labelKeys = Object.keys(result.labelChars).join("");
+            const labelList = result.matches.map(m => m.label + "→" + m.name.substring(0, 15)).join(", ");
+            Logger.debug("Flash", "Recompute query='" + query + "' | entries=" + allEntries.length
+                + " | matches=" + result.matches.length
+                + " | continuations=[" + contKeys + "] | labelPool=[" + labelKeys + "]"
+                + " | labels: " + labelList);
+        }
     }
 
     Connections {
@@ -552,16 +554,18 @@ Item {
                 }
 
                 const ch = event.text.toLowerCase();
-                if (ch === "" || ch.length !== 1) {
+                if (ch === "") {
                     Logger.debug("Flash", "Ignored non-printable key=" + key + " text='" + event.text + "'");
                     event.accepted = true;
                     return;
                 }
 
-                Logger.debug("Flash", "Keypress '" + ch + "' | query='" + windowState.flashQuery
-                    + "' | isLabel=" + !!windowState.flashLabelChars[ch]
-                    + " | isContinuation=" + !!windowState.flashContinuations[ch]
-                    + " | pendingLabel='" + windowState.flashPendingLabel + "'");
+                if (Logger.minLevel <= Logger.levelDebug) {
+                    Logger.debug("Flash", "Keypress '" + ch + "' | query='" + windowState.flashQuery
+                        + "' | isLabel=" + !!windowState.flashLabelChars[ch]
+                        + " | isContinuation=" + !!windowState.flashContinuations[ch]
+                        + " | pendingLabel='" + windowState.flashPendingLabel + "'");
+                }
 
                 // Resolve second char of a 2-char label
                 if (windowState.flashPendingLabel !== "") {

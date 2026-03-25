@@ -86,9 +86,16 @@ Singleton {
         const lines = root._buffer;
         root._buffer = [];
 
+        if (writeProcess.running) {
+            // A write is in progress — push lines back to front of buffer so
+            // they are not lost. onExited will re-trigger a flush.
+            root._buffer = lines.concat(root._buffer);
+            root._scheduleFlush();
+            return;
+        }
+
         writeProcess.payload = lines.join("\n") + "\n";
-        if (!writeProcess.running)
-            writeProcess.running = true;
+        writeProcess.running = true;
     }
 
     Timer {
@@ -114,6 +121,9 @@ Singleton {
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0)
                 console.error("[Logger] Write failed, exitCode:", exitCode);
+            // Drain any content that arrived while this write was in progress
+            if (root._buffer.length > 0)
+                root._scheduleFlush();
         }
     }
 

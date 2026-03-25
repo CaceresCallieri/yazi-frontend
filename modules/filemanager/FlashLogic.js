@@ -151,6 +151,9 @@ function _assignLabels(matches, available) {
                 twoCharPrefixes.push(available[p]);
         }
 
+        // If twoCharPrefixes is empty (all available chars were used as 1-char labels),
+        // the outer loop never executes and remaining matches stay unlabeled — they simply
+        // won't have a jump target. This is expected graceful degradation.
         var twoCharIdx = assignedCount;
         for (var first = 0; first < twoCharPrefixes.length && twoCharIdx < matches.length; first++) {
             for (var second = 0; second < available.length && twoCharIdx < matches.length; second++) {

@@ -261,42 +261,44 @@ Item {
             }
 
             // Flash navigation indicator (visible during flash mode)
-            StyledText {
+            RowLayout {
                 visible: root._flashActive
-                text: "S"
-                color: Theme.palette.m3primary
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
-                font.weight: Font.Bold
-            }
+                spacing: Theme.spacing.md
 
-            StyledText {
-                visible: root._flashActive
-                text: root.windowState ? root.windowState.flashQuery : ""
-                color: Theme.palette.m3onSurface
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
-                Layout.fillWidth: true
-            }
+                StyledText {
+                    text: "S"
+                    color: Theme.palette.m3primary
+                    font.pointSize: Theme.font.size.xs
+                    font.family: Theme.font.family.mono
+                    font.weight: Font.Bold
+                }
 
-            StyledText {
-                visible: root._flashActive
-                text: {
-                    if (!root.windowState) return "";
-                    const query = root.windowState.flashQuery;
-                    if (query === "") return "";
-                    const matches = root.windowState.flashMatches;
-                    if (matches.length === 0) return "No matches";
-                    return matches.length + (matches.length === 1 ? " match" : " matches");
+                StyledText {
+                    text: root.windowState ? root.windowState.flashQuery : ""
+                    color: Theme.palette.m3onSurface
+                    font.pointSize: Theme.font.size.xs
+                    font.family: Theme.font.family.mono
+                    Layout.fillWidth: true
                 }
-                color: {
-                    if (root.windowState && root.windowState.flashQuery !== ""
-                        && root.windowState.flashMatches.length === 0)
-                        return Theme.palette.m3error;
-                    return Theme.palette.m3onSurfaceVariant;
+
+                StyledText {
+                    text: {
+                        if (!root.windowState) return "";
+                        const query = root.windowState.flashQuery;
+                        if (query === "") return "";
+                        const matches = root.windowState.flashMatches;
+                        if (matches.length === 0) return "No matches";
+                        return matches.length + (matches.length === 1 ? " match" : " matches");
+                    }
+                    color: {
+                        if (root.windowState && root.windowState.flashQuery !== ""
+                            && root.windowState.flashMatches.length === 0)
+                            return Theme.palette.m3error;
+                        return Theme.palette.m3onSurfaceVariant;
+                    }
+                    font.pointSize: Theme.font.size.xs
+                    font.family: Theme.font.family.mono
                 }
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
             }
 
             // Right: abbreviated path (always visible)

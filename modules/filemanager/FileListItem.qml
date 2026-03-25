@@ -48,8 +48,7 @@ Item {
         const before = name.substring(0, matchStart);
         const match = name.substring(matchStart, matchStart + query.length);
         const afterMatchStart = matchStart + query.length;
-        const labelLen = label.length;
-        const replacedEnd = Math.min(afterMatchStart + labelLen, name.length);
+        const replacedEnd = Math.min(afterMatchStart + label.length, name.length);
         const after = name.substring(replacedEnd);
 
         const querySpan = "<span style=\"background-color: " + Theme.palette.m3secondaryContainer
