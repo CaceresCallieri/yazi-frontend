@@ -306,7 +306,7 @@ Item {
 
         anchors.fill: parent
         anchors.margins: Theme.padding.sm
-        anchors.rightMargin: Theme.padding.sm + 12
+        anchors.rightMargin: Theme.padding.sm + 12 // reserve space for re-parented scrollbar (8px wide + 4px clearance)
 
         clip: true
         focus: true
@@ -314,14 +314,15 @@ Item {
         boundsBehavior: Flickable.StopAtBounds
         Component.onCompleted: view.forceActiveFocus()
 
+        // Re-parented to view.parent so the scrollbar lives outside the ListView's
+        // clipping rect and can be positioned independently in the right margin gap.
         ScrollBar.vertical: ScrollBar {
-            id: fileListScrollBar
             policy: ScrollBar.AlwaysOn
             parent: view.parent
             anchors.top: view.top
             anchors.bottom: view.bottom
             anchors.right: parent.right
-            anchors.rightMargin: Theme.padding.sm + 3
+            anchors.rightMargin: Theme.padding.sm + 3 // centers the 8px bar in the 12px reserved gap
             width: 8
 
             contentItem: Rectangle {
