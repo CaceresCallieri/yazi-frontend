@@ -117,7 +117,7 @@ Item {
 
                 delegate: Rectangle {
                     implicitWidth: root._colWidth
-                    implicitHeight: 24
+                    implicitHeight: root._rowHeight
                     color: Theme.palette.m3surfaceContainerHigh
 
                     StyledText {

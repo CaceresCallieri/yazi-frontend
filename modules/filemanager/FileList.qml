@@ -322,7 +322,7 @@ Item {
             anchors.top: view.top
             anchors.bottom: view.bottom
             anchors.right: parent.right
-            anchors.rightMargin: Theme.padding.sm + 3 // centers the 6px bar in the 10px reserved gap
+            anchors.rightMargin: Theme.padding.sm + 3 // right-aligns the 6px bar with 3px clearance from the window edge
             width: 6
 
             contentItem: Rectangle {
