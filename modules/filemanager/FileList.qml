@@ -431,7 +431,7 @@ Item {
             path: root.windowState ? root.windowState.currentPath : Paths.home
             showHidden: Config.fileManager.showHidden
             sortBy: root.windowState ? root.windowState.sortBy : 1
-            sortReverse: root.windowState ? root.windowState.sortReverse : false
+            sortReverse: root.windowState ? root.windowState.sortReverse : true
             watchChanges: true
             onPathChanged: root._pathJustChanged = true
             onEntriesChanged: {
