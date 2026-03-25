@@ -180,7 +180,7 @@ Item {
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono
             horizontalAlignment: Text.AlignRight
-            Layout.minimumWidth: 60
+            Layout.minimumWidth: 50
         }
     }
 

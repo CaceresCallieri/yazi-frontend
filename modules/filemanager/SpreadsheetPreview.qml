@@ -44,7 +44,7 @@ Item {
     Component.onCompleted: root._updateEmpty()
 
     readonly property int _colWidth: 120
-    readonly property int _rowHeight: 28
+    readonly property int _rowHeight: 22
 
     // Use explicit x/y/width/height to fill parent — this component is loaded as a
     // Loader sourceComponent, so anchors.margins on the root would be silently ignored

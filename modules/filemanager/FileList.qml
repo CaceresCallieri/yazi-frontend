@@ -306,7 +306,7 @@ Item {
 
         anchors.fill: parent
         anchors.margins: Theme.padding.sm
-        anchors.rightMargin: Theme.padding.sm + 12 // reserve space for re-parented scrollbar (8px wide + 4px clearance)
+        anchors.rightMargin: Theme.padding.sm + 10 // reserve space for re-parented scrollbar (6px wide + 4px clearance)
 
         clip: true
         focus: true
@@ -322,11 +322,11 @@ Item {
             anchors.top: view.top
             anchors.bottom: view.bottom
             anchors.right: parent.right
-            anchors.rightMargin: Theme.padding.sm + 3 // centers the 8px bar in the 12px reserved gap
-            width: 8
+            anchors.rightMargin: Theme.padding.sm + 3 // centers the 6px bar in the 10px reserved gap
+            width: 6
 
             contentItem: Rectangle {
-                implicitWidth: 8
+                implicitWidth: 6
                 radius: width / 2
                 color: Theme.palette.m3onSurfaceVariant
                 opacity: 0.4
