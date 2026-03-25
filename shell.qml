@@ -11,7 +11,7 @@ ShellRoot {
     // create("") or createPicker("...") to open windows on demand.
     //
     // Open the file manager:
-    //   qs ipc --any-display -c yazi-fm call filemanager open ""
+    //   qs ipc --any-display -c symmetria-fm call filemanager open ""
     //
     // This process runs headless as a systemd service. No window is
     // created on startup — windows appear only when requested via IPC.
@@ -20,6 +20,6 @@ ShellRoot {
         // this registers the IpcHandler. Without this, the Singleton
         // is lazily created and the IPC target never appears.
         void WindowFactory;
-        console.log("yazi-fm: IPC service ready (target: filemanager)");
+        console.log("symmetria-fm: IPC service ready (target: filemanager)");
     }
 }

@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.19)
-project(yazifm-plugin VERSION 0.1.0 LANGUAGES CXX)
+project(symmetria-filemanager-plugin VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_INSTALL_PREFIX "/usr" CACHE STRING "Install prefix")
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "Install prefix" FORCE)
+endif()
 
 set(INSTALL_QMLDIR "lib/qt6/qml" CACHE STRING "QML module install directory (relative to CMAKE_INSTALL_PREFIX)")
 
@@ -31,7 +33,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wunused-lambda-capture)
 endif()
 
-add_subdirectory(src/YaziFM/Models)
+add_subdirectory(src/Symmetria/FileManager/Models)
 
 # Clear Quickshell QML cache after install
 install(CODE "

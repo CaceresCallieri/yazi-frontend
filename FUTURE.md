@@ -1,6 +1,6 @@
 # Future Path: Rust Migration
 
-This document outlines the long-term vision for migrating the yazi-frontend
+This document outlines the long-term vision for migrating the Symmetria File Manager
 file manager from QML/QuickShell to a native Rust implementation. The current
 QML codebase serves as a working prototype and living specification — every
 behaviour, edge case, and architectural decision documented here has been
@@ -89,7 +89,7 @@ Merge the portal backend (Phase 1) and UI (Phase 3) into a single binary.
 
 **Final architecture (1 process, 0 IPC hops):**
 ```
-App → xdg-desktop-portal → yazi-frontend (Rust)
+App → xdg-desktop-portal → symmetria-fm (Rust)
                                 │
                                 ├── zbus: D-Bus portal FileChooser
                                 ├── walkdir + ignore: async file scanning

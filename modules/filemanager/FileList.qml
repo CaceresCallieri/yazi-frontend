@@ -1,7 +1,7 @@
 import "../../components"
 import "../../services"
 import "../../config"
-import YaziFM.Models
+import Symmetria.FileManager.Models
 import Quickshell.Io
 import QtQuick
 import QtQuick.Controls

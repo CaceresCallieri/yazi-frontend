@@ -9,7 +9,7 @@
 #include <map>
 #include <memory>
 
-namespace symmetria::models {
+namespace symmetria::filemanager::models {
 
 // Internal tree node used only during archive parsing. Builds a sorted
 // directory tree from flat archive paths, then flattens depth-first into
@@ -306,4 +306,4 @@ void ArchivePreviewModel::readArchive() {
     watcher->setFuture(future);
 }
 
-} // namespace symmetria::models
+} // namespace symmetria::filemanager::models

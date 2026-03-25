@@ -4,7 +4,7 @@
 #include <qobject.h>
 #include <qqmlintegration.h>
 
-namespace symmetria::models {
+namespace symmetria::filemanager::models {
 
 class PreviewImageHelper : public QObject {
     Q_OBJECT
@@ -42,4 +42,4 @@ private:
     QFutureWatcher<QString>* m_watcher = nullptr;
 };
 
-} // namespace symmetria::models
+} // namespace symmetria::filemanager::models

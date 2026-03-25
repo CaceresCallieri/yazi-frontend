@@ -4,19 +4,19 @@
 
 ## Project Overview
 
-Yazi-frontend is a keyboard-first graphical file manager built as a standalone QuickShell application. It runs as a headless systemd service (`yazi-fm.service`) that spawns FloatingWindow instances on demand via IPC. No Yazi runtime dependency — pure native Qt/QML/C++ inspired by Yazi's UX philosophy.
+Symmetria File Manager is a keyboard-first graphical file manager built as a standalone QuickShell application. It runs as a headless systemd service (`symmetria-fm.service`) that spawns FloatingWindow instances on demand via IPC. Pure native Qt/QML/C++ inspired by Yazi's UX philosophy — no Yazi runtime dependency.
 
-**Do NOT restart the shell (Symmetria) or kill the yazi-fm service** without the user's consent — they may have open file manager or picker windows with unsaved state.
+**Do NOT restart the shell (Symmetria) or kill the symmetria-fm service** without the user's consent — they may have open file manager or picker windows with unsaved state.
 
 ## Build & Run
 
-### C++ Plugin (`YaziFM.Models`)
+### C++ Plugin (`Symmetria.FileManager.Models`)
 
-The file manager's core data models live in `plugin/` as a standalone CMake project that builds a Qt6 QML plugin. This plugin is separate from Symmetria's plugin build.
+The file manager's core data models live in `plugin/` as a standalone CMake project that builds a Qt6 QML plugin. This plugin is separate from Symmetria Shell's plugin build.
 
 ```bash
 ./build-plugin.sh              # Build + install (no restart)
-./build-plugin.sh --restart    # Build + install + restart yazi-fm
+./build-plugin.sh --restart    # Build + install + restart symmetria-fm
 ```
 
 Or manually:
@@ -25,14 +25,14 @@ cd plugin
 cmake -B build
 cmake --build build --parallel $(nproc)
 sudo cmake --install build
-systemctl --user restart yazi-fm
+systemctl --user restart symmetria-fm
 ```
 
-**Install path:** `/usr/lib/qt6/qml/YaziFM/Models/` — Qt's QML engine discovers modules here automatically.
+**Install path:** `/usr/lib/qt6/qml/Symmetria/FileManager/Models/` — Qt's QML engine discovers modules here automatically.
 
 **CMake variables:**
-- `CMAKE_INSTALL_PREFIX` defaults to `/usr` — combined with `INSTALL_QMLDIR=lib/qt6/qml`, the final path is `/usr/lib/qt6/qml/`
-- Do NOT pass `-DCMAKE_INSTALL_PREFIX=/` (old convention) — the CMakeLists already defaults correctly
+- `CMAKE_INSTALL_PREFIX` defaults to `/usr` (via `CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT` guard) — combined with `INSTALL_QMLDIR=lib/qt6/qml`, the final path is `/usr/lib/qt6/qml/`
+- Pass `-DCMAKE_INSTALL_PREFIX=/custom/path` to override if needed
 
 **Build dependencies (Arch):** `qt6-base qt6-declarative syntax-highlighting libarchive qxlsx-qt6 freexl`
 
@@ -40,22 +40,22 @@ systemctl --user restart yazi-fm
 
 No compilation needed — just restart the service:
 ```bash
-systemctl --user restart yazi-fm
+systemctl --user restart symmetria-fm
 ```
 The service's `ExecStartPre` automatically clears the QML cache before each start.
 
 ### Opening the File Manager
 
 ```bash
-qs ipc -c yazi-fm call filemanager open ""           # From terminal
+qs ipc -c symmetria-fm call filemanager open ""    # From terminal
 # Or via Super+E keybinding (configured in Symmetria's Shortcuts.qml)
 ```
 
 ## Architecture
 
-### Plugin: `YaziFM.Models` (C++ → QML)
+### Plugin: `Symmetria.FileManager.Models` (C++ → QML)
 
-Five model classes, all in C++ namespace `symmetria::models` (kept for migration simplicity — QML_ELEMENT doesn't require namespace to match URI):
+Five model classes in C++ namespace `symmetria::filemanager::models`:
 
 | Class | Purpose |
 |-------|---------|
@@ -65,11 +65,11 @@ Five model classes, all in C++ namespace `symmetria::models` (kept for migration
 | `SyntaxHighlightHelper` | Syntax-highlighted HTML for text file previews via KF6 |
 | `PreviewImageHelper` | Image preview generation with background compositing + caching |
 
-### Symmetria Dependency (One-Sided)
+### Symmetria Shell Dependency (One-Sided)
 
-Symmetria imports `YaziFM.Models` in 5 QML files (wallpaper grid, file dialog, etc.) — it depends on this plugin being installed. Yazi-frontend does NOT depend on Symmetria.
+Symmetria Shell imports `Symmetria.FileManager.Models` in 5 QML files (wallpaper grid, file dialog, etc.) — it depends on this plugin being installed. Symmetria File Manager does NOT depend on the shell.
 
-If the plugin is not installed, Symmetria's wallpaper picker and file dialog will fail to load. After any plugin API changes, verify Symmetria still works.
+If the plugin is not installed, Symmetria Shell's wallpaper picker and file dialog will fail to load. After any plugin API changes, verify the shell still works.
 
 ### State Architecture
 
@@ -79,7 +79,7 @@ If the plugin is not installed, Symmetria's wallpaper picker and file dialog wil
 
 ### Service & Portal
 
-- `yazi-fm.service` — headless systemd user service, `Restart=always`, auto-clears QML cache
+- `symmetria-fm.service` — headless systemd user service, `Restart=always`, auto-clears QML cache
 - `portal/symmetria_portal.py` — XDG Desktop Portal backend for system file dialogs
 - Communication: Portal → IPC → QML picker window → FIFO → Portal → D-Bus response
 

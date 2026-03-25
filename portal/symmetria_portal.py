@@ -5,7 +5,7 @@
 """Symmetria XDG Desktop Portal FileChooser backend.
 
 Implements org.freedesktop.impl.portal.FileChooser by delegating to
-the yazi-frontend file manager via QuickShell IPC. Communication back
+the Symmetria File Manager via QuickShell IPC. Communication back
 from the picker uses a FIFO (named pipe) — the same pattern as
 Symmetria's askpass module.
 """
@@ -38,7 +38,7 @@ FIFO_TIMEOUT_SECONDS = 300  # 5 minutes max wait for user interaction
 CANCELLED_SENTINEL = "__PICKER_CANCELLED__"
 
 QS_IPC_CMD = [
-    "qs", "ipc", "--any-display", "-c", "yazi-fm",
+    "qs", "ipc", "--any-display", "-c", "symmetria-fm",
     "call", "filemanager", "createPicker",
 ]
 

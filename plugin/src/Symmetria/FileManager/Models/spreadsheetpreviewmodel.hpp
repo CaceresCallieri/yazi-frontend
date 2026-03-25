@@ -29,7 +29,7 @@
 #include <qqmlintegration.h>
 #include <qstringlist.h>
 
-namespace symmetria::models {
+namespace symmetria::filemanager::models {
 
 class SpreadsheetPreviewModel : public QAbstractTableModel {
     Q_OBJECT
@@ -103,4 +103,4 @@ private:
     int m_generation = 0;
 };
 
-} // namespace symmetria::models
+} // namespace symmetria::filemanager::models

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install the Symmetria XDG Desktop Portal FileChooser backend.
-# This replaces the GTK file dialog with the yazi-frontend file manager
+# This replaces the GTK file dialog with the Symmetria file manager
 # for all applications that use the portal (browsers, Electron, etc.).
 
 set -euo pipefail
@@ -36,7 +36,7 @@ sudo -A cp "$SCRIPT_DIR/org.freedesktop.impl.portal.desktop.symmetria.service" \
 echo "Installing systemd user services..."
 mkdir -p ~/.config/systemd/user
 cp "$SCRIPT_DIR/xdg-desktop-portal-symmetria.service" ~/.config/systemd/user/
-cp "$SCRIPT_DIR/../yazi-fm.service" ~/.config/systemd/user/
+cp "$SCRIPT_DIR/../symmetria-fm.service" ~/.config/systemd/user/
 
 # 6. Update portals.conf to route FileChooser to our backend
 PORTALS_CONF="$HOME/.config/xdg-desktop-portal/portals.conf"
@@ -57,7 +57,7 @@ EOF
 # 7. Reload and restart
 echo "Reloading systemd and restarting services..."
 systemctl --user daemon-reload
-systemctl --user enable --now yazi-fm.service
+systemctl --user enable --now symmetria-fm.service
 systemctl --user restart xdg-desktop-portal
 
 echo ""

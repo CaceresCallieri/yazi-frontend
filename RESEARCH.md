@@ -1,4 +1,4 @@
-# Yazi Frontend — Feasibility Research
+# Symmetria File Manager — Feasibility Research
 
 ## Executive Summary
 

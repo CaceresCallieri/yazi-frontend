@@ -26,7 +26,7 @@
 #include <KSyntaxHighlighting/Definition>
 #include <KSyntaxHighlighting/Repository>
 
-namespace symmetria::models {
+namespace symmetria::filemanager::models {
 
 class SyntaxHighlightHelper : public QObject {
     Q_OBJECT
@@ -84,4 +84,4 @@ private:
     KSyntaxHighlighting::Repository m_repository;
 };
 
-} // namespace symmetria::models
+} // namespace symmetria::filemanager::models

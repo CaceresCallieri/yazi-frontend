@@ -12,7 +12,7 @@
 #include <qqmlintegration.h>
 #include <qqmllist.h>
 
-namespace symmetria::models {
+namespace symmetria::filemanager::models {
 
 class FileSystemEntry : public QObject {
     Q_OBJECT
@@ -95,7 +95,7 @@ class FileSystemModel : public QAbstractListModel {
     Q_PROPERTY(Filter filter READ filter WRITE setFilter NOTIFY filterChanged)
     Q_PROPERTY(QStringList nameFilters READ nameFilters WRITE setNameFilters NOTIFY nameFiltersChanged)
 
-    Q_PROPERTY(QQmlListProperty<symmetria::models::FileSystemEntry> entries READ entries NOTIFY entriesChanged)
+    Q_PROPERTY(QQmlListProperty<symmetria::filemanager::models::FileSystemEntry> entries READ entries NOTIFY entriesChanged)
 
 public:
     enum SortBy {
@@ -183,4 +183,4 @@ private:
     [[nodiscard]] bool compareEntries(const FileSystemEntry* a, const FileSystemEntry* b) const;
 };
 
-} // namespace symmetria::models
+} // namespace symmetria::filemanager::models

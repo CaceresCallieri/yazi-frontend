@@ -1,11 +1,11 @@
 [Unit]
-Description=Yazi File Manager IPC Service
+Description=Symmetria File Manager IPC Service
 PartOf=graphical-session.target
 After=graphical-session.target
 
 [Service]
 ExecStartPre=/usr/bin/rm -rf %h/.cache/quickshell/qmlcache
-ExecStart=/usr/bin/qs -c yazi-fm
+ExecStart=/usr/bin/qs -c symmetria-fm
 Restart=always
 RestartSec=2
 

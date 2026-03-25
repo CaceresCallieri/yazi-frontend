@@ -8,7 +8,7 @@
 #include <qstandardpaths.h>
 #include <qtconcurrentrun.h>
 
-namespace symmetria::models {
+namespace symmetria::filemanager::models {
 
 PreviewImageHelper::PreviewImageHelper(QObject* parent)
     : QObject(parent) {}
@@ -158,4 +158,4 @@ const QString& PreviewImageHelper::cacheDir() {
     return dir;
 }
 
-} // namespace symmetria::models
+} // namespace symmetria::filemanager::models

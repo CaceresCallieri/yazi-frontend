@@ -4,7 +4,7 @@
 #include <qfuturewatcher.h>
 #include <qtconcurrentrun.h>
 
-namespace symmetria::models {
+namespace symmetria::filemanager::models {
 
 // Forward declaration — defined after isVideo() to keep related accessors together.
 static QString buildPermissions(const QFileInfo& info);
@@ -582,4 +582,4 @@ bool FileSystemModel::compareEntries(const FileSystemEntry* a, const FileSystemE
     return m_sortReverse ? cmp > 0 : cmp < 0;
 }
 
-} // namespace symmetria::models
+} // namespace symmetria::filemanager::models

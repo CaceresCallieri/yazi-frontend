@@ -9,7 +9,7 @@
 
 #include <freexl.h>
 
-namespace symmetria::models {
+namespace symmetria::filemanager::models {
 
 // Result struct returned from the async spreadsheet reading task.
 struct SpreadsheetReadResult {
@@ -308,4 +308,4 @@ void SpreadsheetPreviewModel::readSpreadsheet() {
     watcher->setFuture(future);
 }
 
-} // namespace symmetria::models
+} // namespace symmetria::filemanager::models

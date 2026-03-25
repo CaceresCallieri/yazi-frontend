@@ -6,11 +6,11 @@ cmake --build build --parallel $(nproc)
 sudo cmake --install build
 echo "Plugin installed."
 if [[ "${1:-}" == "--restart" ]]; then
-    echo "Restarting yazi-fm..."
-    systemctl --user restart yazi-fm
+    echo "Restarting symmetria-fm..."
+    systemctl --user restart symmetria-fm
     sleep 2
-    systemctl --user status yazi-fm --no-pager || true
+    systemctl --user status symmetria-fm --no-pager || true
 else
-    echo "Note: yazi-fm was NOT restarted. Close any open picker/FM windows first, then run:"
-    echo "  systemctl --user restart yazi-fm"
+    echo "Note: symmetria-fm was NOT restarted. Close any open picker/FM windows first, then run:"
+    echo "  systemctl --user restart symmetria-fm"
 fi

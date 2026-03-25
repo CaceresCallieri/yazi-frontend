@@ -1,6 +1,6 @@
 import "../../components"
 import "../../services"
-import YaziFM.Models
+import Symmetria.FileManager.Models
 import QtQuick
 import QtQuick.Layouts
 

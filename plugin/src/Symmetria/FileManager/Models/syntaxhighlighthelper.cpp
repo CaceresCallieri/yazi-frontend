@@ -11,7 +11,7 @@
 #include <KSyntaxHighlighting/SyntaxHighlighter>
 #include <KSyntaxHighlighting/Theme>
 
-namespace symmetria::models {
+namespace symmetria::filemanager::models {
 
 SyntaxHighlightHelper::SyntaxHighlightHelper(QObject* parent)
     : QObject(parent) {}
@@ -234,4 +234,4 @@ QString SyntaxHighlightHelper::buildHighlightedHtml(
     return html;
 }
 
-} // namespace symmetria::models
+} // namespace symmetria::filemanager::models

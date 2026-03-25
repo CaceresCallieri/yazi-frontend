@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# Install yazi-frontend in standalone or Symmetria-integrated mode.
+# Install Symmetria File Manager in standalone or Symmetria-integrated mode.
 # Idempotent — safe to run multiple times.
 
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SYMMETRIA_DIR="$HOME/.config/quickshell/symmetria"
-STANDALONE_DIR="$HOME/.config/quickshell/yazi-fm"
+STANDALONE_DIR="$HOME/.config/quickshell/symmetria-fm"
 
 usage() {
     echo "Usage: $0 [--standalone | --symmetria]"
     echo
-    echo "  --standalone   (default) Symlink project for 'qs -c yazi-fm'"
+    echo "  --standalone   (default) Symlink project for 'qs -c symmetria-fm'"
     echo "  --symmetria    Symlink into Symmetria shell for integrated mode"
     exit 1
 }
@@ -20,7 +20,7 @@ MODE="${1:---standalone}"
 
 case "$MODE" in
     --standalone)
-        echo "Installing yazi-frontend in standalone mode..."
+        echo "Installing Symmetria File Manager in standalone mode..."
         echo "  Project:   $PROJECT_DIR"
         echo "  Target:    $STANDALONE_DIR"
         echo
@@ -30,7 +30,7 @@ case "$MODE" in
 
         echo
         echo "Done. Run with:"
-        echo "  qs -c yazi-fm"
+        echo "  qs -c symmetria-fm"
         echo
         echo "Or for development (clears QML cache):"
         echo "  ./run.sh"
@@ -42,7 +42,7 @@ case "$MODE" in
             exit 1
         fi
 
-        echo "Installing yazi-frontend into Symmetria..."
+        echo "Installing Symmetria File Manager into Symmetria Shell..."
         echo "  Project:   $PROJECT_DIR"
         echo "  Symmetria: $SYMMETRIA_DIR"
         echo

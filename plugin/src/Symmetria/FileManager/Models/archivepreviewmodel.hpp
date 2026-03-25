@@ -26,7 +26,7 @@
 #include <qobject.h>
 #include <qqmlintegration.h>
 
-namespace symmetria::models {
+namespace symmetria::filemanager::models {
 
 struct ArchiveEntryData {
     QString name;      // filename component ("file.txt")
@@ -102,4 +102,4 @@ private:
     int m_generation = 0;
 };
 
-} // namespace symmetria::models
+} // namespace symmetria::filemanager::models

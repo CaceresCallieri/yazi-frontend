@@ -1,7 +1,7 @@
-# Yazi-Inspired File Manager — Product Requirements Document
+# Symmetria File Manager — Product Requirements Document
 
 > **Status**: Draft v1.0
-> **Project**: `~/projects/yazi-frontend/`
+> **Project**: `~/projects/symmetria-file-manager/`
 > **Target**: Symmetria QuickShell Desktop Shell
 > **See also**: [RESEARCH.md](./RESEARCH.md) — feasibility analysis and Yazi IPC research
 
