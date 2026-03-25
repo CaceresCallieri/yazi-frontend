@@ -2,6 +2,7 @@
 //@ pragma Env QSG_RENDER_LOOP=threaded
 
 import "modules/filemanager"
+import "services"
 import Quickshell
 import QtQuick
 
@@ -20,6 +21,7 @@ ShellRoot {
         // this registers the IpcHandler. Without this, the Singleton
         // is lazily created and the IPC target never appears.
         void WindowFactory;
+        void Logger;
         console.log("symmetria-fm: IPC service ready (target: filemanager)");
     }
 }

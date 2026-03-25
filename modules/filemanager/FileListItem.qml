@@ -41,8 +41,38 @@ Item {
         return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
 
+    function _highlightFlash(name: string, query: string, label: string, matchStart: int): string {
+        if (matchStart < 0 || query === "" || label === "")
+            return root._htmlEscape(name);
+
+        const before = name.substring(0, matchStart);
+        const match = name.substring(matchStart, matchStart + query.length);
+        const afterMatchStart = matchStart + query.length;
+        const labelLen = label.length;
+        const replacedEnd = Math.min(afterMatchStart + labelLen, name.length);
+        const after = name.substring(replacedEnd);
+
+        const querySpan = "<span style=\"background-color: " + Theme.palette.m3secondaryContainer
+                        + "; color: " + Theme.palette.m3onSecondaryContainer + ";\">"
+                        + root._htmlEscape(match) + "</span>";
+
+        const labelSpan = "<span style=\"background-color: " + Theme.palette.m3primary
+                        + "; color: " + Theme.palette.m3onPrimary
+                        + "; font-weight: 700; font-family: " + Theme.font.family.mono + ";\">"
+                        + root._htmlEscape(label) + "</span>";
+
+        return root._htmlEscape(before) + querySpan + labelSpan + root._htmlEscape(after);
+    }
+
     property bool isSearchMatch: false
     property bool isSelected: false
+
+    // Flash navigation
+    property bool flashActive: false
+    property string flashQuery: ""
+    property string flashLabel: ""
+    property int flashMatchStart: -1
+    readonly property bool isFlashMatch: flashActive && flashLabel !== ""
 
     implicitHeight: Config.fileManager.sizes.itemHeight
 
@@ -132,6 +162,8 @@ Item {
         anchors.leftMargin: Theme.padding.lg
         anchors.rightMargin: Theme.padding.lg
         spacing: Theme.spacing.md
+        opacity: root.flashActive && !root.isFlashMatch ? 0.25 : 1.0
+        Behavior on opacity { Anim {} }
 
         // File/folder icon
         MaterialIcon {
@@ -159,11 +191,13 @@ Item {
         // File name
         StyledText {
             Layout.fillWidth: true
-            clip: root.isSearchMatch
-            textFormat: root.isSearchMatch ? Text.RichText : Text.PlainText
-            elide: root.isSearchMatch ? Text.ElideNone : Text.ElideRight
+            clip: root.isSearchMatch || root.isFlashMatch
+            textFormat: (root.isSearchMatch || root.isFlashMatch) ? Text.RichText : Text.PlainText
+            elide: (root.isSearchMatch || root.isFlashMatch) ? Text.ElideNone : Text.ElideRight
             text: {
                 const name = root.modelData?.name ?? "";
+                if (root.isFlashMatch)
+                    return root._highlightFlash(name, root.flashQuery, root.flashLabel, root.flashMatchStart);
                 if (root.isSearchMatch)
                     return root._highlightMatches(name, root.searchQuery);
                 return name;

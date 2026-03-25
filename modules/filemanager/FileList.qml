@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import "../../components"
 import "../../services"
 import "../../config"
+import "FlashLogic.js" as FlashLogic
 import Symmetria.FileManager.Models
 import Quickshell.Io
 import QtQuick
@@ -32,6 +33,12 @@ Item {
 
     // Filename to focus once the model refreshes (set by paste, create, rename, etc.)
     property string _pendingFocusName: ""
+
+    // Flash navigation: cross-column entry sources (wired from MillerColumns)
+    property var parentEntries: []
+    property var previewDirectoryEntries: []
+    property string previewDirectoryPath: ""
+    property int _preFlashIndex: 0
 
     // Y of the bottom edge of the current item, relative to FileList root.
     // Used by RenamePopup for contextual positioning below the selected item.
@@ -213,6 +220,71 @@ Item {
         }
     }
 
+    function _recomputeFlash(): void {
+        const query = windowState.flashQuery.toLowerCase();
+        if (query === "") {
+            windowState.flashMatches = [];
+            windowState.flashLabelChars = {};
+            windowState.flashContinuations = {};
+            return;
+        }
+
+        // Collect entries from all three columns
+        const allEntries = [];
+
+        const currentEntries = fsModel.entries;
+        for (let i = 0; i < currentEntries.length; i++) {
+            allEntries.push({
+                name:   currentEntries[i].name,
+                column: "current",
+                index:  i,
+                path:   currentEntries[i].path,
+                isDir:  currentEntries[i].isDir
+            });
+        }
+
+        // Only include preview entries if the directory path is resolved
+        // (avoids searching stale entries during the 150ms debounce window)
+        const prevEntries = root.previewDirectoryPath !== "" ? root.previewDirectoryEntries : null;
+        if (prevEntries) {
+            for (let i = 0; i < prevEntries.length; i++) {
+                allEntries.push({
+                    name:   prevEntries[i].name,
+                    column: "preview",
+                    index:  i,
+                    path:   prevEntries[i].path,
+                    isDir:  prevEntries[i].isDir
+                });
+            }
+        }
+
+        const parEntries = root.parentEntries;
+        if (parEntries) {
+            for (let i = 0; i < parEntries.length; i++) {
+                allEntries.push({
+                    name:   parEntries[i].name,
+                    column: "parent",
+                    index:  i,
+                    path:   parEntries[i].path,
+                    isDir:  parEntries[i].isDir
+                });
+            }
+        }
+
+        const result = FlashLogic.computeFlash(query, allEntries, view.currentIndex);
+        windowState.flashMatches = result.matches;
+        windowState.flashLabelChars = result.labelChars;
+        windowState.flashContinuations = result.continuations;
+
+        const contKeys = Object.keys(result.continuations).join("");
+        const labelKeys = Object.keys(result.labelChars).join("");
+        const labelList = result.matches.map(m => m.label + "→" + m.name.substring(0, 15)).join(", ");
+        Logger.debug("Flash", "Recompute query='" + query + "' | entries=" + allEntries.length
+            + " | matches=" + result.matches.length
+            + " | continuations=[" + contKeys + "] | labelPool=[" + labelKeys + "]"
+            + " | labels: " + labelList);
+    }
+
     Connections {
         target: windowState
 
@@ -260,6 +332,25 @@ Item {
         function onContextMenuTargetPathChanged() {
             if (windowState.contextMenuTargetPath === "")
                 Qt.callLater(() => view.forceActiveFocus());
+        }
+
+        function onFlashJump(column: string, index: int, path: string) {
+            Logger.info("Flash", "Jump → " + column + ":" + index + " path=" + path);
+            if (column === "current") {
+                view.currentIndex = index;
+                view.positionViewAtIndex(index, ListView.Contain);
+            } else if (column === "preview") {
+                if (root.previewDirectoryPath !== "") {
+                    windowState.saveCursor(root.previewDirectoryPath, index);
+                    root._saveCursorAndNavigate(() => windowState.navigate(root.previewDirectoryPath));
+                }
+            } else if (column === "parent") {
+                const parentPath = windowState.currentPath.replace(/\/[^/]+$/, "") || "/";
+                // Save the flash target cursor BEFORE _saveCursorAndNavigate, which saves
+                // currentPath's cursor (a different path). Order is load-bearing.
+                windowState.saveCursor(parentPath, index);
+                root._saveCursorAndNavigate(() => windowState.goUp());
+            }
         }
     }
 
@@ -381,6 +472,10 @@ Item {
             // assigns a new object each time, triggering the notify signal).
             isSelected: root.windowState && root.windowState.selectedPaths
                         ? !!root.windowState.selectedPaths[modelData.path] : false
+            flashActive: root.windowState ? root.windowState.flashActive : false
+            flashQuery: root.windowState ? root.windowState.flashQuery : ""
+            flashLabel: root.windowState?.flashMatchMap["current:" + index]?.label ?? ""
+            flashMatchStart: root.windowState?.flashMatchMap["current:" + index]?.matchStart ?? -1
             onActivated: root._activateCurrentItem()
         }
 
@@ -416,6 +511,111 @@ Item {
                     const keyChar = prefix === "," ? event.text : event.text.toLowerCase();
                     root._executeChord(prefix, keyChar);
                 }
+                event.accepted = true;
+                return;
+            }
+
+            // Flash navigation mode: intercept all keys for search/label/jump
+            if (windowState.flashActive) {
+                if (key === Qt.Key_Shift || key === Qt.Key_Control
+                    || key === Qt.Key_Alt || key === Qt.Key_Meta) {
+                    event.accepted = true;
+                    return;
+                }
+
+                if (key === Qt.Key_Escape) {
+                    Logger.debug("Flash", "Escape → cancel flash");
+                    view.currentIndex = root._preFlashIndex;
+                    view.positionViewAtIndex(view.currentIndex, ListView.Contain);
+                    windowState.clearFlash();
+                    event.accepted = true;
+                    return;
+                }
+
+                if (key === Qt.Key_Backspace) {
+                    // Cancel pending 2-char label without touching the query
+                    if (windowState.flashPendingLabel !== "") {
+                        Logger.debug("Flash", "Backspace → cancel pending 2-char label '" + windowState.flashPendingLabel + "'");
+                        windowState.flashPendingLabel = "";
+                    } else if (windowState.flashQuery.length > 0) {
+                        Logger.debug("Flash", "Backspace → query '" + windowState.flashQuery + "' → '" + windowState.flashQuery.slice(0, -1) + "'");
+                        windowState.flashQuery = windowState.flashQuery.slice(0, -1);
+                        root._recomputeFlash();
+                    } else {
+                        Logger.debug("Flash", "Backspace → empty query, cancel flash");
+                        view.currentIndex = root._preFlashIndex;
+                        view.positionViewAtIndex(view.currentIndex, ListView.Contain);
+                        windowState.clearFlash();
+                    }
+                    event.accepted = true;
+                    return;
+                }
+
+                const ch = event.text.toLowerCase();
+                if (ch === "" || ch.length !== 1) {
+                    Logger.debug("Flash", "Ignored non-printable key=" + key + " text='" + event.text + "'");
+                    event.accepted = true;
+                    return;
+                }
+
+                Logger.debug("Flash", "Keypress '" + ch + "' | query='" + windowState.flashQuery
+                    + "' | isLabel=" + !!windowState.flashLabelChars[ch]
+                    + " | isContinuation=" + !!windowState.flashContinuations[ch]
+                    + " | pendingLabel='" + windowState.flashPendingLabel + "'");
+
+                // Resolve second char of a 2-char label
+                if (windowState.flashPendingLabel !== "") {
+                    const fullLabel = windowState.flashPendingLabel + ch;
+                    windowState.flashPendingLabel = "";
+                    const pending = windowState.flashMatches;
+                    for (let i = 0; i < pending.length; i++) {
+                        if (pending[i].label === fullLabel) {
+                            Logger.info("Flash", "2-char label '" + fullLabel + "' → jump " + pending[i].column + ":" + pending[i].index + " " + pending[i].path);
+                            windowState.flashJump(pending[i].column, pending[i].index, pending[i].path);
+                            windowState.clearFlash();
+                            event.accepted = true;
+                            return;
+                        }
+                    }
+                    Logger.debug("Flash", "Invalid 2-char label '" + fullLabel + "' — ignored");
+                    event.accepted = true;
+                    return;
+                }
+
+                // Check if char is a label
+                if (windowState.flashLabelChars[ch]) {
+                    const matches = windowState.flashMatches;
+                    // Try exact 1-char label
+                    const exact = matches.find(m => m.label === ch);
+                    if (exact) {
+                        Logger.info("Flash", "Label '" + ch + "' → jump " + exact.column + ":" + exact.index + " " + exact.path);
+                        windowState.flashJump(exact.column, exact.index, exact.path);
+                        windowState.clearFlash();
+                        event.accepted = true;
+                        return;
+                    }
+                    // Check if first char of any 2-char label
+                    if (matches.some(m => m.label.length === 2 && m.label[0] === ch)) {
+                        Logger.debug("Flash", "'" + ch + "' is 2-char label prefix → waiting for second char");
+                        windowState.flashPendingLabel = ch;
+                        event.accepted = true;
+                        return;
+                    }
+                }
+
+                // Check if char is a continuation → extend query.
+                // When query is empty, every printable char is a valid first search char
+                // (no continuations or labels exist yet).
+                if (windowState.flashQuery === "" || windowState.flashContinuations[ch]) {
+                    Logger.debug("Flash", "Continuation '" + ch + "' → query becomes '" + windowState.flashQuery + ch + "'");
+                    windowState.flashQuery += ch;
+                    root._recomputeFlash();
+                    event.accepted = true;
+                    return;
+                }
+
+                // Neither label nor continuation — ignore
+                Logger.warn("Flash", "'" + ch + "' is neither label nor continuation — dropped");
                 event.accepted = true;
                 return;
             }
@@ -560,6 +760,13 @@ Item {
             case Qt.Key_Slash:
                 root._preSearchIndex = view.currentIndex;
                 windowState.startSearch();
+                event.accepted = true;
+                break;
+
+            case Qt.Key_S:
+                Logger.info("Flash", "S pressed → entering flash mode (cursor at " + view.currentIndex + ")");
+                root._preFlashIndex = view.currentIndex;
+                windowState.startFlash();
                 event.accepted = true;
                 break;
 

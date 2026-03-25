@@ -13,6 +13,8 @@ Item {
 
     property WindowState windowState
 
+    readonly property var entries: parentModel.entries
+
     readonly property string _parentPath: {
         if (!windowState) return "";
         const path = windowState.currentPath;
@@ -89,6 +91,10 @@ Item {
 
         delegate: FileListItem {
             width: parentView.width
+            flashActive: root.windowState ? root.windowState.flashActive : false
+            flashQuery: root.windowState ? root.windowState.flashQuery : ""
+            flashLabel: root.windowState?.flashMatchMap["parent:" + index]?.label ?? ""
+            flashMatchStart: root.windowState?.flashMatchMap["parent:" + index]?.matchStart ?? -1
             onActivated: {
                 if (modelData.isDir)
                     root.windowState.navigate(modelData.path);

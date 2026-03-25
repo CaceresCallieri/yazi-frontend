@@ -9,6 +9,12 @@ Item {
     id: root
 
     required property var previewEntry  // FileSystemEntry | null
+    property WindowState windowState
+
+    // Flash navigation: directory entries exposed for cross-column search
+    property var _directoryEntries: []
+    readonly property var directoryEntries: _previewType === _typeDirectory ? _directoryEntries : []
+    readonly property string directoryPath: (_previewType === _typeDirectory && _committedEntry) ? _committedEntry.path : ""
 
     // --- Internal state ---
 
@@ -228,10 +234,15 @@ Item {
                             // preview is read-only context and does not need to mirror the
                             // active panel's sort order (which lives on WindowState, not Config).
                             watchChanges: false
+                            onEntriesChanged: root._directoryEntries = entries
                         }
 
                         delegate: FileListItem {
                             width: directoryView.width
+                            flashActive: root.windowState ? root.windowState.flashActive : false
+                            flashQuery: root.windowState ? root.windowState.flashQuery : ""
+                            flashLabel: root.windowState?.flashMatchMap["preview:" + index]?.label ?? ""
+                            flashMatchStart: root.windowState?.flashMatchMap["preview:" + index]?.matchStart ?? -1
                         }
                     }
                 }

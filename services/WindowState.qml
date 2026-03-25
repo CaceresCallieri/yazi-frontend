@@ -32,6 +32,7 @@ QtObject {
             return;
 
         clearSearch();
+        clearFlash();
 
         // Truncate forward history and append new path
         _history = _history.slice(0, _historyIndex + 1).concat([path]);
@@ -44,6 +45,7 @@ QtObject {
             return;
 
         clearSearch();
+        clearFlash();
         _historyIndex--;
         currentPath = _history[_historyIndex];
     }
@@ -53,6 +55,7 @@ QtObject {
             return;
 
         clearSearch();
+        clearFlash();
         _historyIndex++;
         currentPath = _history[_historyIndex];
     }
@@ -62,6 +65,7 @@ QtObject {
             return;
 
         clearSearch();
+        clearFlash();
         const parentPath = currentPath.replace(/\/[^/]+$/, "") || "/";
         navigate(parentPath);
     }
@@ -84,6 +88,7 @@ QtObject {
 
     function startSearch(): void {
         clearSearch();
+        clearFlash();
         searchActive = true;
     }
 
@@ -97,6 +102,40 @@ QtObject {
         if (matchIndices.length === 0)
             return;
         currentMatchIndex = (currentMatchIndex - 1 + matchIndices.length) % matchIndices.length;
+    }
+
+    // === Flash navigation ===
+    property bool flashActive: false
+    property string flashQuery: ""
+    property var flashMatches: []           // Match objects from FlashLogic.computeFlash()
+    property var flashLabelChars: ({})      // { char: true } — chars assigned as labels
+    property var flashContinuations: ({})   // { char: true } — chars that extend the query
+    property string flashPendingLabel: ""   // First char of a 2-char label being resolved
+    // O(1) lookup map: "column:index" → match object. Rebuilt when flashMatches changes.
+    readonly property var flashMatchMap: {
+        const map = {};
+        for (let i = 0; i < flashMatches.length; i++) {
+            const m = flashMatches[i];
+            map[m.column + ":" + m.index] = m;
+        }
+        return map;
+    }
+
+    signal flashJump(string column, int index, string path)
+
+    function startFlash(): void {
+        clearFlash();
+        clearSearch();
+        flashActive = true;
+    }
+
+    function clearFlash(): void {
+        flashActive = false;
+        flashQuery = "";
+        flashMatches = [];
+        flashLabelChars = {};
+        flashContinuations = {};
+        flashPendingLabel = "";
     }
 
     // === Sort (per-window, ephemeral) ===

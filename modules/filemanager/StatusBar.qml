@@ -13,6 +13,7 @@ Item {
 
     // Collapses the repeated null-guard pattern used throughout this file.
     readonly property bool _searchActive: windowState ? windowState.searchActive : false
+    readonly property bool _flashActive: windowState ? windowState.flashActive : false
     readonly property int _selectedCount: windowState ? windowState.selectedCount : 0
 
     implicitHeight: inner.implicitHeight + Theme.padding.sm * 4
@@ -46,7 +47,7 @@ Item {
             // — hidden during search in both modes
             StyledRect {
                 id: acceptBtn
-                visible: FileManagerService.pickerMode && !root._searchActive
+                visible: FileManagerService.pickerMode && !root._searchActive && !root._flashActive
                 color: _acceptEnabled ? Theme.palette.m3primary : Theme.palette.m3surfaceVariant
                 radius: Theme.rounding.full
                 implicitWidth: acceptLabel.implicitWidth + Theme.padding.lg * 2
@@ -90,7 +91,7 @@ Item {
             }
 
             StyledText {
-                visible: !root._searchActive && !FileManagerService.pickerMode
+                visible: !root._searchActive && !root._flashActive && !FileManagerService.pickerMode
                 text: {
                     const count = root.fileCount + (root.fileCount === 1 ? " item" : " items");
                     if (root._selectedCount > 0)
@@ -107,7 +108,7 @@ Item {
 
             // Sort mode indicator
             StyledText {
-                visible: !root._searchActive && !FileManagerService.pickerMode
+                visible: !root._searchActive && !root._flashActive && !FileManagerService.pickerMode
                 text: {
                     if (!root.windowState) return "";
                     const arrow = root.windowState.sortReverse ? " ↓" : " ↑";
@@ -119,13 +120,13 @@ Item {
             }
 
             Item {
-                visible: !root._searchActive
+                visible: !root._searchActive && !root._flashActive
                 Layout.fillWidth: true
             }
 
             // Center: save filename (save mode) or current entry info (normal/open picker)
             StyledText {
-                visible: !root._searchActive && FileManagerService.pickerSaveMode
+                visible: !root._searchActive && !root._flashActive && FileManagerService.pickerSaveMode
                     && FileManagerService.pickerSuggestedName !== ""
                 text: "Save as: " + FileManagerService.pickerSuggestedName
                 color: Theme.palette.m3primary
@@ -134,7 +135,7 @@ Item {
             }
 
             StyledText {
-                visible: !root._searchActive && !FileManagerService.pickerSaveMode
+                visible: !root._searchActive && !root._flashActive && !FileManagerService.pickerSaveMode
                     && root.currentEntry !== null
                 text: {
                     if (root.currentEntry?.isDir)
@@ -147,13 +148,13 @@ Item {
             }
 
             Item {
-                visible: !root._searchActive
+                visible: !root._searchActive && !root._flashActive
                 Layout.fillWidth: true
             }
 
             // Cancel button (picker mode only)
             StyledRect {
-                visible: FileManagerService.pickerMode && !root._searchActive
+                visible: FileManagerService.pickerMode && !root._searchActive && !root._flashActive
                 color: Theme.palette.m3surfaceVariant
                 radius: Theme.rounding.full
                 implicitWidth: cancelLabel.implicitWidth + Theme.padding.lg * 2
@@ -252,6 +253,45 @@ Item {
                 }
                 color: {
                     if (root.windowState && root.windowState.searchQuery !== "" && root.windowState.matchIndices.length === 0)
+                        return Theme.palette.m3error;
+                    return Theme.palette.m3onSurfaceVariant;
+                }
+                font.pointSize: Theme.font.size.xs
+                font.family: Theme.font.family.mono
+            }
+
+            // Flash navigation indicator (visible during flash mode)
+            StyledText {
+                visible: root._flashActive
+                text: "S"
+                color: Theme.palette.m3primary
+                font.pointSize: Theme.font.size.xs
+                font.family: Theme.font.family.mono
+                font.weight: Font.Bold
+            }
+
+            StyledText {
+                visible: root._flashActive
+                text: root.windowState ? root.windowState.flashQuery : ""
+                color: Theme.palette.m3onSurface
+                font.pointSize: Theme.font.size.xs
+                font.family: Theme.font.family.mono
+                Layout.fillWidth: true
+            }
+
+            StyledText {
+                visible: root._flashActive
+                text: {
+                    if (!root.windowState) return "";
+                    const query = root.windowState.flashQuery;
+                    if (query === "") return "";
+                    const matches = root.windowState.flashMatches;
+                    if (matches.length === 0) return "No matches";
+                    return matches.length + (matches.length === 1 ? " match" : " matches");
+                }
+                color: {
+                    if (root.windowState && root.windowState.flashQuery !== ""
+                        && root.windowState.flashMatches.length === 0)
                         return Theme.palette.m3error;
                     return Theme.palette.m3onSurfaceVariant;
                 }

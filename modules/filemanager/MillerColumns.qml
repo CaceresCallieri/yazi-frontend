@@ -26,6 +26,7 @@ Item {
             Layout.preferredWidth: 2
 
             ParentPanel {
+                id: parentPanel
                 anchors.fill: parent
                 windowState: root.windowState
                 opacity: (root.windowState && root.windowState.chordActive) ? 0 : 1
@@ -55,6 +56,9 @@ Item {
             Layout.fillHeight: true
             Layout.preferredWidth: 5
             windowState: root.windowState
+            parentEntries: parentPanel.entries
+            previewDirectoryEntries: previewPanel.directoryEntries
+            previewDirectoryPath: previewPanel.directoryPath
             onCloseRequested: root.closeRequested()
         }
 
@@ -67,10 +71,12 @@ Item {
 
         // Right: passive preview of highlighted entry
         PreviewPanel {
+            id: previewPanel
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.preferredWidth: 3
             previewEntry: currentPanel.currentEntry ?? null
+            windowState: root.windowState
         }
     }
 }
