@@ -75,7 +75,13 @@ Item {
         boundsBehavior: Flickable.StopAtBounds
 
         ScrollBar.vertical: ScrollBar {
-            policy: ScrollBar.AsNeeded
+            policy: ScrollBar.AlwaysOn
+            contentItem: Rectangle {
+                implicitWidth: 5
+                radius: width / 2
+                color: Theme.palette.m3onSurfaceVariant
+                opacity: 0.4
+            }
         }
 
         model: FileSystemModel {
