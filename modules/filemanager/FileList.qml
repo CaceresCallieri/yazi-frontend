@@ -254,6 +254,11 @@ Item {
         function onRenameCompleted(newName: string) {
             root._pendingFocusName = newName;
         }
+
+        function onContextMenuTargetPathChanged() {
+            if (windowState.contextMenuTargetPath === "")
+                Qt.callLater(() => view.forceActiveFocus());
+        }
     }
 
     // Background
@@ -364,7 +369,8 @@ Item {
         // Vim-style keyboard navigation
         Keys.onPressed: function(event) {
             // Block all keys while a modal popup is visible
-            if (windowState.deleteConfirmPaths.length > 0 || windowState.createInputActive || windowState.renameTargetPath !== "") {
+            if (windowState.deleteConfirmPaths.length > 0 || windowState.createInputActive
+                || windowState.renameTargetPath !== "" || windowState.contextMenuTargetPath !== "") {
                 event.accepted = true;
                 return;
             }
@@ -446,7 +452,17 @@ Item {
 
             case Qt.Key_Return:
             case Qt.Key_Enter:
-                root._activateCurrentItem();
+                if (mods & Qt.ControlModifier) {
+                    // Ctrl+Enter: open context menu for current file (not directories)
+                    if (root.currentEntry && !root.currentEntry.isDir) {
+                        windowState.requestContextMenu(
+                            root.currentEntry.path,
+                            root.currentEntry.mimeType
+                        );
+                    }
+                } else {
+                    root._activateCurrentItem();
+                }
                 event.accepted = true;
                 break;
 

@@ -214,4 +214,18 @@ QtObject {
         renameTargetPath = "";
         renameIncludeExtension = false;
     }
+
+    // === Context menu ===
+    property string contextMenuTargetPath: ""
+    property string contextMenuTargetMimeType: ""
+
+    function requestContextMenu(path: string, mimeType: string): void {
+        contextMenuTargetPath = path;
+        contextMenuTargetMimeType = mimeType;
+    }
+
+    function cancelContextMenu(): void {
+        contextMenuTargetPath = "";
+        contextMenuTargetMimeType = "";
+    }
 }

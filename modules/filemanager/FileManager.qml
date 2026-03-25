@@ -61,4 +61,8 @@ Item {
         targetColumnX: millerColumns.x + millerColumns.currentColumnX
         targetColumnWidth: millerColumns.currentColumnWidth
     }
+    ContextMenuPopup {
+        anchors.fill: parent
+        windowState: windowState
+    }
 }

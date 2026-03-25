@@ -43,34 +43,7 @@ Item {
 
     function _isArchiveFile(entry) {
         if (!entry) return false;
-        const mime = entry.mimeType;
-        return [
-            // Standard archives
-            "application/zip",
-            "application/x-tar",
-            "application/x-7z-compressed",
-            "application/x-rar", "application/x-rar-compressed", "application/vnd.rar",
-            "application/x-cpio",
-            "application/vnd.ms-cab-compressed",
-            "application/x-xar",
-            // Compressed tars
-            "application/x-compressed-tar",
-            "application/x-bzip-compressed-tar",
-            "application/x-xz-compressed-tar",
-            "application/x-zstd-compressed-tar",
-            "application/x-lzma-compressed-tar",
-            // Standalone compression (may contain tar inside)
-            "application/gzip", "application/x-gzip",
-            "application/x-bzip2",
-            "application/x-xz",
-            "application/zstd", "application/x-zstd",
-            // Disc/package formats
-            "application/x-iso9660-image",
-            "application/x-debian-package",
-            // Zip-based formats
-            "application/java-archive",
-            "application/epub+zip",
-        ].includes(mime);
+        return FileManagerService.isArchiveFile(entry.mimeType);
     }
 
     function _isSpreadsheetFile(entry) {

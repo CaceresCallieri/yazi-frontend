@@ -91,6 +91,37 @@ Singleton {
 
     // === Utilities (stateless, shared) ===
 
+    readonly property var _archiveMimeTypes: ({
+        "application/zip": true,
+        "application/x-tar": true,
+        "application/x-7z-compressed": true,
+        "application/x-rar": true,
+        "application/x-rar-compressed": true,
+        "application/vnd.rar": true,
+        "application/x-cpio": true,
+        "application/vnd.ms-cab-compressed": true,
+        "application/x-xar": true,
+        "application/x-compressed-tar": true,
+        "application/x-bzip-compressed-tar": true,
+        "application/x-xz-compressed-tar": true,
+        "application/x-zstd-compressed-tar": true,
+        "application/x-lzma-compressed-tar": true,
+        "application/gzip": true,
+        "application/x-gzip": true,
+        "application/x-bzip2": true,
+        "application/x-xz": true,
+        "application/zstd": true,
+        "application/x-zstd": true,
+        "application/x-iso9660-image": true,
+        "application/x-debian-package": true,
+        "application/java-archive": true,
+        "application/epub+zip": true,
+    })
+
+    function isArchiveFile(mimeType: string): bool {
+        return !!_archiveMimeTypes[mimeType];
+    }
+
     function formatSize(bytes: double): string {
         if (bytes < 1024)
             return bytes + " B";
