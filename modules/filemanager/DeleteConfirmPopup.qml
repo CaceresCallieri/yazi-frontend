@@ -51,10 +51,11 @@ Loader {
             width: Math.min(parent.width - Theme.padding.lg * 4, dialogLayout.implicitWidth + Theme.padding.lg * 3)
             implicitHeight: dialogLayout.implicitHeight + Theme.padding.lg * 3
 
+            // Start at 0.1 — the Behavior on scale animates to 1 (OutBack pop-in).
+            // No live binding needed: this component is only created when deleteConfirmPaths
+            // is non-empty (Loader active is driven by it), so the target is always 1.
             scale: 0.1
-            Component.onCompleted: scale = Qt.binding(
-                () => root.windowState && root.windowState.deleteConfirmPaths.length > 0 ? 1 : 0
-            )
+            Component.onCompleted: scale = 1
 
             Behavior on scale {
                 NumberAnimation {

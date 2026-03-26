@@ -29,6 +29,8 @@ Item {
 
     // Keys suppressed in picker mode (clipboard operations don't belong in a file chooser).
     // Note: Key_C is intentionally absent — it starts the harmless "copy path" chord.
+    // Note: Key_V (Ctrl+V paste) is suppressed separately below — only the Ctrl-modified form
+    // is blocked; bare V is unbound, so it cannot live in this array alongside modifier-agnostic keys.
     // Create (A), Rename (R), and Delete (D) are allowed — common workflows in file dialogs.
     readonly property var _pickerSuppressedKeys: [Qt.Key_Y, Qt.Key_X, Qt.Key_P, Qt.Key_Space]
 
@@ -654,7 +656,7 @@ Item {
                 return;
             }
 
-            // Picker mode: Escape cancels, suppress file-op keys
+            // Picker mode: Escape cancels, suppress clipboard operations
             if (FileManagerService.pickerMode) {
                 if (key === Qt.Key_Escape) {
                     FileManagerService.cancelPickerMode();
