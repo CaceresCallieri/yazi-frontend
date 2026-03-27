@@ -74,6 +74,7 @@ Item {
                 // as the save location (same as StatusBar's accept button).
                 // No currentEntry needed — works even in empty folders.
                 FileManagerService.completePickerMode([windowState.currentPath]);
+            // currentEntry is null (empty folder, non-save mode) — Enter is a no-op.
             } else if (root.currentEntry) {
                 if (FileManagerService.pickerDirectory) {
                     // Directory picker: only dirs are selectable; ignore Enter on files.
@@ -965,7 +966,7 @@ Item {
             if (exitCode === 0 && exitStatus === Process.NormalExit) {
                 FileManagerService.clearClipboard();
             } else {
-                console.warn("FileList: paste failed — exitCode:", exitCode, "exitStatus:", exitStatus);
+                Logger.warn("FileList", "paste failed — exitCode: " + exitCode + " exitStatus: " + exitStatus);
                 root._pendingFocusName = "";
             }
         }
@@ -980,7 +981,7 @@ Item {
 
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0 || exitStatus !== Process.NormalExit)
-                console.warn("FileList: wl-copy failed — exitCode:", exitCode, "exitStatus:", exitStatus);
+                Logger.warn("FileList", "wl-copy failed — exitCode: " + exitCode + " exitStatus: " + exitStatus);
             const cb = _pendingCallback;
             _pendingCallback = null;
             if (cb)
