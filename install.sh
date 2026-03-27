@@ -31,17 +31,18 @@ case "$MODE" in
         # Install icon to XDG icon directory
         ICON_DIR="$HOME/.local/share/icons/hicolor/512x512/apps"
         mkdir -p "$ICON_DIR"
-        cp "$PROJECT_DIR/assets/symmetria-fm.png" "$ICON_DIR/symmetria-fm.png"
+        cp "$PROJECT_DIR/assets/symmetria-fm.png" "$ICON_DIR/"
         echo "  Installed icon → $ICON_DIR/symmetria-fm.png"
 
         # Install .desktop file
         DESKTOP_DIR="$HOME/.local/share/applications"
         mkdir -p "$DESKTOP_DIR"
-        cp "$PROJECT_DIR/symmetria-fm.desktop" "$DESKTOP_DIR/symmetria-fm.desktop"
+        cp "$PROJECT_DIR/symmetria-fm.desktop" "$DESKTOP_DIR/"
         echo "  Installed desktop entry → $DESKTOP_DIR/symmetria-fm.desktop"
 
-        # Update icon cache
+        # Update icon and desktop entry caches
         gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+        update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 
         echo
         echo "Done. Run with:"
@@ -52,6 +53,8 @@ case "$MODE" in
         ;;
 
     --symmetria)
+        # Icon and .desktop installation are intentionally omitted here;
+        # integrated mode relies on the parent Symmetria Shell's own launcher setup.
         if [[ ! -d "$SYMMETRIA_DIR" ]]; then
             echo "ERROR: Symmetria not found at $SYMMETRIA_DIR"
             exit 1
