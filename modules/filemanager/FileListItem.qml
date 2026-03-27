@@ -195,7 +195,7 @@ Item {
 
         // File name
         StyledText {
-            Layout.fillWidth: true
+            Layout.fillWidth: !(root.modelData?.isSymlink ?? false)
             clip: root.isSearchMatch || root.isFlashMatch
             textFormat: (root.isSearchMatch || root.isFlashMatch) ? Text.RichText : Text.PlainText
             elide: (root.isSearchMatch || root.isFlashMatch) ? Text.ElideNone : Text.ElideRight
@@ -209,6 +209,16 @@ Item {
             }
             color: Theme.palette.m3onSurface
             font.pointSize: Theme.font.size.md
+        }
+
+        // Symlink target indicator
+        StyledText {
+            visible: root.modelData?.isSymlink ?? false
+            Layout.fillWidth: true
+            text: "→ " + Paths.shortenHomeBare(root.modelData?.symlinkTarget ?? "")
+            color: Theme.palette.m3outline
+            font.pointSize: Theme.font.size.xs
+            elide: Text.ElideMiddle
         }
 
         // File size (hidden for directories)
