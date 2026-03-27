@@ -94,30 +94,46 @@ Item {
             Qt.openUrlExternally("file://" + root.currentEntry.path);
     }
 
-    // Copy the path that would be confirmed in picker mode to the system clipboard.
-    // Mirrors _activateCurrentItem()'s picker branching so the copied path always
-    // matches what gets sent to the portal FIFO.
-    function _copyPickerPathToClipboard(): void {
-        if (clipboardCopyProcess.running)
-            return;
-        let pathToCopy;
+    // Returns the path that _activateCurrentItem() would confirm, or "" if the
+    // current state has no selectable target (e.g. cursor on a file in directory
+    // picker mode).  Single source of truth shared by the clipboard copy and the
+    // portal FIFO — keeps both in sync when picker branching logic changes.
+    function _resolvePickerPath(): string {
         if (FileManagerService.pickerSaveMode) {
-            // Append the suggested filename so the clipboard contains the full
+            // Save mode: the confirmed location is the current directory.
+            // Append the suggested filename so the clipboard gets the full
             // destination path, matching what the portal actually writes to disk.
             const dir = windowState.currentPath;
             const name = FileManagerService.pickerSuggestedName;
-            pathToCopy = name ? dir + "/" + name : dir;
+            if (name) {
+                // Guard against trailing slash on dir (e.g. root "/")
+                return dir.endsWith("/") ? dir + name : dir + "/" + name;
+            }
+            return dir;
         } else if (FileManagerService.pickerDirectory) {
             if (root.currentEntry && root.currentEntry.isDir)
-                pathToCopy = root.currentEntry.path;
+                return root.currentEntry.path;
         } else {
             if (root.currentEntry && !root.currentEntry.isDir)
-                pathToCopy = root.currentEntry.path;
+                return root.currentEntry.path;
         }
-        if (pathToCopy) {
-            clipboardCopyProcess.command = ["wl-copy", "--", pathToCopy];
-            clipboardCopyProcess.running = true;
-        }
+        return "";
+    }
+
+    // Copies the picker-confirmed path to the system clipboard, then invokes
+    // onDone() once wl-copy exits (success or failure).  The callback ensures
+    // callers don't proceed (e.g. close the picker window) before the clipboard
+    // write completes — wl-copy is asynchronous.
+    // No-ops if wl-copy is already running or no selectable path exists.
+    function _copyPickerPathToClipboard(onDone: var): void {
+        if (clipboardCopyProcess.running)
+            return;
+        const path = root._resolvePickerPath();
+        if (!path)
+            return;
+        clipboardCopyProcess._pendingCallback = onDone;
+        clipboardCopyProcess.command = ["wl-copy", "--", path];
+        clipboardCopyProcess.running = true;
     }
 
     function _executeChord(prefix: string, keyChar: string): void {
@@ -758,9 +774,10 @@ Item {
                         );
                     }
                 } else if ((mods & Qt.ShiftModifier) && FileManagerService.pickerMode) {
-                    // Shift+Enter in picker: copy path to clipboard, then confirm + close
-                    root._copyPickerPathToClipboard();
-                    root._activateCurrentItem();
+                    // Shift+Enter in picker: copy path to clipboard, then confirm + close.
+                    // _activateCurrentItem is called inside the wl-copy exit callback so
+                    // the picker window stays open until the clipboard write completes.
+                    root._copyPickerPathToClipboard(() => root._activateCurrentItem());
                 } else {
                     root._activateCurrentItem();
                 }
@@ -953,9 +970,18 @@ Item {
 
     Process {
         id: clipboardCopyProcess
+
+        // Callback set by _copyPickerPathToClipboard() — called once wl-copy
+        // exits so callers can safely proceed after the clipboard write.
+        property var _pendingCallback: null
+
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0 || exitStatus !== Process.NormalExit)
                 console.warn("FileList: wl-copy failed — exitCode:", exitCode, "exitStatus:", exitStatus);
+            const cb = _pendingCallback;
+            _pendingCallback = null;
+            if (cb)
+                cb();
         }
     }
 }
