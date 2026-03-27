@@ -5,6 +5,7 @@ import "../../services"
 import "../../config"
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import QtQuick
 
 Singleton {
@@ -12,12 +13,23 @@ Singleton {
 
     property var _activeWindows: []
     property var _activePickerWindow: null
+    property var _activeOverlayWindow: null
 
     function create(initialPath: string): void {
         const win = fileManagerWindow.createObject(dummy, {
             "initialPath": initialPath || Paths.home
         });
         _activeWindows = _activeWindows.concat([win]);
+    }
+
+    function createOverlay(initialPath: string): void {
+        if (_activeOverlayWindow) {
+            console.warn("FileManager: Overlay already active, ignoring request");
+            return;
+        }
+        _activeOverlayWindow = overlayWindow.createObject(dummy, {
+            "initialPath": initialPath || Paths.home
+        });
     }
 
     QtObject {
@@ -34,6 +46,10 @@ Singleton {
 
         function open(initialPath: string): void {
             root.create(initialPath);
+        }
+
+        function openOverlay(initialPath: string): void {
+            root.createOverlay(initialPath);
         }
 
         function createPicker(optionsJson: string): void {
@@ -279,6 +295,109 @@ Singleton {
 
             Behavior on color {
                 CAnim {}
+            }
+        }
+    }
+
+    // === Overlay window (layer shell with centered file manager) ===
+    Component {
+        id: overlayWindow
+
+        PanelWindow {
+            id: overlayWin
+
+            property string initialPath: Paths.home
+            property bool _closing: false
+
+            color: "transparent"
+
+            WlrLayershell.namespace: "symmetria-fm-overlay"
+            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.keyboardFocus: _closing
+                ? WlrKeyboardFocus.None
+                : WlrKeyboardFocus.Exclusive
+            WlrLayershell.exclusionMode: ExclusionMode.Ignore
+
+            anchors.top: true
+            anchors.bottom: true
+            anchors.left: true
+            anchors.right: true
+
+            // --- Animated properties ---
+            property real overlayScale: 0.0
+            property real overlayOpacity: 0.0
+
+            Behavior on overlayScale {
+                NumberAnimation {
+                    duration: Theme.animDuration
+                    easing.type: Easing.OutBack
+                    easing.overshoot: 1.2
+                }
+            }
+
+            Behavior on overlayOpacity {
+                Anim {}
+            }
+
+            Component.onCompleted: {
+                overlayScale = 1.0;
+                overlayOpacity = 1.0;
+            }
+
+            // Delay destroy until close animation finishes
+            Timer {
+                id: destroyTimer
+                interval: Theme.animDuration + 50
+                running: overlayWin._closing
+                onTriggered: overlayWin.visible = false
+            }
+
+            onVisibleChanged: {
+                if (!visible) {
+                    if (root._activeWindows.length === 0 && !root._activePickerWindow)
+                        FileManagerService.clearClipboard();
+                    root._activeOverlayWindow = null;
+                    destroy();
+                }
+            }
+
+            function close(): void {
+                if (_closing)
+                    return;
+                _closing = true;
+                overlayScale = 0.0;
+                overlayOpacity = 0.0;
+            }
+
+            // --- Click-outside-to-close area ---
+            MouseArea {
+                anchors.fill: parent
+                onClicked: overlayWin.close()
+            }
+
+            // --- Centered file manager content ---
+            Item {
+                id: overlayContentWrapper
+
+                anchors.centerIn: parent
+                width: parent.width * Config.fileManager.sizes.overlayViewportFraction
+                height: parent.height * Config.fileManager.sizes.overlayViewportFraction
+
+                scale: overlayWin.overlayScale
+                opacity: overlayWin.overlayOpacity
+
+                ClippingRect {
+                    anchors.fill: parent
+                    radius: Theme.rounding.lg
+                    color: Theme.layer(Theme.palette.m3surface, 0)
+
+                    FileManager {
+                        anchors.fill: parent
+                        initialPath: overlayWin.initialPath
+
+                        onCloseRequested: overlayWin.close()
+                    }
+                }
             }
         }
     }
