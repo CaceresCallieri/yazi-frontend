@@ -1,7 +1,5 @@
 [Unit]
 Description=Symmetria File Manager IPC Service
-PartOf=graphical-session.target
-After=graphical-session.target
 
 [Service]
 ExecStartPre=/usr/bin/rm -rf %h/.cache/quickshell/qmlcache
@@ -10,4 +8,4 @@ Restart=always
 RestartSec=2
 
 [Install]
-WantedBy=graphical-session.target
+WantedBy=default.target
