@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Symmetria File Manager
+Comment=Keyboard-first file manager built on QuickShell
+Exec=qs ipc --any-display -c symmetria-fm call filemanager open ""
+Icon=symmetria-fm
+Type=Application
+Categories=System;FileManager;Utility;
+MimeType=inode/directory;
+Terminal=false
+StartupNotify=false

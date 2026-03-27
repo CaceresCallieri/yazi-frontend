@@ -1,5 +1,6 @@
 //@ pragma Env QT_QPA_PLATFORM=wayland
 //@ pragma Env QSG_RENDER_LOOP=threaded
+//@ pragma AppId symmetria-fm
 
 import "modules/filemanager"
 import "services"

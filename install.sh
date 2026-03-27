@@ -28,6 +28,21 @@ case "$MODE" in
         ln -sfn "$PROJECT_DIR" "$STANDALONE_DIR"
         echo "  Linked $STANDALONE_DIR → $PROJECT_DIR"
 
+        # Install icon to XDG icon directory
+        ICON_DIR="$HOME/.local/share/icons/hicolor/512x512/apps"
+        mkdir -p "$ICON_DIR"
+        cp "$PROJECT_DIR/assets/symmetria-fm.png" "$ICON_DIR/symmetria-fm.png"
+        echo "  Installed icon → $ICON_DIR/symmetria-fm.png"
+
+        # Install .desktop file
+        DESKTOP_DIR="$HOME/.local/share/applications"
+        mkdir -p "$DESKTOP_DIR"
+        cp "$PROJECT_DIR/symmetria-fm.desktop" "$DESKTOP_DIR/symmetria-fm.desktop"
+        echo "  Installed desktop entry → $DESKTOP_DIR/symmetria-fm.desktop"
+
+        # Update icon cache
+        gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+
         echo
         echo "Done. Run with:"
         echo "  qs -c symmetria-fm"
