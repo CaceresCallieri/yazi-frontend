@@ -235,3 +235,56 @@ correct colors (`#8e44ad` headings, `#2980b9` keywords, `#f44f4f` strings).
 
 **Discovered in:** `SyntaxHighlightHelper::buildHighlightedHtml()` — all text
 was black-on-dark-background until the call order was reversed.
+
+---
+
+## 7. NumberAnimation (Anim) Silently Breaks Color Property Transitions
+
+**Symptom:** A `Behavior on color { Anim {} }` is added to a Rectangle or
+StyledRect. The color appears correct on first render, but after any subsequent
+change (theme IPC update, binding re-evaluation), the color snaps to `#000000`
+(black) and never recovers. No error or warning is logged.
+
+**Root cause:** `Anim` is a `NumberAnimation`. It cannot interpolate multi-channel
+color values — it treats the color as a single numeric zero, producing `#000000`
+on every transition. Once stuck at `#000000`, further binding changes produce
+`#000000` → `#000000` animations (no-ops), so `onColorChanged` never fires again
+and the property appears permanently frozen.
+
+The first render is correct because QML `Behavior` does not fire during component
+initialization — the initial binding value is assigned directly. The bug only
+manifests on the **second** color change (e.g., when the theme IPC response
+arrives ~50ms after startup).
+
+**Working patterns:**
+```qml
+// For color and border.color, use CAnim (ColorAnimation):
+StyledRect {
+    color: someBinding
+    border.color: anotherBinding
+    Behavior on border.color { CAnim {} }
+    // NOTE: StyledRect already has internal Behavior on color { CAnim {} }
+    // — do NOT add another Behavior on color, it would override the internal one.
+}
+```
+
+**DO NOT:**
+```qml
+// NumberAnimation CANNOT interpolate colors:
+Behavior on color { Anim {} }              // ← produces #000000
+Behavior on border.color { Anim {} }       // ← produces #000000
+```
+
+**Built-in color animations in base components:**
+- `StyledRect` has `Behavior on color { CAnim {} }` — no need to add your own
+- `StyledText` has `Behavior on color { CAnim {} }` — no need to add your own
+- `Anim` (NumberAnimation) is correct for numeric properties: `width`, `height`,
+  `opacity`, `anchors.*Offset`, `anchors.*Margin`, etc.
+
+**Diagnostic signature in logs:** The `onColorChanged` handler reports
+`color=#000000 isActive=true expected=#242424` — the binding evaluates correctly
+but the animated value is wrong.
+
+**Discovered in:** `TabBar.qml` — tab pill backgrounds were permanently stuck at
+black because `Behavior on color { Anim {} }` overrode StyledRect's internal
+`CAnim` with a broken `NumberAnimation`.
