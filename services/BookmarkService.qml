@@ -61,14 +61,14 @@ Singleton {
         "Videos": "video_library",
         "Music": "library_music",
         "Desktop": "desktop_windows",
-        ".config": "settings",
+        ".config": "settings"
     })
 
     function iconForPath(path: string): string {
         // Strip trailing slash and compute path relative to home
         const clean = path.endsWith("/") ? path.slice(0, -1) : path;
         const home = Paths.home;
-        if (clean === home || clean + "/" === home)
+        if (clean === home)
             return _knownDirectoryIcons[""];
         if (clean.startsWith(home + "/")) {
             const relative = clean.substring(home.length + 1);
@@ -116,16 +116,20 @@ Singleton {
 
         command: ["cat", root._configPath]
 
+        property string _capturedText: ""
+
         stdout: StdioCollector {
-            id: readCollector
+            onStreamFinished: readProcess._capturedText = text
         }
 
         onExited: (exitCode, exitStatus) => {
-            if (exitCode === 0 && readCollector.text.trim() !== "") {
-                root._applyBookmarks(readCollector.text);
-            } else {
+            const captured = _capturedText;
+            _capturedText = "";
+            if (exitCode === 0 && captured.trim() !== "") {
+                root._applyBookmarks(captured);
+            } else if (!_loaded) {
                 // First run — seed with default bookmarks and persist
-                bookmarks = JSON.parse(JSON.stringify(_defaultBookmarks));
+                bookmarks = Object.assign({}, _defaultBookmarks);
                 _loaded = true;
                 _save();
             }
