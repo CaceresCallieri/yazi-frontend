@@ -44,6 +44,7 @@ Item {
                 readonly property bool isActive: root.tabManager
                     && root.tabManager.activeIndex === tabItem.index
                 readonly property bool isHovered: tabHoverArea.containsMouse
+
                 readonly property string tabLabel: {
                     if (!modelData || !modelData.currentPath)
                         return "~";
@@ -61,16 +62,18 @@ Item {
 
                 Behavior on width { Anim {} }
 
-                // Background: active tab gets matte pill, inactive is transparent
+                // Background: active tab gets matte pill, inactive gets subtle outline
                 StyledRect {
+                    id: tabBg
                     anchors.fill: parent
                     radius: Theme.rounding.full
                     color: tabItem.isActive ? Theme.pillMedium.background : "transparent"
-                    border.color: tabItem.isActive ? Theme.pillMedium.border : "transparent"
-                    border.width: tabItem.isActive ? 1 : 0
+                    border.color: tabItem.isActive ? Theme.pillMedium.border : Theme.palette.m3outlineVariant
+                    border.width: 1
 
-                    Behavior on color { Anim {} }
-                    Behavior on border.color { Anim {} }
+                    // StyledRect already has Behavior on color { CAnim {} } internally —
+                    // do NOT override it with Anim (NumberAnimation), which can't interpolate colors.
+                    Behavior on border.color { CAnim {} }
                 }
 
                 // Hover/click area for the entire tab
