@@ -20,7 +20,7 @@ Item {
 
     onHeightChanged: {
         if (tabManager)
-            Logger.info("TabBar", "height=" + height + " implicitHeight=" + implicitHeight + " showBar=" + tabManager.showBar + " tabCount=" + tabManager.count);
+            Logger.debug("TabBar", "height=" + height + " implicitHeight=" + implicitHeight + " showBar=" + tabManager.showBar + " tabCount=" + tabManager.count);
     }
 
     Row {
@@ -110,7 +110,6 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     implicitWidth: closeIcon.implicitWidth + Theme.padding.sm * 2
                     implicitHeight: closeIcon.implicitHeight + Theme.padding.sm * 2
-                    visible: tabItem.isHovered
                     opacity: tabItem.isHovered ? 1 : 0
 
                     Behavior on opacity { Anim {} }

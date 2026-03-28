@@ -50,14 +50,15 @@ Item {
         target: root.tabManager
         enabled: root.tabManager !== null
         function onAboutToSwitchTab(): void {
-            if (root.windowState)
-                root.windowState.saveCursor(root.windowState.currentPath, view.currentIndex);
+            if (!root.windowState)
+                return;
+            root.windowState.saveCursor(root.windowState.currentPath, view.currentIndex);
             // Cancel transient modes on the departing tab
-            if (root.windowState && root.windowState.searchActive)
+            if (root.windowState.searchActive)
                 root.windowState.clearSearch();
-            if (root.windowState && root.windowState.flashActive)
+            if (root.windowState.flashActive)
                 root.windowState.clearFlash();
-            if (root.windowState && root.windowState.activeChordPrefix !== "")
+            if (root.windowState.activeChordPrefix !== "")
                 root.windowState.activeChordPrefix = "";
         }
     }
@@ -68,10 +69,11 @@ Item {
     onWindowStateChanged: {
         if (windowState) {
             const newPath = windowState.currentPath;
-            if (newPath === fsModel.path) {
-                // Same directory — restore cursor immediately
+            if (newPath === fsModel.path && view.count > 0) {
+                // Same directory AND model already populated — restore cursor immediately.
+                // If count is 0, the model is still loading; onEntriesChanged will handle it.
                 const restored = windowState.restoreCursor(newPath);
-                const safeIndex = Math.min(restored, Math.max(view.count - 1, 0));
+                const safeIndex = Math.min(restored, view.count - 1);
                 view.currentIndex = safeIndex;
                 view.positionViewAtIndex(safeIndex, ListView.Contain);
             }

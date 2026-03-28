@@ -48,7 +48,7 @@ QtObject {
         if (count > 1)
             aboutToSwitchTab();
         activeIndex = insertIndex;
-        Logger.info("TabManager", "createTab → count=" + count + " activeIndex=" + activeIndex + " showBar=" + showBar + " path=" + (tabInitialPath || initialPath));
+        Logger.debug("TabManager", "createTab → count=" + count + " activeIndex=" + activeIndex + " showBar=" + showBar + " path=" + (tabInitialPath || initialPath));
     }
 
     function closeTab(index: int): bool {
@@ -61,8 +61,9 @@ QtObject {
 
         if (newTabs.length === 0) {
             // Last tab — caller should close the window
-            closing.destroy();
+            // Clear tabs first so activeTab binding resolves to null before the object is freed
             tabs = [];
+            closing.destroy();
             return false;
         }
 
@@ -73,10 +74,14 @@ QtObject {
         } else if (index === activeIndex) {
             // Closing active tab: prefer moving to the left tab, or stay at 0
             newIndex = Math.min(index, newTabs.length - 1);
+            // Notify listeners (e.g. FileList) to save cursor before we switch away
+            aboutToSwitchTab();
         }
 
-        tabs = newTabs;
+        // Assign activeIndex before tabs so the activeTab binding never points at the
+        // spliced-out slot while tabs already reflects the post-close array.
         activeIndex = newIndex;
+        tabs = newTabs;
         closing.destroy();
         return true;
     }
@@ -91,7 +96,7 @@ QtObject {
 
         aboutToSwitchTab();
         activeIndex = index;
-        Logger.info("TabManager", "activateTab → index=" + index);
+        Logger.debug("TabManager", "activateTab → index=" + index);
     }
 
     function nextTab(): void {
