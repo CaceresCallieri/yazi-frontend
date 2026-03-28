@@ -82,15 +82,34 @@ Item {
 
     // Train zoxide's frecency database on every directory visit.
     // Fire-and-forget: exit code is irrelevant.
+    // _zoxidePendingPath holds the most-recent path that arrived while the
+    // process was busy — replayed in onExited so rapid navigation doesn't
+    // silently drop directory visits from zoxide's database.
     Process {
         id: zoxideAddProcess
+
+        property string _pendingPath: ""
+
+        onExited: {
+            if (_pendingPath !== "") {
+                const path = _pendingPath;
+                _pendingPath = "";
+                zoxideAddProcess.command = ["zoxide", "add", "--", path];
+                zoxideAddProcess.running = true;
+            }
+        }
     }
 
     Connections {
         target: tabManager.activeTab
         function onCurrentPathChanged(): void {
             const path = tabManager.activeTab.currentPath;
-            if (path && path !== "" && !zoxideAddProcess.running) {
+            if (!path || path === "")
+                return;
+            if (zoxideAddProcess.running) {
+                // Process busy — queue the path; onExited will replay it.
+                zoxideAddProcess._pendingPath = path;
+            } else {
                 zoxideAddProcess.command = ["zoxide", "add", "--", path];
                 zoxideAddProcess.running = true;
             }

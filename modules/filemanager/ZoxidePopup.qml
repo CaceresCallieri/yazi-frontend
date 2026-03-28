@@ -24,9 +24,17 @@ Loader {
         property var results: []
         property int selectedIndex: 0
         property bool _dirty: false
-        property bool _zoxideAvailable: true
+        property bool _loading: false
 
         Component.onCompleted: _runQuery()
+
+        // Stop any in-flight zoxide query when the popup is destroyed (e.g.,
+        // user presses Escape while a query is running). Without this the orphaned
+        // process fires onStreamFinished / onExited on a destroyed QML object.
+        Component.onDestruction: {
+            if (zoxideProcess.running)
+                zoxideProcess.running = false;
+        }
 
         // === Scrim backdrop — click to cancel ===
         MouseArea {
@@ -216,14 +224,13 @@ Loader {
                     }
                 }
 
-                // Empty state
+                // Empty state — hidden while a query is in progress to avoid a
+                // "No matches" flash before the first results arrive.
                 StyledText {
                     Layout.fillWidth: true
                     Layout.topMargin: Theme.spacing.md
-                    visible: popupScope.results.length === 0 && !zoxideProcess.running
-                    text: popupScope._zoxideAvailable
-                        ? qsTr("No matches")
-                        : qsTr("zoxide not found — install with: paru -S zoxide")
+                    visible: popupScope.results.length === 0 && !popupScope._loading
+                    text: qsTr("No matches")
                     color: Theme.palette.m3onSurfaceVariant
                     font.pointSize: Theme.font.size.sm
                     horizontalAlignment: Text.AlignHCenter
@@ -245,11 +252,18 @@ Loader {
                 for (const kw of keywords)
                     cmd.push(kw);
             }
+            _loading = true;
             zoxideProcess.command = cmd;
             zoxideProcess.running = true;
         }
 
         function _parseResults(text: string): void {
+            // Guard: empty stdout (e.g. no-match exit) — nothing to parse.
+            if (!text.trim()) {
+                results = [];
+                selectedIndex = 0;
+                return;
+            }
             const lines = text.trim().split("\n");
             const parsed = [];
             const maxResults = 10;
@@ -266,6 +280,7 @@ Loader {
             if (results.length === 0 || selectedIndex < 0 || selectedIndex >= results.length)
                 return;
             const targetPath = results[selectedIndex].path;
+            // navigate() calls cancelZoxide() internally — popup closes automatically.
             root.windowState.navigate(targetPath);
         }
 
@@ -286,12 +301,11 @@ Loader {
             }
 
             onExited: (exitCode, exitStatus) => {
-                if (exitCode === 127) {
-                    // 127 = command not found — zoxide is not installed
-                    popupScope._zoxideAvailable = false;
-                    popupScope.results = [];
-                } else if (exitCode !== 0) {
-                    // No matches for this query — clear results
+                popupScope._loading = false;
+                if (exitCode !== 0) {
+                    // Non-zero exit: either no matches (exit 1) or zoxide not found.
+                    // We can't reliably distinguish the two inside QuickShell's
+                    // Process (no shell, so no exit code 127 convention).
                     popupScope.results = [];
                 }
                 if (popupScope._dirty) {
