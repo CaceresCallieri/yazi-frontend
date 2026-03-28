@@ -10,7 +10,6 @@ QtObject {
     property var tabs: []
     property int activeIndex: 0
 
-
     readonly property WindowState activeTab: tabs.length > 0 ? tabs[activeIndex] : null
     readonly property int count: tabs.length
     readonly property bool showBar: count > 1

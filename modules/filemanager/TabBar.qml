@@ -64,15 +64,15 @@ Item {
 
                 // Background: active tab gets matte pill, inactive gets subtle outline
                 StyledRect {
-                    id: tabBg
                     anchors.fill: parent
                     radius: Theme.rounding.full
                     color: tabItem.isActive ? Theme.pillMedium.background : "transparent"
                     border.color: tabItem.isActive ? Theme.pillMedium.border : Theme.palette.m3outlineVariant
                     border.width: 1
 
-                    // StyledRect already has Behavior on color { CAnim {} } internally —
-                    // do NOT override it with Anim (NumberAnimation), which can't interpolate colors.
+                    // NOTE: Do NOT add a Behavior on color here — StyledRect already
+                    // animates color via CAnim internally. Overriding it with Anim (NumberAnimation)
+                    // breaks color interpolation and produces solid black (#000000) transitions.
                     Behavior on border.color { CAnim {} }
                 }
 
