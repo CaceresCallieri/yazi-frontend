@@ -1,4 +1,5 @@
 #include "previewimagehelper.hpp"
+#include "icnsdecoder.hpp"
 
 #include <qcryptographichash.h>
 #include <qdir.h>
@@ -136,13 +137,17 @@ bool PreviewImageHelper::needsCachedDecode(const QString& path) {
     // The reader-based format detection would perform synchronous I/O here.
     return path.endsWith(QStringLiteral(".pdf"), Qt::CaseInsensitive)
         || path.endsWith(QStringLiteral(".rpgmvp"), Qt::CaseInsensitive)
-        || path.endsWith(QStringLiteral(".png_"), Qt::CaseInsensitive);
+        || path.endsWith(QStringLiteral(".png_"), Qt::CaseInsensitive)
+        || path.endsWith(QStringLiteral(".icns"), Qt::CaseInsensitive);
 }
 
 QString PreviewImageHelper::generateCachedPreview(const QString& sourcePath, const QString& cachePath) {
     if (sourcePath.endsWith(QStringLiteral(".rpgmvp"), Qt::CaseInsensitive)
         || sourcePath.endsWith(QStringLiteral(".png_"), Qt::CaseInsensitive))
         return decryptRpgmvp(sourcePath, cachePath);
+
+    if (sourcePath.endsWith(QStringLiteral(".icns"), Qt::CaseInsensitive))
+        return IcnsDecoder::extractLargestPng(sourcePath, cachePath);
 
     // PDF — render first page with white background compositing
     QImageReader reader(sourcePath);

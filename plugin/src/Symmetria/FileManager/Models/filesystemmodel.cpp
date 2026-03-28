@@ -57,7 +57,8 @@ bool FileSystemEntry::isDir() const {
 bool FileSystemEntry::isImage() const {
     if (!m_isImageInitialised) {
         if (m_path.endsWith(QStringLiteral(".rpgmvp"), Qt::CaseInsensitive)
-            || m_path.endsWith(QStringLiteral(".png_"), Qt::CaseInsensitive)) {
+            || m_path.endsWith(QStringLiteral(".png_"), Qt::CaseInsensitive)
+            || m_path.endsWith(QStringLiteral(".icns"), Qt::CaseInsensitive)) {
             m_isImage = true;
         } else {
             QImageReader reader(m_path);
@@ -440,7 +441,7 @@ void FileSystemModel::updateEntriesForDir(const QString& dir) {
             for (const auto& format : formats) {
                 extraNameFilters << "*." + format;
             }
-            extraNameFilters << QStringLiteral("*.rpgmvp") << QStringLiteral("*.png_");
+            extraNameFilters << QStringLiteral("*.rpgmvp") << QStringLiteral("*.png_") << QStringLiteral("*.icns");
 
             QDir::Filters filters = QDir::Files;
             if (showHidden) {
@@ -480,7 +481,8 @@ void FileSystemModel::updateEntriesForDir(const QString& dir) {
 
             if (filter == Images) {
                 if (!path.endsWith(QStringLiteral(".rpgmvp"), Qt::CaseInsensitive)
-                    && !path.endsWith(QStringLiteral(".png_"), Qt::CaseInsensitive)) {
+                    && !path.endsWith(QStringLiteral(".png_"), Qt::CaseInsensitive)
+                    && !path.endsWith(QStringLiteral(".icns"), Qt::CaseInsensitive)) {
                     QImageReader reader(path);
                     if (!reader.canRead()) {
                         continue;

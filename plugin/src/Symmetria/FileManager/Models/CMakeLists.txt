@@ -5,6 +5,7 @@ qt_add_qml_module(symmetria-filemanager-models
         filesystemmodel.hpp filesystemmodel.cpp
         iconthemeresolver.hpp iconthemeresolver.cpp
         previewimagehelper.hpp previewimagehelper.cpp
+        icnsdecoder.hpp icnsdecoder.cpp
         syntaxhighlighthelper.hpp syntaxhighlighthelper.cpp
         archivepreviewmodel.hpp archivepreviewmodel.cpp
         spreadsheetpreviewmodel.hpp spreadsheetpreviewmodel.cpp
