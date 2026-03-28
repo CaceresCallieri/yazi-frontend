@@ -350,12 +350,13 @@ Loader {
                                     anchors.verticalCenter: parent.verticalCenter
                                     anchors.leftMargin: Theme.padding.lg
                                     anchors.rightMargin: Theme.padding.lg
-                                    spacing: Theme.spacing.sm
+                                    spacing: Theme.spacing.md
 
-                                    // Keycap badge
+                                    // Keycap badge — fixed-width column
                                     Rectangle {
-                                        width: 22
-                                        height: 22
+                                        Layout.preferredWidth: 24
+                                        Layout.preferredHeight: 24
+                                        Layout.alignment: Qt.AlignVCenter
                                         radius: 6
                                         color: Qt.alpha("#ffffff", 0.06)
                                         border.color: Qt.alpha("#ffffff", 0.10)
@@ -371,13 +372,20 @@ Loader {
                                         }
                                     }
 
+                                    // Icon — fixed-width column
                                     MaterialIcon {
+                                        Layout.preferredWidth: 20
+                                        Layout.alignment: Qt.AlignVCenter
+                                        horizontalAlignment: Text.AlignHCenter
                                         text: modelData.icon
                                         color: Theme.palette.m3onSurfaceVariant
                                         font.pointSize: Theme.font.size.md
                                     }
 
+                                    // Label — fills remaining space
                                     StyledText {
+                                        Layout.fillWidth: true
+                                        Layout.alignment: Qt.AlignVCenter
                                         text: modelData.label
                                         color: Theme.palette.m3onSurface
                                         font.pointSize: Theme.font.size.sm
