@@ -14,6 +14,7 @@ Item {
     id: root
 
     property WindowState windowState
+    property TabManager tabManager
 
     readonly property var currentEntry: view.currentIndex >= 0 && view.currentIndex < view.count ? fsModel.entries[view.currentIndex] : null
     readonly property int fileCount: view.count
@@ -32,7 +33,8 @@ Item {
     // Note: Key_V (Ctrl+V paste) is suppressed separately below — only the Ctrl-modified form
     // is blocked; bare V is unbound, so it cannot live in this array alongside modifier-agnostic keys.
     // Create (A), Rename (R), and Delete (D) are allowed — common workflows in file dialogs.
-    readonly property var _pickerSuppressedKeys: [Qt.Key_Y, Qt.Key_X, Qt.Key_P, Qt.Key_Space]
+    readonly property var _pickerSuppressedKeys: [Qt.Key_Y, Qt.Key_X, Qt.Key_P, Qt.Key_Space,
+        Qt.Key_T, Qt.Key_BracketLeft, Qt.Key_BracketRight]
 
     // Filename to focus once the model refreshes (set by paste, create, rename, etc.)
     property string _pendingFocusName: ""
@@ -42,6 +44,40 @@ Item {
     property var previewDirectoryEntries: []
     property string previewDirectoryPath: ""
     property int _preFlashIndex: 0
+
+    // Save cursor before tab switch so it can be restored when returning
+    Connections {
+        target: root.tabManager
+        enabled: root.tabManager !== null
+        function onAboutToSwitchTab(): void {
+            if (root.windowState)
+                root.windowState.saveCursor(root.windowState.currentPath, view.currentIndex);
+            // Cancel transient modes on the departing tab
+            if (root.windowState && root.windowState.searchActive)
+                root.windowState.clearSearch();
+            if (root.windowState && root.windowState.flashActive)
+                root.windowState.clearFlash();
+            if (root.windowState && root.windowState.activeChordPrefix !== "")
+                root.windowState.activeChordPrefix = "";
+        }
+    }
+
+    // When the active tab (and thus windowState) changes, restore cursor position.
+    // If the new tab has the same path, FSModel won't re-scan (no onPathChanged/onEntriesChanged),
+    // so we must restore the cursor directly. If the path differs, onPathChanged will handle it.
+    onWindowStateChanged: {
+        if (windowState) {
+            const newPath = windowState.currentPath;
+            if (newPath === fsModel.path) {
+                // Same directory — restore cursor immediately
+                const restored = windowState.restoreCursor(newPath);
+                const safeIndex = Math.min(restored, Math.max(view.count - 1, 0));
+                view.currentIndex = safeIndex;
+                view.positionViewAtIndex(safeIndex, ListView.Contain);
+            }
+            // Different path — FSModel.path binding triggers onPathChanged → _pathJustChanged flow
+        }
+    }
 
     // Y of the bottom edge of the current item, relative to FileList root.
     // Used by RenamePopup for contextual positioning below the selected item.
@@ -857,8 +893,20 @@ Item {
                 break;
 
             case Qt.Key_Tab:
-                // Jump between the dirs block and files block — useful in picker mode too.
-                root._jumpToDirFileBoundary();
+                if ((mods & Qt.ControlModifier) && root.tabManager) {
+                    // Ctrl+Tab — next tab
+                    root.tabManager.nextTab();
+                } else {
+                    // Bare Tab — jump between dirs block and files block
+                    root._jumpToDirFileBoundary();
+                }
+                event.accepted = true;
+                break;
+
+            case Qt.Key_Backtab:
+                // Ctrl+Shift+Tab — previous tab
+                if ((mods & Qt.ControlModifier) && root.tabManager)
+                    root.tabManager.prevTab();
                 event.accepted = true;
                 break;
 
@@ -949,6 +997,35 @@ Item {
 
             case Qt.Key_Comma:
                 windowState.activeChordPrefix = ",";
+                event.accepted = true;
+                break;
+
+            // === Tab management ===
+            case Qt.Key_T:
+                if (root.tabManager)
+                    root.tabManager.createTab(windowState.currentPath);
+                event.accepted = true;
+                break;
+
+            case Qt.Key_Q:
+                if ((mods & Qt.ControlModifier) && root.tabManager) {
+                    // Ctrl+Q — close current tab; last tab closes the window
+                    windowState.saveCursor(windowState.currentPath, view.currentIndex);
+                    if (!root.tabManager.closeTab(root.tabManager.activeIndex))
+                        root.closeRequested();
+                    event.accepted = true;
+                }
+                break;
+
+            case Qt.Key_BracketLeft:
+                if (root.tabManager)
+                    root.tabManager.prevTab();
+                event.accepted = true;
+                break;
+
+            case Qt.Key_BracketRight:
+                if (root.tabManager)
+                    root.tabManager.nextTab();
                 event.accepted = true;
                 break;
             }

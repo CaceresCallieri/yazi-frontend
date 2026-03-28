@@ -12,9 +12,9 @@ Item {
     // Set by WindowFactory — determines starting directory for this window
     property string initialPath: Paths.home
 
-    // Per-window state — each FileManager instance owns its own
-    WindowState {
-        id: windowState
+    // Per-window tab manager — owns one WindowState per tab
+    TabManager {
+        id: tabManager
         initialPath: root.initialPath
     }
 
@@ -22,22 +22,31 @@ Item {
         anchors.fill: parent
         spacing: 0
 
+        TabBar {
+            Layout.fillWidth: true
+            Layout.preferredHeight: tabManager.showBar ? implicitHeight : 0
+            tabManager: tabManager
+            clip: true
+            onCloseRequested: root.closeRequested()
+        }
+
         PathBar {
             Layout.fillWidth: true
-            windowState: windowState
+            windowState: tabManager.activeTab
         }
 
         MillerColumns {
             id: millerColumns
             Layout.fillWidth: true
             Layout.fillHeight: true
-            windowState: windowState
+            windowState: tabManager.activeTab
+            tabManager: tabManager
             onCloseRequested: root.closeRequested()
         }
 
         StatusBar {
             Layout.fillWidth: true
-            windowState: windowState
+            windowState: tabManager.activeTab
             fileCount: millerColumns.fileCount
             currentEntry: millerColumns.currentEntry
         }
@@ -48,21 +57,21 @@ Item {
     // picker guard is folded into the popup's active binding.
     DeleteConfirmPopup {
         anchors.fill: parent
-        windowState: windowState
+        windowState: tabManager.activeTab
     }
     CreateFilePopup {
         anchors.fill: parent
-        windowState: windowState
+        windowState: tabManager.activeTab
     }
     RenamePopup {
         anchors.fill: parent
-        windowState: windowState
+        windowState: tabManager.activeTab
         targetItemY: millerColumns.y + millerColumns.currentItemBottomY
         targetColumnX: millerColumns.x + millerColumns.currentColumnX
         targetColumnWidth: millerColumns.currentColumnWidth
     }
     ContextMenuPopup {
         anchors.fill: parent
-        windowState: windowState
+        windowState: tabManager.activeTab
     }
 }

@@ -7,6 +7,7 @@ Item {
     id: root
 
     property WindowState windowState
+    property TabManager tabManager
 
     readonly property var currentEntry: currentPanel.currentEntry
     readonly property int fileCount: currentPanel.fileCount
@@ -56,6 +57,7 @@ Item {
             Layout.fillHeight: true
             Layout.preferredWidth: 5
             windowState: root.windowState
+            tabManager: root.tabManager
             parentEntries: parentPanel.entries
             previewDirectoryEntries: previewPanel.directoryEntries
             previewDirectoryPath: previewPanel.directoryPath
