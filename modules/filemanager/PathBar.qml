@@ -141,7 +141,7 @@ Item {
 
                         // Clickable segment
                         Item {
-                            implicitWidth: ((homeIcon.visible ? homeIcon.implicitWidth + Theme.padding.sm : 0) + segmentName.implicitWidth + Theme.padding.sm * 2) || 0
+                            implicitWidth: segmentName.implicitWidth + Theme.padding.sm * 2
                             implicitHeight: segmentName.implicitHeight + Theme.padding.sm * 2
 
                             // Clickable only if not the last segment
@@ -154,29 +154,10 @@ Item {
                                 }
                             }
 
-                            // Home icon — collapse width when hidden so anchors
-                            // and implicitWidth don't include ghost icon space
-                            // (QML visible:false hides visually but retains geometry)
-                            MaterialIcon {
-                                id: homeIcon
-
-                                anchors.left: parent.left
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: Theme.padding.sm
-
-                                visible: segment.modelData.isHome
-                                width: visible ? implicitWidth : 0
-                                text: "home"
-                                color: segment.index < root._segments.length - 1 ? Theme.palette.m3onSurfaceVariant : Theme.palette.m3onSurface
-                                fill: 1
-                            }
-
                             StyledText {
                                 id: segmentName
 
-                                anchors.left: homeIcon.visible ? homeIcon.right : parent.left
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: Theme.padding.sm
+                                anchors.centerIn: parent
 
                                 text: segment.modelData.name
                                 color: segment.index < root._segments.length - 1 ? Theme.palette.m3onSurfaceVariant : Theme.palette.m3onSurface
