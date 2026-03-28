@@ -11,7 +11,7 @@ endif()
 set(INSTALL_QMLDIR "lib/qt6/qml" CACHE STRING "QML module install directory (relative to CMAKE_INSTALL_PREFIX)")
 
 # GuiPrivate needed because QXlsx links against Qt6::GuiPrivate
-find_package(Qt6 REQUIRED COMPONENTS Core Qml Gui Concurrent GuiPrivate)
+find_package(Qt6 REQUIRED COMPONENTS Core Qml Gui Concurrent GuiPrivate Multimedia)
 find_package(KF6SyntaxHighlighting REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LibArchive IMPORTED_TARGET libarchive REQUIRED)

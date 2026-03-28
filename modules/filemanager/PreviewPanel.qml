@@ -32,6 +32,7 @@ Item {
     readonly property int _typeFallback: 5
     readonly property int _typeArchive: 6
     readonly property int _typeSpreadsheet: 7
+    readonly property int _typeAudio: 8
 
     function _isTextFile(entry) {
         if (!entry) return false;
@@ -52,6 +53,12 @@ Item {
     function _isArchiveFile(entry) {
         if (!entry) return false;
         return FileManagerService.isArchiveFile(entry.mimeType);
+    }
+
+    function _isAudioFile(entry) {
+        if (!entry) return false;
+        const mime = entry.mimeType;
+        return mime.startsWith("audio/") || mime === "application/ogg";
     }
 
     function _isSpreadsheetFile(entry) {
@@ -76,6 +83,8 @@ Item {
             return _typeImage;
         if (_committedEntry.isVideo)
             return _typeVideo;
+        if (_isAudioFile(_committedEntry))
+            return _typeAudio;
         if (_isTextFile(_committedEntry))
             return _typeText;
         if (_isArchiveFile(_committedEntry))
@@ -114,6 +123,11 @@ Item {
     readonly property int _spreadsheetActiveSheet: spreadsheetLoader.item?.activeSheet ?? 0
     readonly property int _spreadsheetTotalRows: spreadsheetLoader.item?.totalRows ?? 0
     readonly property int _spreadsheetTotalCols: spreadsheetLoader.item?.totalCols ?? 0
+
+    // Audio preview metadata — title, artist, duration
+    readonly property string _audioTitle: audioLoader.item?.audioTitle ?? ""
+    readonly property string _audioArtist: audioLoader.item?.audioArtist ?? ""
+    readonly property string _audioDuration: audioLoader.item?.audioDuration ?? ""
 
     // --- Debounce ---
 
@@ -274,6 +288,20 @@ Item {
                 }
             }
 
+            // Audio preview (mp3, ogg, flac, wav, etc.)
+            Loader {
+                id: audioLoader
+
+                anchors.fill: parent
+                active: _previewType === _typeAudio
+                asynchronous: true
+
+                sourceComponent: AudioPreview {
+                    entry: root._committedEntry
+                    windowState: root.windowState
+                }
+            }
+
             // Text preview (source code, config files, etc.)
             Loader {
                 id: textLoader
@@ -338,6 +366,9 @@ Item {
             spreadsheetActiveSheet: root._spreadsheetActiveSheet
             spreadsheetTotalRows: root._spreadsheetTotalRows
             spreadsheetTotalCols: root._spreadsheetTotalCols
+            audioTitle: root._audioTitle
+            audioArtist: root._audioArtist
+            audioDuration: root._audioDuration
         }
     }
 }

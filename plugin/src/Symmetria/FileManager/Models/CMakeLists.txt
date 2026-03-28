@@ -8,10 +8,11 @@ qt_add_qml_module(symmetria-filemanager-models
         syntaxhighlighthelper.hpp syntaxhighlighthelper.cpp
         archivepreviewmodel.hpp archivepreviewmodel.cpp
         spreadsheetpreviewmodel.hpp spreadsheetpreviewmodel.cpp
+        audiowaveformmodel.hpp audiowaveformmodel.cpp
 )
 
 target_link_libraries(symmetria-filemanager-models PRIVATE
-    Qt::Core Qt::Qml Qt::Gui Qt::Concurrent
+    Qt::Core Qt::Qml Qt::Gui Qt::Concurrent Qt::Multimedia
     KF6::SyntaxHighlighting
     PkgConfig::LibArchive
     QXlsx::QXlsx

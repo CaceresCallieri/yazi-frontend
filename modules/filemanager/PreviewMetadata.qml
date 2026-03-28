@@ -16,6 +16,9 @@ Item {
     property int spreadsheetActiveSheet: 0
     property int spreadsheetTotalRows: 0
     property int spreadsheetTotalCols: 0
+    property string audioTitle: ""
+    property string audioArtist: ""
+    property string audioDuration: ""
 
     visible: !!entry
     implicitHeight: metaLayout.implicitHeight + Theme.padding.sm * 2
@@ -108,6 +111,15 @@ Item {
                     parts.push(qsTr("%1 files").arg(root.archiveFileCount));
                 return parts.join(", ");
             }
+            color: Theme.palette.m3outline
+            font.pointSize: Theme.font.size.xs
+            font.family: Theme.font.family.mono
+        }
+
+        // Audio duration (only shown for audio previews)
+        StyledText {
+            visible: root.audioDuration !== ""
+            text: root.audioDuration
             color: Theme.palette.m3outline
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono

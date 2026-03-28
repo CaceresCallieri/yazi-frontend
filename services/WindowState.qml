@@ -257,13 +257,18 @@ QtObject {
         renameIncludeExtension = false;
     }
 
+    // === Audio preview ===
+    signal audioPlaybackToggle()
+
     // === Context menu ===
     property string contextMenuTargetPath: ""
     property string contextMenuTargetMimeType: ""
 
     function requestContextMenu(path: string, mimeType: string): void {
-        contextMenuTargetPath = path;
+        // Set mimeType before path — the Loader activates on path !== "",
+        // so mimeType must already be available when Component.onCompleted fires.
         contextMenuTargetMimeType = mimeType;
+        contextMenuTargetPath = path;
     }
 
     function cancelContextMenu(): void {

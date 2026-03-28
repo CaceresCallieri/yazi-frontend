@@ -23,19 +23,26 @@ Loader {
         property string targetName: ""
         property string targetMimeType: ""
         property bool isArchive: false
+        property bool isAudio: false
 
         // --- Internal state machine: "actions" | "openWith" | "extracting" ---
         property string viewMode: "actions"
 
         // --- Action list ---
-        readonly property var actionItems: isArchive
-            ? [
-                { actionId: "openWith", icon: "open_in_new", label: "Open with\u2026", key: "o" },
-                { actionId: "extract",  icon: "unarchive",   label: "Extract here",    key: "e" }
-              ]
-            : [
+        // Force unconditional reads so the QML binding engine registers
+        // both properties as dependencies even when their initial value is false.
+        readonly property var actionItems: {
+            const _audio = isAudio;
+            const _archive = isArchive;
+            let items = [
                 { actionId: "openWith", icon: "open_in_new", label: "Open with\u2026", key: "o" }
-              ]
+            ];
+            if (_audio)
+                items.push({ actionId: "playToggle", icon: "play_arrow", label: "Play / Pause", key: "p" });
+            if (_archive)
+                items.push({ actionId: "extract", icon: "unarchive", label: "Extract here", key: "e" });
+            return items;
+        }
         property int actionIndex: 0
 
         // --- Open With data ---
@@ -55,6 +62,7 @@ Loader {
             targetMimeType = root.windowState.contextMenuTargetMimeType;
             targetName = targetPath.substring(targetPath.lastIndexOf("/") + 1);
             isArchive = FileManagerService.isArchiveFile(targetMimeType);
+            isAudio = targetMimeType.startsWith("audio/") || targetMimeType === "application/ogg";
         }
 
         function _executeAction(actionId: string): void {
@@ -67,6 +75,9 @@ Loader {
                     appList = [];
                     _updateFilteredApps();
                 }
+            } else if (actionId === "playToggle") {
+                root.windowState.audioPlaybackToggle();
+                root.windowState.cancelContextMenu();
             } else if (actionId === "extract") {
                 viewMode = "extracting";
                 extractionError = "";
@@ -156,6 +167,11 @@ Loader {
                 break;
             case Qt.Key_O:
                 _executeAction("openWith");
+                event.accepted = true;
+                break;
+            case Qt.Key_P:
+                if (isAudio)
+                    _executeAction("playToggle");
                 event.accepted = true;
                 break;
             case Qt.Key_E:
