@@ -1,6 +1,7 @@
 import "../../components"
 import "../../services"
 import "../../config"
+import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 
@@ -73,5 +74,26 @@ Item {
     ContextMenuPopup {
         anchors.fill: parent
         windowState: tabManager.activeTab
+    }
+    ZoxidePopup {
+        anchors.fill: parent
+        windowState: tabManager.activeTab
+    }
+
+    // Train zoxide's frecency database on every directory visit.
+    // Fire-and-forget: exit code is irrelevant.
+    Process {
+        id: zoxideAddProcess
+    }
+
+    Connections {
+        target: tabManager.activeTab
+        function onCurrentPathChanged(): void {
+            const path = tabManager.activeTab.currentPath;
+            if (path && path !== "" && !zoxideAddProcess.running) {
+                zoxideAddProcess.command = ["zoxide", "add", "--", path];
+                zoxideAddProcess.running = true;
+            }
+        }
     }
 }

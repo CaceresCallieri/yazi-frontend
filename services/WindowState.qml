@@ -33,6 +33,7 @@ QtObject {
 
         clearSearch();
         clearFlash();
+        cancelZoxide();
 
         // Truncate forward history and append new path
         _history = _history.slice(0, _historyIndex + 1).concat([path]);
@@ -46,6 +47,7 @@ QtObject {
 
         clearSearch();
         clearFlash();
+        cancelZoxide();
         _historyIndex--;
         currentPath = _history[_historyIndex];
     }
@@ -56,6 +58,7 @@ QtObject {
 
         clearSearch();
         clearFlash();
+        cancelZoxide();
         _historyIndex++;
         currentPath = _history[_historyIndex];
     }
@@ -266,5 +269,16 @@ QtObject {
     function cancelContextMenu(): void {
         contextMenuTargetPath = "";
         contextMenuTargetMimeType = "";
+    }
+
+    // === Zoxide jump ===
+    property bool zoxideActive: false
+
+    function requestZoxide(): void {
+        zoxideActive = true;
+    }
+
+    function cancelZoxide(): void {
+        zoxideActive = false;
     }
 }

@@ -471,6 +471,11 @@ Item {
                 Qt.callLater(() => view.forceActiveFocus());
         }
 
+        function onZoxideActiveChanged() {
+            if (!windowState.zoxideActive)
+                Qt.callLater(() => view.forceActiveFocus());
+        }
+
         function onFlashJump(column: string, index: int, path: string) {
             Logger.info("Flash", "Jump → " + column + ":" + index + " path=" + path);
             if (column === "current") {
@@ -620,7 +625,8 @@ Item {
         Keys.onPressed: function(event) {
             // Block all keys while a modal popup is visible
             if (windowState.deleteConfirmPaths.length > 0 || windowState.createInputActive
-                || windowState.renameTargetPath !== "" || windowState.contextMenuTargetPath !== "") {
+                || windowState.renameTargetPath !== "" || windowState.contextMenuTargetPath !== ""
+                || windowState.zoxideActive) {
                 event.accepted = true;
                 return;
             }
@@ -981,6 +987,12 @@ Item {
             case Qt.Key_Escape:
                 if (windowState.selectedCount > 0)
                     windowState.clearSelection();
+                event.accepted = true;
+                break;
+
+            case Qt.Key_Z:
+                windowState.saveCursor(windowState.currentPath, view.currentIndex);
+                windowState.requestZoxide();
                 event.accepted = true;
                 break;
 
