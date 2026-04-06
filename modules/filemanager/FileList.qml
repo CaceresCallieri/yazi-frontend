@@ -146,11 +146,7 @@ Item {
         if (root.currentEntry.isDir)
             _navigateIntoCurrentItem();
         else {
-            const openPath = openFileHelper.resolvePathForOpen(root.currentEntry.path);
-            // NOTE: xdg-open does NOT support "--" (it's a shell dispatcher, not
-            // a getopt tool). Passing "--" causes "unexpected option" and silent failure.
-            xdgOpenProcess.command = ["xdg-open", openPath];
-            xdgOpenProcess.running = true;
+            fileOpener.open(root.currentEntry.path);
         }
     }
 
@@ -1144,12 +1140,8 @@ Item {
         }
     }
 
-    PreviewImageHelper {
-        id: openFileHelper
-    }
-
-    Process {
-        id: xdgOpenProcess
+    FileOpener {
+        id: fileOpener
     }
 
     Process {

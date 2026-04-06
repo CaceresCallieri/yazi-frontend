@@ -6,7 +6,7 @@ After=graphical-session.target
 [Service]
 Type=dbus
 BusName=org.freedesktop.impl.portal.desktop.symmetria
-ExecStart=/usr/bin/python3.12 /usr/lib/symmetria/symmetria_portal.py
+ExecStart=%h/.local/share/symmetria/portal-venv/bin/python3 /usr/lib/symmetria/symmetria_portal.py
 Restart=on-failure
 
 [Install]

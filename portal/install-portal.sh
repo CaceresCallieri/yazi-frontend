@@ -10,10 +10,15 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 echo "=== Symmetria Portal FileChooser — Installation ==="
 echo ""
 
-# 1. Check dbus-fast is available for python3.12 (matches service ExecStart)
-if ! python3.12 -c "import dbus_fast" 2>/dev/null; then
-    echo "Installing dbus-fast for python3.12..."
-    python3.12 -m pip install --break-system-packages dbus-fast
+# 1. Set up virtualenv for portal dependencies (avoids --break-system-packages)
+VENV_DIR="$HOME/.local/share/symmetria/portal-venv"
+if [ ! -f "$VENV_DIR/bin/python3" ]; then
+    echo "Creating virtualenv at $VENV_DIR..."
+    python3 -m venv "$VENV_DIR"
+fi
+if ! "$VENV_DIR/bin/python3" -c "import dbus_fast" 2>/dev/null; then
+    echo "Installing dbus-fast into virtualenv..."
+    "$VENV_DIR/bin/pip" install dbus-fast
 fi
 
 # 2. Install portal Python backend to a fixed system path (not dev repo path)
@@ -72,4 +77,5 @@ echo "  sudo -A rm /usr/lib/symmetria/symmetria_portal.py"
 echo "  sudo -A rm /usr/share/xdg-desktop-portal/portals/symmetria.portal"
 echo "  sudo -A rm /usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.symmetria.service"
 echo "  rm ~/.config/systemd/user/xdg-desktop-portal-symmetria.service"
+echo "  rm -rf ~/.local/share/symmetria/portal-venv"
 echo "  # Restore portals.conf from backup: cp ~/.config/xdg-desktop-portal/portals.conf.bak ~/.config/xdg-desktop-portal/portals.conf"

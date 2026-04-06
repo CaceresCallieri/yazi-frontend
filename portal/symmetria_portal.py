@@ -1,7 +1,7 @@
-#!/usr/bin/env python3.12
-# NOTE: python3.12 is pinned explicitly because dbus-fast was installed for that
-# interpreter via `python3.12 -m pip install dbus-fast` (see install-portal.sh).
-# If you change the interpreter, reinstall dbus-fast for the new version.
+#!/usr/bin/env python3
+# NOTE: This script is invoked by systemd using the virtualenv Python at
+# ~/.local/share/symmetria/portal-venv/bin/python3 (see install-portal.sh).
+# The venv contains dbus-fast; the system Python is never modified.
 """Symmetria XDG Desktop Portal FileChooser backend.
 
 Implements org.freedesktop.impl.portal.FileChooser by delegating to
@@ -14,6 +14,7 @@ import asyncio
 import json
 import logging
 import os
+import stat as stat_module
 import subprocess
 import threading
 import uuid
@@ -62,12 +63,31 @@ def get_option(options: dict, key: str, default=None):
 
 
 async def read_fifo(fifo_path: str, timeout: float) -> str:
-    """Read from a FIFO with a timeout. Returns the content or raises TimeoutError."""
+    """Read from a FIFO with a timeout. Returns the content or raises TimeoutError.
+
+    Uses os.open() + os.fstat() to atomically verify the opened fd is a real
+    FIFO, preventing symlink-substitution attacks (where an attacker replaces
+    the expected FIFO with a symlink to a sensitive file like /etc/shadow).
+    """
     loop = asyncio.get_running_loop()  # get_event_loop() is deprecated in Python 3.10+
 
     def _blocking_read():
-        with open(fifo_path, "r") as f:
-            return f.read()
+        # Blocking open — waits until the picker writes to the FIFO.
+        # This runs in an executor thread with an asyncio timeout, so
+        # the event loop stays responsive.
+        fd = os.open(fifo_path, os.O_RDONLY)
+        try:
+            mode = os.fstat(fd).st_mode
+            if not stat_module.S_ISFIFO(mode):
+                raise OSError(
+                    f"Security: expected FIFO at {fifo_path}, "
+                    f"got mode {oct(mode)}"
+                )
+            with os.fdopen(fd, "r") as f:
+                return f.read()
+        except:
+            os.close(fd)
+            raise
 
     return await asyncio.wait_for(
         loop.run_in_executor(None, _blocking_read),

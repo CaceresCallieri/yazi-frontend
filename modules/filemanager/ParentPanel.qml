@@ -4,7 +4,6 @@ import "../../components"
 import "../../services"
 import "../../config"
 import Symmetria.FileManager.Models
-import Quickshell.Io
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -100,10 +99,7 @@ Item {
                 if (modelData.isDir)
                     root.windowState.navigate(modelData.path);
                 else {
-                    const openPath = parentOpenFileHelper.resolvePathForOpen(modelData.path);
-                    // xdg-open does NOT support "--" — see FileList.qml comment
-                    parentXdgOpenProcess.command = ["xdg-open", openPath];
-                    parentXdgOpenProcess.running = true;
+                    fileOpener.open(modelData.path);
                 }
             }
         }
@@ -140,12 +136,8 @@ Item {
         parentView.currentIndex = -1;
     }
 
-    PreviewImageHelper {
-        id: parentOpenFileHelper
-    }
-
-    Process {
-        id: parentXdgOpenProcess
+    FileOpener {
+        id: fileOpener
     }
 
     // Re-sync when the current path changes (parent path may stay the same
