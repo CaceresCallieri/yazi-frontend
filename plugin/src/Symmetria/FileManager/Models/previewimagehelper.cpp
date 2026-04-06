@@ -12,6 +12,14 @@
 
 namespace symmetria::filemanager::models {
 
+static QString buildCacheKey(const QString& path) {
+    const QFileInfo info(path);
+    return QCryptographicHash::hash(
+        (path + QStringLiteral(":") + QString::number(info.lastModified().toSecsSinceEpoch())).toUtf8(),
+        QCryptographicHash::Sha1
+    ).toHex();
+}
+
 PreviewImageHelper::PreviewImageHelper(QObject* parent)
     : QObject(parent) {}
 
@@ -83,11 +91,7 @@ void PreviewImageHelper::processSource() {
     }
 
     // PDF / RPGMV / .icns — check cache first, then generate asynchronously
-    const QFileInfo info(m_source);
-    const auto cacheKey = QCryptographicHash::hash(
-        (m_source + QStringLiteral(":") + QString::number(info.lastModified().toSecsSinceEpoch())).toUtf8(),
-        QCryptographicHash::Sha1
-    ).toHex();
+    const auto cacheKey = buildCacheKey(m_source);
     const auto cachePath = cacheDir() + QStringLiteral("/") + cacheKey + QStringLiteral(".png");
 
     // Cache hit — return immediately without spinning up a thread
@@ -215,18 +219,22 @@ QString PreviewImageHelper::resolvePathForOpen(const QString& path) {
     if (!needsCachedDecode(path))
         return path;
 
-    const QFileInfo info(path);
-    const auto cacheKey = QCryptographicHash::hash(
-        (path + QStringLiteral(":") + QString::number(info.lastModified().toSecsSinceEpoch())).toUtf8(),
-        QCryptographicHash::Sha1
-    ).toHex();
+    const auto cacheKey = buildCacheKey(path);
     const auto cachePath = cacheDir() + QStringLiteral("/") + cacheKey + QStringLiteral(".png");
 
     if (QFileInfo::exists(cachePath))
         return cachePath;
 
-    // Cache miss — generate synchronously (fast for RPGMV: skip header + copy)
-    return generateCachedPreview(path, cachePath);
+    // Cache miss:
+    // RPGMV formats (.rpgmvp / .png_) are a trivial header-skip + memcopy — safe to do
+    // synchronously on the GUI thread (typically <1ms even for large files).
+    // .icns and .pdf both involve real I/O or rendering (IcnsDecoder / QImageReader) —
+    // return the original path and let xdg-open open the source file directly.
+    if (path.endsWith(QStringLiteral(".rpgmvp"), Qt::CaseInsensitive)
+        || path.endsWith(QStringLiteral(".png_"), Qt::CaseInsensitive))
+        return generateCachedPreview(path, cachePath);
+
+    return path;
 }
 
 const QString& PreviewImageHelper::cacheDir() {

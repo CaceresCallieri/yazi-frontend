@@ -100,7 +100,8 @@ Item {
                 if (modelData.isDir)
                     root.windowState.navigate(modelData.path);
                 else {
-                    parentXdgOpenProcess.command = ["xdg-open", modelData.path];
+                    const openPath = parentOpenFileHelper.resolvePathForOpen(modelData.path);
+                    parentXdgOpenProcess.command = ["xdg-open", openPath];
                     parentXdgOpenProcess.running = true;
                 }
             }
@@ -131,6 +132,10 @@ Item {
             }
         }
         parentView.currentIndex = -1;
+    }
+
+    PreviewImageHelper {
+        id: parentOpenFileHelper
     }
 
     Process {

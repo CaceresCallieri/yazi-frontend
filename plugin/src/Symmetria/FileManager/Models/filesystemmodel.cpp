@@ -40,9 +40,9 @@ static bool detectRemoteMount(const QString& path, unsigned long parentFsType) {
     struct statfs sfs;
     if (::statfs(path.toUtf8().constData(), &sfs) != 0)
         return false;
+    const auto fsType = static_cast<unsigned long>(sfs.f_type);
     // Only flag the mount root: the entry's fs type differs from its parent's
-    return isRemoteFsType(static_cast<unsigned long>(sfs.f_type))
-        && static_cast<unsigned long>(sfs.f_type) != parentFsType;
+    return isRemoteFsType(fsType) && fsType != parentFsType;
 }
 
 FileSystemEntry::FileSystemEntry(const QString& path, const QString& relativePath, QObject* parent)
@@ -511,6 +511,8 @@ void FileSystemModel::updateEntriesForDir(const QString& dir) {
     const auto future = QtConcurrent::run([=](QPromise<QPair<QSet<QString>, QList<CachedEntryData>>>& promise) {
         // Get the parent directory's filesystem type so we can detect mount boundaries
         struct statfs parentSfs;
+        // 0 is used as a sentinel for "parent statfs failed" — an entry whose
+        // own f_type is 0 would not match any known remote magic, so it stays safe.
         const unsigned long parentFsType = (::statfs(dir.toUtf8().constData(), &parentSfs) == 0)
             ? static_cast<unsigned long>(parentSfs.f_type) : 0;
 
@@ -579,7 +581,12 @@ void FileSystemModel::updateEntriesForDir(const QString& dir) {
             newPaths.insert(path);
         }
 
-        if (promise.isCanceled() || newPaths == oldPaths) {
+        if (promise.isCanceled())
+            return;
+        if (newPaths == oldPaths) {
+            // No changes — emit an empty result so the watcher always fires and
+            // clears m_loading on the main thread, even when nothing changed.
+            promise.addResult(qMakePair(QSet<QString>{}, QList<CachedEntryData>{}));
             return;
         }
 
@@ -615,6 +622,11 @@ void FileSystemModel::updateEntriesForDir(const QString& dir) {
     connect(watcher, &QFutureWatcher<QPair<QSet<QString>, QList<CachedEntryData>>>::finished, this, [dir, watcher, this]() {
         m_futures.remove(dir);
 
+        // Safe for now: a canceled watcher cannot fire between m_futures.clear()
+        // and updateEntriesForDir() because both run synchronously on the main
+        // thread and Qt delivers the finished signal via the event loop.  If the
+        // scan lifecycle ever becomes re-entrant, m_loading should be derived
+        // from m_futures.isEmpty() rather than toggled manually.
         if (m_futures.isEmpty() && m_loading) {
             m_loading = false;
             emit loadingChanged();

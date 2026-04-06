@@ -235,8 +235,8 @@ Item {
                     // Loading indicator — visible while directory is being scanned
                     Loader {
                         anchors.centerIn: parent
-                        active: directoryView.model.loading
-                        opacity: active ? 1 : 0
+                        opacity: directoryView.model.loading ? 1 : 0
+                        active: opacity > 0
 
                         sourceComponent: ColumnLayout {
                             spacing: Theme.spacing.sm

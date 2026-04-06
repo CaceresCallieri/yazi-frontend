@@ -195,7 +195,7 @@ Item {
 
         // Remote mount indicator — inline network icon for SSHFS/NFS/FUSE mount points
         MaterialIcon {
-            visible: root.modelData?.isRemoteMount ?? false
+            visible: root.modelData.isRemoteMount
             text: "lan"
             color: Theme.palette.m3primary
             font.pointSize: Theme.font.size.xs
