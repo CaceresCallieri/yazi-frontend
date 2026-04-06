@@ -178,14 +178,7 @@ Item {
                     return "folder";
                 if (root.modelData.isImage)
                     return "image";
-                const mime = root.modelData.mimeType;
-                if (mime.startsWith("text/"))
-                    return "article";
-                if (mime.startsWith("video/"))
-                    return "movie";
-                if (mime.startsWith("audio/"))
-                    return "music_note";
-                return "description";
+                return FileManagerService.iconNameForMime(root.modelData.mimeType);
             }
             materialColor: root.modelData?.isDir ? Theme.palette.m3primary : Theme.palette.m3onSurfaceVariant
             materialFill: root.modelData?.isDir ? 1 : 0

@@ -95,7 +95,7 @@ Singleton {
             const parsed = JSON.parse(json);
             bookmarks = parsed && typeof parsed === "object" ? parsed : {};
         } catch (e) {
-            console.warn("[BookmarkService] Failed to parse bookmarks:", e);
+            Logger.warn("BookmarkService", "Failed to parse bookmarks: " + e);
             bookmarks = {};
         }
         _loaded = true;
@@ -152,7 +152,7 @@ Singleton {
 
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0)
-                console.error("[BookmarkService] Write failed, exitCode:", exitCode);
+                Logger.error("BookmarkService", "Write failed, exitCode: " + exitCode);
             if (_pendingPayload !== "") {
                 payload = _pendingPayload;
                 _pendingPayload = "";

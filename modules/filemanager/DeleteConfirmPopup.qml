@@ -253,7 +253,7 @@ Loader {
                 if (exitCode === 0) {
                     root.windowState.cancelDelete();
                 } else {
-                    console.warn("DeleteConfirmPopup: gio trash failed with exit code", exitCode);
+                    Logger.warn("DeleteConfirmPopup", "gio trash failed with exit code " + exitCode);
                     // Dismiss the popup even on failure — user can retry via D again
                     root.windowState.cancelDelete();
                 }

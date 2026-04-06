@@ -24,6 +24,6 @@ ShellRoot {
         void WindowFactory;
         void BookmarkService;
         void Logger;
-        console.log("symmetria-fm: IPC service ready (target: filemanager)");
+        Logger.info("ShellRoot", "IPC service ready (target: filemanager)");
     }
 }

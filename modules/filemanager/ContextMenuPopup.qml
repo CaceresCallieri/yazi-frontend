@@ -62,7 +62,7 @@ Loader {
             targetMimeType = root.windowState.contextMenuTargetMimeType;
             targetName = Paths.basename(targetPath);
             isArchive = FileManagerService.isArchiveFile(targetMimeType);
-            isAudio = targetMimeType.startsWith("audio/") || targetMimeType === "application/ogg";
+            isAudio = FileManagerService.isAudioFile(targetMimeType);
         }
 
         function _executeAction(actionId: string): void {
@@ -637,7 +637,7 @@ Loader {
             }
             onExited: (exitCode, exitStatus) => {
                 if (exitCode !== 0)
-                    console.warn("ContextMenuPopup: gio mime failed, exit code", exitCode);
+                    Logger.warn("ContextMenuPopup", "gio mime failed, exit code " + exitCode);
             }
         }
 
@@ -646,7 +646,7 @@ Loader {
             id: openWithProcess
             onExited: (exitCode, exitStatus) => {
                 if (exitCode !== 0)
-                    console.warn("ContextMenuPopup: gio launch failed, exit code", exitCode);
+                    Logger.warn("ContextMenuPopup", "gio launch failed, exit code " + exitCode);
             }
         }
 

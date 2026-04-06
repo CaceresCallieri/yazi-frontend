@@ -122,6 +122,42 @@ Singleton {
         return !!_archiveMimeTypes[mimeType];
     }
 
+    function isTextFile(mimeType: string): bool {
+        if (mimeType.startsWith("text/")) return true;
+        return [
+            "application/json", "application/xml",
+            "application/x-shellscript", "application/x-yaml",
+            "application/toml", "application/javascript",
+            "application/typescript", "application/x-perl",
+            "application/x-ruby", "application/x-httpd-php",
+            "application/sql", "application/x-desktop",
+            "application/xhtml+xml",
+        ].includes(mimeType);
+    }
+
+    function isAudioFile(mimeType: string): bool {
+        return mimeType.startsWith("audio/") || mimeType === "application/ogg";
+    }
+
+    function isSpreadsheetFile(mimeType: string): bool {
+        return [
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
+            "application/vnd.ms-excel.sheet.macroEnabled.12",
+            "application/vnd.ms-excel.template.macroEnabled.12",
+            "application/vnd.ms-excel.sheet.binary.macroEnabled.12",
+        ].includes(mimeType);
+    }
+
+    function iconNameForMime(mimeType: string): string {
+        if (mimeType.startsWith("text/")) return "article";
+        if (mimeType.startsWith("video/")) return "movie";
+        if (isAudioFile(mimeType)) return "music_note";
+        if (mimeType.startsWith("application/pdf")) return "picture_as_pdf";
+        return "description";
+    }
+
     function formatSize(bytes: double): string {
         if (bytes < 1024)
             return bytes + " B";

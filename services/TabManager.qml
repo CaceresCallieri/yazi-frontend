@@ -34,7 +34,7 @@ QtObject {
         });
 
         if (!state) {
-            console.error("TabManager: failed to create WindowState");
+            Logger.error("TabManager", "failed to create WindowState");
             return;
         }
 

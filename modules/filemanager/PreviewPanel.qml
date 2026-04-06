@@ -35,46 +35,6 @@ Item {
     readonly property int _typeAudio: 8
     readonly property int _typeRemoteDir: 9
 
-    function _isTextFile(entry) {
-        if (!entry) return false;
-        const mime = entry.mimeType;
-        if (mime.startsWith("text/")) return true;
-        // application/* types that are actually text-based
-        return [
-            "application/json", "application/xml",
-            "application/x-shellscript", "application/x-yaml",
-            "application/toml", "application/javascript",
-            "application/typescript", "application/x-perl",
-            "application/x-ruby", "application/x-httpd-php",
-            "application/sql", "application/x-desktop",
-            "application/xhtml+xml",
-        ].includes(mime);
-    }
-
-    function _isArchiveFile(entry) {
-        if (!entry) return false;
-        return FileManagerService.isArchiveFile(entry.mimeType);
-    }
-
-    function _isAudioFile(entry) {
-        if (!entry) return false;
-        const mime = entry.mimeType;
-        return mime.startsWith("audio/") || mime === "application/ogg";
-    }
-
-    function _isSpreadsheetFile(entry) {
-        if (!entry) return false;
-        const mime = entry.mimeType;
-        return [
-            "application/vnd.ms-excel",                                              // .xls
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",     // .xlsx
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.template",  // .xltx
-            "application/vnd.ms-excel.sheet.macroEnabled.12",                        // .xlsm
-            "application/vnd.ms-excel.template.macroEnabled.12",                     // .xltm
-            "application/vnd.ms-excel.sheet.binary.macroEnabled.12",                 // .xlsb
-        ].includes(mime);
-    }
-
     readonly property int _previewType: {
         if (!_committedEntry)
             return _typeNone;
@@ -87,13 +47,13 @@ Item {
             return _typeImage;
         if (_committedEntry.isVideo)
             return _typeVideo;
-        if (_isAudioFile(_committedEntry))
+        if (FileManagerService.isAudioFile(_committedEntry.mimeType))
             return _typeAudio;
-        if (_isTextFile(_committedEntry))
+        if (FileManagerService.isTextFile(_committedEntry.mimeType))
             return _typeText;
-        if (_isArchiveFile(_committedEntry))
+        if (FileManagerService.isArchiveFile(_committedEntry.mimeType))
             return _typeArchive;
-        if (_isSpreadsheetFile(_committedEntry))
+        if (FileManagerService.isSpreadsheetFile(_committedEntry.mimeType))
             return _typeSpreadsheet;
         return _typeFallback;
     }

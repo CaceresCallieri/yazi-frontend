@@ -24,7 +24,7 @@ Singleton {
 
     function createOverlay(initialPath: string): void {
         if (_activeOverlayWindow) {
-            console.warn("FileManager: Overlay already active, ignoring request");
+            Logger.warn("WindowFactory", "Overlay already active, ignoring request");
             return;
         }
         _activeOverlayWindow = overlayWindow.createObject(dummy, {
@@ -54,14 +54,14 @@ Singleton {
 
         function createPicker(optionsJson: string): void {
             if (root._activePickerWindow) {
-                console.warn("FileManager: Picker already active, ignoring request");
+                Logger.warn("WindowFactory", "Picker already active, ignoring request");
                 return;
             }
 
             // Rate limiting — prevent rapid dialog spam
             const now = Date.now();
             if (now - _lastPickerCallTime < _rateLimitMs) {
-                console.warn("FileManager: Picker rate-limited, ignoring request");
+                Logger.warn("WindowFactory", "Picker rate-limited, ignoring request");
                 return;
             }
             _lastPickerCallTime = now;
@@ -70,7 +70,7 @@ Singleton {
             try {
                 options = JSON.parse(optionsJson);
             } catch (e) {
-                console.error("FileManager: Invalid picker options JSON:", e);
+                Logger.error("WindowFactory", "Invalid picker options JSON: " + e);
                 return;
             }
 
@@ -79,23 +79,23 @@ Singleton {
             const fifoPath = options.fifo || "";
             // Layer 1: Prefix check — only accept our own temp files
             if (!fifoPath.startsWith(_validFifoPrefix)) {
-                console.error("FileManager: Invalid FIFO path prefix:", fifoPath);
+                Logger.error("WindowFactory", "Invalid FIFO path prefix: " + fifoPath);
                 return;
             }
             // Layer 2: Traversal check — prevent /tmp/symmetria-picker-../../etc/passwd
             if (fifoPath.includes("..") || fifoPath.includes("\0")) {
-                console.error("FileManager: Suspicious FIFO path rejected:", fifoPath);
+                Logger.error("WindowFactory", "Suspicious FIFO path rejected: " + fifoPath);
                 return;
             }
             // Layer 3: Length check — prevent excessively long paths
             if (fifoPath.length > 128) {
-                console.error("FileManager: FIFO path too long:", fifoPath.substring(0, 50) + "...");
+                Logger.error("WindowFactory", "FIFO path too long: " + fifoPath.substring(0, 50) + "...");
                 return;
             }
             // Layer 4: Charset check — suffix must be alphanumeric (uuid4 hex + dashes)
             const suffix = fifoPath.substring(_validFifoPrefix.length);
             if (!/^[a-zA-Z0-9._-]+$/.test(suffix)) {
-                console.error("FileManager: FIFO path contains invalid characters:", fifoPath);
+                Logger.error("WindowFactory", "FIFO path contains invalid characters: " + fifoPath);
                 return;
             }
 
@@ -148,9 +148,9 @@ Singleton {
         onExited: (exitCode, exitStatus) => {
             fifoWriteTimeout.stop();
             if (exitCode !== 0)
-                console.error("FileManager: FIFO write failed, exitCode:", exitCode);
+                Logger.error("WindowFactory", "FIFO write failed, exitCode: " + exitCode);
             else
-                console.log("FileManager: Picker result sent to FIFO");
+                Logger.info("WindowFactory", "Picker result sent to FIFO");
             root._closePickerWindow();
         }
     }
@@ -159,7 +159,7 @@ Singleton {
         id: fifoWriteTimeout
         interval: 5000
         onTriggered: {
-            console.error("FileManager: FIFO write timeout — forcing close");
+            Logger.error("WindowFactory", "FIFO write timeout — forcing close");
             fifoWriteProcess.signal(9);
             root._closePickerWindow();
         }
@@ -182,9 +182,9 @@ Singleton {
         onExited: (exitCode, exitStatus) => {
             fifoCancelTimeout.stop();
             if (exitCode !== 0)
-                console.error("FileManager: FIFO cancel write failed, exitCode:", exitCode);
+                Logger.error("WindowFactory", "FIFO cancel write failed, exitCode: " + exitCode);
             else
-                console.log("FileManager: Picker cancellation sent to FIFO");
+                Logger.info("WindowFactory", "Picker cancellation sent to FIFO");
             root._closePickerWindow();
         }
     }
@@ -193,7 +193,7 @@ Singleton {
         id: fifoCancelTimeout
         interval: 5000
         onTriggered: {
-            console.error("FileManager: FIFO cancel timeout — forcing close");
+            Logger.error("WindowFactory", "FIFO cancel timeout — forcing close");
             fifoCancelProcess.signal(9);
             root._closePickerWindow();
         }

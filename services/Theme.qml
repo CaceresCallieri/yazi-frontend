@@ -147,7 +147,7 @@ Singleton {
         }
         onExited: (exitCode, exitStatus) => {
             if (exitCode !== 0) {
-                console.warn("Theme: Symmetria IPC unavailable, using defaults");
+                Logger.warn("Theme", "Symmetria IPC unavailable, using defaults");
             }
             if (root._pendingRequery) {
                 root._pendingRequery = false;
@@ -206,7 +206,7 @@ Singleton {
             if (a?.anim?.curves?.standardDecel) root.animCurveStandardDecel = a.anim.curves.standardDecel;
             if (a?.transparency) _applyObject(root.transparency, a.transparency);
         } catch (e) {
-            console.warn("Theme: failed to parse IPC response:", e);
+            Logger.warn("Theme", "failed to parse IPC response: " + e);
         }
     }
 

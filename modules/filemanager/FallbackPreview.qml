@@ -19,10 +19,7 @@ Item {
         width: parent.width - Theme.padding.lg * 2
         spacing: Theme.spacing.md
 
-        // Mime-based icon — mirrors the mapping in FileListItem.qml
-        // application/pdf appears here only if isImage is false for PDFs in the
-        // C++ model (i.e. PDF compositing is disabled), otherwise PDFs are routed
-        // to ImagePreview instead.
+        // Mime-based icon via centralized FileManagerService.iconNameForMime()
         FileIcon {
             Layout.alignment: Qt.AlignHCenter
             entry: root.entry
@@ -31,16 +28,7 @@ Item {
             materialIconName: {
                 if (!root.entry)
                     return "description";
-                const mime = root.entry.mimeType;
-                if (mime.startsWith("text/"))
-                    return "article";
-                if (mime.startsWith("video/"))
-                    return "movie";
-                if (mime.startsWith("audio/"))
-                    return "music_note";
-                if (mime.startsWith("application/pdf"))
-                    return "picture_as_pdf";
-                return "description";
+                return FileManagerService.iconNameForMime(root.entry.mimeType);
             }
             materialColor: Theme.palette.m3outline
             materialPointSize: Theme.font.size.xxl * 2
