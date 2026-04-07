@@ -276,6 +276,12 @@ function handleKey(event, root, view, pasteProcess, clipboardCopyProcess) {
         break;
 
     case Qt.Key_R:
+        if ((mods & Qt.ControlModifier) && FileManagerService.pickerSaveMode) {
+            // Ctrl+R in save mode: activate inline save-name editing in status bar
+            FileManagerService.saveNameEditing = true;
+            event.accepted = true;
+            break;
+        }
         if (root.currentEntry) {
             var includeExt = (mods & Qt.ShiftModifier) !== 0;
             windowState.requestRename(root.currentEntry.path, includeExt);

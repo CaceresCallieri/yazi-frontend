@@ -158,6 +158,16 @@ Item {
         }
     }
 
+    // Return focus to file list when inline save-name editing ends
+    Connections {
+        target: FileManagerService
+
+        function onSaveNameEditingChanged() {
+            if (!FileManagerService.saveNameEditing)
+                Qt.callLater(() => view.forceActiveFocus());
+        }
+    }
+
     // Background
     StyledRect {
         anchors.fill: parent

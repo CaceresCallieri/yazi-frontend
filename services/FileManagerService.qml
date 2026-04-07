@@ -43,6 +43,7 @@ Singleton {
     property bool pickerDirectory: false
     property bool pickerSaveMode: false
     property string pickerSuggestedName: ""
+    property bool saveNameEditing: false
 
     signal pickerCompleted(fifoPath: string, paths: var)
     signal pickerCancelled(fifoPath: string)
@@ -92,8 +93,14 @@ Singleton {
             return;
         }
         if (pickerSaveMode) {
-            // Save mode: return current directory as the save location.
-            completePickerMode([windowState.currentPath]);
+            // Save mode: return full save path (dir + filename) when a name is
+            // available, otherwise just the directory for portal-side appending.
+            let savePath = windowState.currentPath;
+            if (pickerSuggestedName) {
+                const sep = savePath.endsWith("/") ? "" : "/";
+                savePath = savePath + sep + pickerSuggestedName;
+            }
+            completePickerMode([savePath]);
             return;
         }
         if (!currentEntry) return;
@@ -117,6 +124,7 @@ Singleton {
         pickerDirectory = false;
         pickerSaveMode = false;
         pickerSuggestedName = "";
+        saveNameEditing = false;
     }
 
     // === Utilities (stateless, shared) ===

@@ -104,6 +104,9 @@ Item {
                     onClicked: {
                         if (!acceptBtn._acceptEnabled)
                             return;
+                        // Auto-confirm any in-progress save name edit before completing
+                        if (FileManagerService.saveNameEditing)
+                            saveNameInput._confirmEdit(false);
                         FileManagerService.confirmPickerSelection(root.currentEntry, root.windowState);
                     }
                 }
@@ -145,16 +148,96 @@ Item {
                 Layout.fillWidth: true
             }
 
-            // Center: save filename (save mode) or current entry info (normal/open picker)
+            // Center: save filename (save mode) — inline-editable via Ctrl+R
             StyledText {
                 visible: root._normalVisible && FileManagerService.pickerSaveMode
-                    && FileManagerService.pickerSuggestedName !== ""
-                text: "Save as: " + FileManagerService.pickerSuggestedName
+                    && (FileManagerService.pickerSuggestedName !== "" || FileManagerService.saveNameEditing)
+                text: "Save as:"
                 color: Theme.palette.m3primary
                 font.pointSize: Theme.font.size.xs
                 font.family: Theme.font.family.mono
             }
 
+            TextInput {
+                id: saveNameInput
+
+                property string _originalName: ""
+
+                visible: root._normalVisible && FileManagerService.pickerSaveMode
+                    && (FileManagerService.pickerSuggestedName !== "" || FileManagerService.saveNameEditing)
+                text: FileManagerService.pickerSuggestedName
+                color: FileManagerService.saveNameEditing ? Theme.palette.m3onSurface : Theme.palette.m3primary
+                font.pointSize: Theme.font.size.xs
+                font.family: Theme.font.family.mono
+                selectionColor: Theme.palette.m3primary
+                selectedTextColor: Theme.palette.m3onPrimary
+                readOnly: !FileManagerService.saveNameEditing
+                activeFocusOnPress: false
+                clip: true
+                Layout.maximumWidth: root.width * 0.4
+
+                // Smart text selection: select basename without extension
+                function _selectBasename(): void {
+                    const dotIndex = text.lastIndexOf(".");
+                    if (dotIndex > 0)
+                        select(0, dotIndex);
+                    else
+                        selectAll();
+                }
+
+                function _confirmEdit(andSave: bool): void {
+                    FileManagerService.pickerSuggestedName = text;
+                    FileManagerService.saveNameEditing = false;
+                    if (andSave)
+                        FileManagerService.confirmPickerSelection(root.currentEntry, root.windowState);
+                }
+
+                function _cancelEdit(): void {
+                    text = _originalName;
+                    FileManagerService.saveNameEditing = false;
+                }
+
+                Keys.onPressed: function(event) {
+                    if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                        saveNameInput._confirmEdit(true);
+                        event.accepted = true;
+                    } else if (event.key === Qt.Key_Escape) {
+                        saveNameInput._cancelEdit();
+                        event.accepted = true;
+                    } else if (event.key === Qt.Key_Tab) {
+                        // Toggle between basename-only and full-name selection
+                        const dotIndex = saveNameInput.text.lastIndexOf(".");
+                        if (dotIndex > 0 && saveNameInput.selectionEnd === dotIndex)
+                            saveNameInput.selectAll();
+                        else
+                            saveNameInput._selectBasename();
+                        event.accepted = true;
+                    }
+                }
+
+                // Double-click to enter edit mode; disabled while editing so
+                // the TextInput receives normal cursor-positioning clicks.
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: !FileManagerService.saveNameEditing
+                    cursorShape: Qt.PointingHandCursor
+                    onDoubleClicked: FileManagerService.saveNameEditing = true
+                }
+
+                Connections {
+                    target: FileManagerService
+
+                    function onSaveNameEditingChanged() {
+                        if (FileManagerService.saveNameEditing) {
+                            saveNameInput._originalName = saveNameInput.text;
+                            saveNameInput.forceActiveFocus();
+                            saveNameInput._selectBasename();
+                        }
+                    }
+                }
+            }
+
+            // Center: current entry info (normal mode or open picker)
             StyledText {
                 visible: root._normalVisible && !FileManagerService.pickerSaveMode
                     && root.currentEntry !== null
