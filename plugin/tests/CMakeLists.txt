@@ -1,3 +1,5 @@
+include(CTest)
+
 find_package(Qt6 REQUIRED COMPONENTS Test Core Concurrent Gui Qml)
 find_package(KF6SyntaxHighlighting REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -20,6 +22,7 @@ function(add_model_test TEST_NAME)
     # needing a display server in CI or headless environments.
     set_tests_properties(${TEST_NAME} PROPERTIES
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+        TIMEOUT 60
     )
 endfunction()
 

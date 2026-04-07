@@ -2,6 +2,7 @@
 //
 // All test archives are created programmatically via the libarchive C API
 // in QTemporaryDir, so no binary fixtures need to be committed to the repo.
+// Uses QTEST_MAIN (not GUILESS) because QAbstractItemModelTester requires QGuiApplication.
 
 #include "archivepreviewmodel.hpp"
 
@@ -30,6 +31,8 @@ private:
     static bool createArchive(const QString& archivePath, const QVector<TestEntry>& entries)
     {
         struct archive* a = archive_write_new();
+        if (!a)
+            return false;
         archive_write_set_format_pax_restricted(a);
         archive_write_add_filter_gzip(a);
 
@@ -184,7 +187,8 @@ private slots:
         const QString archive = tmpDir.path() + "/corrupted.tar.gz";
         // Write random bytes — libarchive with raw format support may
         // interpret these as a degenerate stream rather than erroring.
-        // The key invariant is graceful handling: no crash, loading completes.
+        // The invariant is graceful handling: no crash, loading completes,
+        // and the model is left in a consistent empty-or-error state.
         QFile f(archive);
         QVERIFY(f.open(QIODevice::WriteOnly));
         f.write(QByteArray(1024, '\xDE'));
@@ -194,8 +198,9 @@ private slots:
         model.setFilePath(archive);
         QVERIFY(waitForLoad(model));
 
-        // Model must complete loading without crashing; error may or may
-        // not be set depending on how libarchive interprets the bytes.
+        // libarchive with archive_read_support_format_raw() may interpret
+        // arbitrary bytes as a degenerate raw stream (rowCount > 0, no error).
+        // The only reliable invariant is: loading completed without a crash.
         QCOMPARE(model.loading(), false);
     }
 

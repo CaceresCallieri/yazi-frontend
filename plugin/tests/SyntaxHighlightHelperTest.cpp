@@ -165,7 +165,9 @@ private slots:
 
     void truncationOnLargeFile()
     {
-        // Create a file with > 500 lines (MaxLines)
+        // Create a file with > 500 lines. The cap is SyntaxHighlightHelper::MaxLines
+        // (private static constexpr int = 500 in syntaxhighlighthelper.hpp). If that
+        // constant changes, update the counts here (600 input lines, 501 reported).
         QByteArray data;
         for (int i = 0; i < 600; ++i)
             data.append(QStringLiteral("line %1\n").arg(i).toUtf8());

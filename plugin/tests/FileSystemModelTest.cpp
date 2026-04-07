@@ -1,7 +1,8 @@
 // FileSystemModelTest — unit tests for the filesystem model.
 //
 // All test directories are created in QTemporaryDir. File watcher tests use
-// generous timeouts to accommodate kernel inotify latency.
+// generous timeouts to accommodate kernel inotify latency. Uses QTEST_MAIN
+// (not GUILESS) because FileSystemEntry uses QImageReader which needs QGuiApplication.
 
 #include "filesystemmodel.hpp"
 
@@ -175,6 +176,44 @@ private slots:
         QCOMPARE(names, (QStringList{"old.txt", "mid.txt", "new.txt"}));
     }
 
+    void sortByExtension()
+    {
+        QTemporaryDir tmpDir;
+        QVERIFY(tmpDir.isValid());
+        createFile(tmpDir.path() + "/b.txt");
+        createFile(tmpDir.path() + "/a.cpp");
+        createFile(tmpDir.path() + "/c.hpp");
+
+        FileSystemModel model;
+        model.setSortBy(FileSystemModel::Extension);
+        model.setSortReverse(false);
+        model.setPath(tmpDir.path());
+        QVERIFY(waitForEntries(model));
+
+        const QStringList names = entryNames(model);
+        // Expected order by extension: .cpp → .hpp → .txt (locale-aware)
+        QCOMPARE(names, (QStringList{"a.cpp", "c.hpp", "b.txt"}));
+    }
+
+    void sortByNatural()
+    {
+        QTemporaryDir tmpDir;
+        QVERIFY(tmpDir.isValid());
+        createFile(tmpDir.path() + "/file10.txt");
+        createFile(tmpDir.path() + "/file2.txt");
+        createFile(tmpDir.path() + "/file1.txt");
+
+        FileSystemModel model;
+        model.setSortBy(FileSystemModel::Natural);
+        model.setSortReverse(false);
+        model.setPath(tmpDir.path());
+        QVERIFY(waitForEntries(model));
+
+        const QStringList names = entryNames(model);
+        // Natural sort: 1, 2, 10 — not lexicographic (1, 10, 2)
+        QCOMPARE(names, (QStringList{"file1.txt", "file2.txt", "file10.txt"}));
+    }
+
     void sortDirsBeforeFiles()
     {
         QTemporaryDir tmpDir;
@@ -191,7 +230,7 @@ private slots:
         QVERIFY(waitForEntries(model));
 
         // Directories must always appear before files, regardless of name
-        QVERIFY(model.rowCount() == 4);
+        QCOMPARE(model.rowCount(), 4);
         QVERIFY(entryIsDir(model, 0));  // aaa_dir
         QVERIFY(entryIsDir(model, 1));  // zzz_dir
         QVERIFY(!entryIsDir(model, 2)); // aaa_file.txt
@@ -288,6 +327,41 @@ private slots:
         model.setShowHidden(true);
         QVERIFY(waitForEntries(model));
         QCOMPARE(model.rowCount(), 2);
+    }
+
+    void nonExistentPathHandledGracefully()
+    {
+        FileSystemModel model;
+        model.setPath(QStringLiteral("/tmp/nonexistent_symmetria_test_dir_xyz"));
+        QVERIFY(waitForEntries(model));
+
+        // A missing directory must not crash and must yield an empty model
+        QCOMPARE(model.loading(), false);
+        QCOMPARE(model.rowCount(), 0);
+    }
+
+    void generationCounterDiscardsStale()
+    {
+        QTemporaryDir tmpDirA;
+        QTemporaryDir tmpDirB;
+        QVERIFY(tmpDirA.isValid());
+        QVERIFY(tmpDirB.isValid());
+        createFile(tmpDirA.path() + "/a1.txt");
+        createFile(tmpDirA.path() + "/a2.txt");
+        createFile(tmpDirB.path() + "/b1.txt");
+
+        FileSystemModel model;
+        model.setSortBy(FileSystemModel::Alphabetical);
+        model.setSortReverse(false);
+        // Navigate to A then immediately to B — A's result should be discarded
+        model.setPath(tmpDirA.path());
+        model.setPath(tmpDirB.path());
+        QVERIFY(waitForEntries(model));
+
+        // Final state must reflect directory B
+        QCOMPARE(model.rowCount(), 1);
+        const QStringList names = entryNames(model);
+        QCOMPARE(names, QStringList{"b1.txt"});
     }
 
     void directoryDiffAdd()
