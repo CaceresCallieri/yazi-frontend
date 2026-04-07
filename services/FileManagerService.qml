@@ -78,6 +78,36 @@ Singleton {
         pickerCancelled(fifo);
     }
 
+    // Single source of truth for picker completion — called by both Enter key
+    // (FileList) and Accept button (StatusBar) to ensure identical behavior.
+    function confirmPickerSelection(currentEntry: var, windowState: var): void {
+        // Multi-select: if items are marked, confirm all marked items.
+        // pickerSaveMode and pickerMultiple are orthogonal — save mode ignores marks.
+        if (pickerMultiple && windowState.selectedCount > 0) {
+            const paths = windowState.getSelectedPathsArray();
+            // Clear before completing so the selection count binding resets
+            // before pickerMode becomes false — prevents a stale count flash.
+            windowState.clearSelection();
+            completePickerMode(paths);
+            return;
+        }
+        if (pickerSaveMode) {
+            // Save mode: return current directory as the save location.
+            completePickerMode([windowState.currentPath]);
+            return;
+        }
+        if (!currentEntry) return;
+        if (pickerDirectory) {
+            // Directory picker: only dirs are selectable.
+            if (currentEntry.isDir)
+                completePickerMode([currentEntry.path]);
+        } else {
+            // File picker: only files are selectable.
+            if (!currentEntry.isDir)
+                completePickerMode([currentEntry.path]);
+        }
+    }
+
     function _resetPickerState(): void {
         pickerMode = false;
         pickerFifoPath = "";

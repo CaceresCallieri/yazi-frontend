@@ -2,7 +2,9 @@
 
 #include <qfile.h>
 #include <qfileinfo.h>
+#include <qfuturewatcher.h>
 #include <qmimedatabase.h>
+#include <qtconcurrentrun.h>
 #include <qtextdocument.h>
 #include <qtextlayout.h>
 #include <qtextobject.h>
@@ -34,17 +36,21 @@ bool SyntaxHighlightHelper::error() const { return m_error; }
 bool SyntaxHighlightHelper::hasContent() const { return !m_highlightedContent.isEmpty(); }
 
 // --------------------------------------------------------------------------
-// loadFile — reads the file, detects language, and generates highlighted HTML.
+// loadFile — dispatches file reading and syntax highlighting to a worker
+// thread via QtConcurrent::run(). Returns immediately so the GUI stays
+// responsive. A generation counter discards stale results when the user
+// navigates faster than I/O + highlighting can complete.
 //
 // The highlighted HTML is generated via a *temporary* QTextDocument that is
 // completely isolated from the QML TextEdit. This is intentional — attaching
 // a QSyntaxHighlighter directly to the QML TextEdit's QTextDocument disrupts
 // QQuickTextEdit's internal rendering state, causing text to disappear on
-// subsequent file loads (the first file works by accident because the
-// highlighter attaches via setDocument() after QML has already rendered).
-// See QUIRKS.md §4 for the full explanation.
+// subsequent file loads. See QUIRKS.md §4 for the full explanation.
 // --------------------------------------------------------------------------
 void SyntaxHighlightHelper::loadFile() {
+    // Increment generation to invalidate any in-flight async results
+    const int generation = ++m_generation;
+
     // Reset state
     const bool wasError = m_error;
     m_error = false;
@@ -54,17 +60,80 @@ void SyntaxHighlightHelper::loadFile() {
     m_language.clear();
 
     if (m_filePath.isEmpty()) {
+        m_loading = false;
+        emit loadingChanged();
         emit contentChanged();
         if (wasError) emit errorChanged();
         return;
     }
 
-    QFile file(m_filePath);
+    m_loading = true;
+    emit loadingChanged();
+    emit contentChanged();
+    if (wasError) emit errorChanged();
+
+    // Detect language on the GUI thread — cheap lookups on cached Repository data.
+    // Definition and Theme are copyable value types, safe to pass to the worker.
+    const QString path = m_filePath;
+    auto def = m_repository.definitionForFileName(QFileInfo(path).fileName());
+    if (!def.isValid()) {
+        static const QMimeDatabase mimeDb;
+        def = m_repository.definitionForMimeType(
+            mimeDb.mimeTypeForFile(path, QMimeDatabase::MatchExtension).name());
+    }
+    const auto theme = m_repository.defaultTheme(
+        KSyntaxHighlighting::Repository::DarkTheme);
+
+    // Heavy work (file I/O + QTextDocument + rehighlight) runs off the GUI thread.
+    const auto future = QtConcurrent::run([path, def, theme]() {
+        return computeHighlight(path, def, theme);
+    });
+
+    auto* watcher = new QFutureWatcher<HighlightResult>(this);
+    connect(watcher, &QFutureWatcher<HighlightResult>::finished, this,
+        [this, generation, watcher]() {
+            watcher->deleteLater();
+
+            // Discard stale results — user navigated to a different file
+            if (generation != m_generation)
+                return;
+
+            const auto result = watcher->result();
+
+            m_highlightedContent = result.html;
+            m_language = result.language;
+            m_lineCount = result.lineCount;
+            m_truncated = result.truncated;
+            m_loading = false;
+
+            const bool errorChanged = (m_error != result.isError);
+            m_error = result.isError;
+
+            emit loadingChanged();
+            emit contentChanged();
+            if (errorChanged) emit this->errorChanged();
+        });
+    watcher->setFuture(future);
+}
+
+// --------------------------------------------------------------------------
+// computeHighlight — pure function that runs on a worker thread.
+//
+// Reads the file, detects binary content, decodes UTF-8, truncates to
+// MaxLines, and generates highlighted HTML. All objects (QFile, QTextDocument,
+// QSyntaxHighlighter) are created locally — no shared state accessed.
+// --------------------------------------------------------------------------
+HighlightResult SyntaxHighlightHelper::computeHighlight(
+    const QString& path,
+    const KSyntaxHighlighting::Definition& def,
+    const KSyntaxHighlighting::Theme& theme)
+{
+    HighlightResult result;
+
+    QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
-        m_error = true;
-        emit contentChanged();
-        emit errorChanged();
-        return;
+        result.isError = true;
+        return result;
     }
 
     const QByteArray raw = file.read(MaxBytes);
@@ -74,10 +143,8 @@ void SyntaxHighlightHelper::loadFile() {
     const qsizetype scanLen = qMin<qsizetype>(raw.size(), BinaryScanBytes);
     for (qsizetype i = 0; i < scanLen; ++i) {
         if (raw.at(i) == '\0') {
-            m_error = true;
-            emit contentChanged();
-            emit errorChanged();
-            return;
+            result.isError = true;
+            return result;
         }
     }
 
@@ -99,43 +166,27 @@ void SyntaxHighlightHelper::loadFile() {
         }
     }
 
-    m_lineCount = linesTruncated ? MaxLines + 1 : newlineCount + 1;
-    m_truncated = byteTruncated || linesTruncated;
-
-    // Detect language from filename, then fallback to MIME type
-    auto def = m_repository.definitionForFileName(QFileInfo(m_filePath).fileName());
-    if (!def.isValid()) {
-        static const QMimeDatabase mimeDb;
-        const auto mime = mimeDb.mimeTypeForFile(
-            m_filePath, QMimeDatabase::MatchExtension
-        );
-        def = m_repository.definitionForMimeType(mime.name());
-    }
-
-    m_language = def.isValid() ? def.translatedName() : QString();
+    result.lineCount = linesTruncated ? MaxLines + 1 : newlineCount + 1;
+    result.truncated = byteTruncated || linesTruncated;
+    result.language = def.isValid() ? def.translatedName() : QString();
 
     // Use the dark theme's normal text color as the <pre> tag's default color.
     // Without this, RichText mode defaults to black text (HTML standard),
     // making text invisible on our dark background.
-    const auto theme = m_repository.defaultTheme(
-        KSyntaxHighlighting::Repository::DarkTheme);
     const QColor normalColor(theme.textColor(KSyntaxHighlighting::Theme::Normal));
     const QString preOpen = QStringLiteral("<pre style=\"margin:0;padding:0;color:")
         + normalColor.name() + QStringLiteral("\">");
 
-    // Generate highlighted HTML via a temporary QTextDocument.
-    // See buildHighlightedHtml() for the full architecture explanation.
     if (def.isValid()) {
-        m_highlightedContent = preOpen + buildHighlightedHtml(text, def)
+        result.html = preOpen + buildHighlightedHtml(text, def, theme)
             + QStringLiteral("</pre>");
     } else {
         // No language definition — wrap escaped plain text in <pre>
-        m_highlightedContent = preOpen + text.toHtmlEscaped()
+        result.html = preOpen + text.toHtmlEscaped()
             + QStringLiteral("</pre>");
     }
 
-    emit contentChanged();
-    if (wasError) emit errorChanged();
+    return result;
 }
 
 // --------------------------------------------------------------------------
@@ -169,7 +220,9 @@ void SyntaxHighlightHelper::loadFile() {
 //   See QUIRKS.md §6.
 // --------------------------------------------------------------------------
 QString SyntaxHighlightHelper::buildHighlightedHtml(
-    const QString& text, const KSyntaxHighlighting::Definition& def)
+    const QString& text,
+    const KSyntaxHighlighting::Definition& def,
+    const KSyntaxHighlighting::Theme& theme)
 {
     QTextDocument tempDoc;
     tempDoc.setPlainText(text);
@@ -178,8 +231,7 @@ QString SyntaxHighlightHelper::buildHighlightedHtml(
 
     // CRITICAL: setTheme() MUST be called before setDefinition().
     // See the function-level comment above for the full explanation.
-    highlighter.setTheme(
-        m_repository.defaultTheme(KSyntaxHighlighting::Repository::DarkTheme));
+    highlighter.setTheme(theme);
     highlighter.setDefinition(def);
 
     // Extract format ranges from QTextLayout (NOT QTextFragment — see above).

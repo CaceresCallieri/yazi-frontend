@@ -103,40 +103,8 @@ Item {
     }
 
     function _activateCurrentItem(): void {
-        // Picker mode — Enter always means "confirm/select", never navigate.
-        // Use l/→ to navigate into directories instead.
-        //   saveMode=true  → return current browsing directory as save location (mirrors Save button)
-        //   directory=true → select dirs only, ignore files
-        //   (default)      → select files only, ignore dirs
         if (FileManagerService.pickerMode) {
-            // Multi-select: if items are marked, confirm all marked items.
-            // Falls back to single-item behavior when nothing is marked.
-            // Note: pickerSaveMode and pickerMultiple are orthogonal — save mode ignores marks.
-            if (FileManagerService.pickerMultiple && windowState.selectedCount > 0) {
-                const paths = windowState.getSelectedPathsArray();
-                // Clear before completing so the selection count binding resets
-                // before pickerMode becomes false — prevents a stale count flash.
-                windowState.clearSelection();
-                FileManagerService.completePickerMode(paths);
-                return;
-            }
-            if (FileManagerService.pickerSaveMode) {
-                // Save mode: Enter = Save button — returns current directory
-                // as the save location (same as StatusBar's accept button).
-                // No currentEntry needed — works even in empty folders.
-                FileManagerService.completePickerMode([windowState.currentPath]);
-            // currentEntry is null (empty folder, non-save mode) — Enter is a no-op.
-            } else if (root.currentEntry) {
-                if (FileManagerService.pickerDirectory) {
-                    // Directory picker: only dirs are selectable; ignore Enter on files.
-                    if (root.currentEntry.isDir)
-                        FileManagerService.completePickerMode([root.currentEntry.path]);
-                } else {
-                    // Open file picker: Enter selects files only; use l/→ for dirs.
-                    if (!root.currentEntry.isDir)
-                        FileManagerService.completePickerMode([root.currentEntry.path]);
-                }
-            }
+            FileManagerService.confirmPickerSelection(root.currentEntry, windowState);
             return;
         }
 
@@ -150,10 +118,10 @@ Item {
         }
     }
 
-    // Returns the path that _activateCurrentItem() would confirm, or "" if the
-    // current state has no selectable target (e.g. cursor on a file in directory
-    // picker mode).  Single source of truth shared by the clipboard copy and the
-    // portal FIFO — keeps both in sync when picker branching logic changes.
+    // Returns the clipboard-preview path for the current picker state, or "" if
+    // the current state has no selectable target (e.g. cursor on a file in directory
+    // picker mode).  Used only for Shift+Enter clipboard copy — intentionally differs
+    // from confirmPickerSelection() in save mode by appending pickerSuggestedName.
     function _resolvePickerPath(): string {
         if (FileManagerService.pickerSaveMode) {
             // Save mode: the confirmed location is the current directory.

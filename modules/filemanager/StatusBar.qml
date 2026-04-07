@@ -104,18 +104,7 @@ Item {
                     onClicked: {
                         if (!acceptBtn._acceptEnabled)
                             return;
-                        if (FileManagerService.pickerSaveMode) {
-                            // Save mode: return current directory path
-                            FileManagerService.completePickerMode([root.windowState.currentPath]);
-                        } else if (FileManagerService.pickerMultiple && root._selectedCount > 0) {
-                            const paths = root.windowState.getSelectedPathsArray();
-                            // Clear before completing so the selection count binding resets
-                            // before pickerMode becomes false — prevents a stale count flash.
-                            root.windowState.clearSelection();
-                            FileManagerService.completePickerMode(paths);
-                        } else if (root.currentEntry) {
-                            FileManagerService.completePickerMode([root.currentEntry.path]);
-                        }
+                        FileManagerService.confirmPickerSelection(root.currentEntry, root.windowState);
                     }
                 }
 

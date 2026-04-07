@@ -25,8 +25,18 @@
 
 #include <KSyntaxHighlighting/Definition>
 #include <KSyntaxHighlighting/Repository>
+#include <KSyntaxHighlighting/Theme>
 
 namespace symmetria::filemanager::models {
+
+// Result of the background highlight computation.
+struct HighlightResult {
+    QString html;
+    QString language;
+    int lineCount = 0;
+    bool truncated = false;
+    bool isError = false;
+};
 
 class SyntaxHighlightHelper : public QObject {
     Q_OBJECT
@@ -70,8 +80,16 @@ private:
     static constexpr int BinaryScanBytes = 8192; // null-byte scan window
 
     void loadFile();
-    [[nodiscard]] QString buildHighlightedHtml(
-        const QString& text, const KSyntaxHighlighting::Definition& def);
+
+    // Pure computation — safe to call from any thread.
+    static HighlightResult computeHighlight(
+        const QString& path,
+        const KSyntaxHighlighting::Definition& def,
+        const KSyntaxHighlighting::Theme& theme);
+    static QString buildHighlightedHtml(
+        const QString& text,
+        const KSyntaxHighlighting::Definition& def,
+        const KSyntaxHighlighting::Theme& theme);
 
     QString m_filePath;
     QString m_highlightedContent;
@@ -80,6 +98,7 @@ private:
     bool m_truncated = false;
     bool m_loading = false;
     bool m_error = false;
+    int m_generation = 0;
 
     KSyntaxHighlighting::Repository m_repository;
 };
