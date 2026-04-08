@@ -30,7 +30,7 @@ Item {
     // Background — match PreviewPanel shade
     StyledRect {
         anchors.fill: parent
-        color: Theme.layer(Theme.palette.m3surfaceContainerLow, 1)
+        color: Theme.layer(Theme.palette.surfaceContainerLow, 1)
     }
 
     // Empty state when at filesystem root

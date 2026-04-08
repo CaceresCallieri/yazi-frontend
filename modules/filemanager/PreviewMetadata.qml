@@ -27,7 +27,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 1
-        color: Theme.palette.m3outlineVariant
+        color: Theme.palette.outlineVariant
     }
 
     RowLayout {
@@ -43,7 +43,7 @@ Item {
         MaterialIcon {
             visible: root.entry?.isSymlink ?? false
             text: "link"
-            color: Theme.palette.m3outline
+            color: Theme.palette.outline
             font.pointSize: Theme.font.size.xs
         }
 
@@ -52,7 +52,7 @@ Item {
             Layout.fillWidth: true
             text: root.entry?.name ?? ""
             elide: Text.ElideMiddle
-            color: Theme.palette.m3onSurfaceVariant
+            color: Theme.palette.onSurfaceVariant
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono
         }
@@ -61,7 +61,7 @@ Item {
         StyledText {
             visible: root.imageDimensions.width > 0
             text: root.imageDimensions.width + "\u00d7" + root.imageDimensions.height
-            color: Theme.palette.m3outline
+            color: Theme.palette.outline
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono
         }
@@ -70,7 +70,7 @@ Item {
         StyledText {
             visible: root.textLanguage !== ""
             text: root.textLanguage
-            color: Theme.palette.m3outline
+            color: Theme.palette.outline
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono
         }
@@ -79,7 +79,7 @@ Item {
         StyledText {
             visible: root.textLineCount > 0
             text: qsTr("%1 lines").arg(root.textLineCount)
-            color: Theme.palette.m3outline
+            color: Theme.palette.outline
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono
         }
@@ -93,7 +93,7 @@ Item {
                     info = qsTr("Sheet %1 of %2").arg(root.spreadsheetActiveSheet + 1).arg(root.spreadsheetSheetCount) + " \u00b7 " + info;
                 return info;
             }
-            color: Theme.palette.m3outline
+            color: Theme.palette.outline
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono
         }
@@ -109,7 +109,7 @@ Item {
                     parts.push(qsTr("%1 files").arg(root.archiveFileCount));
                 return parts.join(", ");
             }
-            color: Theme.palette.m3outline
+            color: Theme.palette.outline
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono
         }
@@ -118,7 +118,7 @@ Item {
         StyledText {
             visible: root.audioDuration !== ""
             text: root.audioDuration
-            color: Theme.palette.m3outline
+            color: Theme.palette.outline
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono
         }
@@ -127,7 +127,7 @@ Item {
         StyledText {
             visible: !!root.entry
             text: root.entry ? FileManagerService.formatDate(root.entry.modifiedDate) : ""
-            color: Theme.palette.m3outline
+            color: Theme.palette.outline
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono
         }
@@ -135,7 +135,7 @@ Item {
         // File size
         StyledText {
             text: root.entry ? FileManagerService.formatSize(root.entry.size) : ""
-            color: Theme.palette.m3outline
+            color: Theme.palette.outline
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono
         }

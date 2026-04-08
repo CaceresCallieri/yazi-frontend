@@ -10,7 +10,7 @@ Item {
     required property QtObject entry
     required property string materialIconName
 
-    property color materialColor: Theme.palette.m3onSurfaceVariant
+    property color materialColor: Theme.palette.onSurfaceVariant
     property real materialFill: 0
     property real materialPointSize: Theme.font.size.xl
     // -1 means "use the font's default weight". QML does not support binding font.weight

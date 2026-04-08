@@ -105,7 +105,7 @@ Item {
                 anchors.centerIn: parent
                 visible: albumArt.status !== Image.Ready
                 text: "music_note"
-                color: Theme.palette.m3outline
+                color: Theme.palette.outline
                 font.pointSize: Theme.font.size.xxl * 1.5
                 font.weight: Font.Medium
 
@@ -127,7 +127,7 @@ Item {
                 Layout.fillWidth: true
                 visible: root.audioTitle !== ""
                 text: root.audioTitle
-                color: Theme.palette.m3onSurface
+                color: Theme.palette.onSurface
                 font.pointSize: Theme.font.size.md
                 font.weight: Font.DemiBold
                 elide: Text.ElideRight
@@ -138,7 +138,7 @@ Item {
                 Layout.fillWidth: true
                 visible: root.audioArtist !== ""
                 text: root.audioArtist
-                color: Theme.palette.m3onSurfaceVariant
+                color: Theme.palette.onSurfaceVariant
                 font.pointSize: Theme.font.size.sm
                 elide: Text.ElideRight
                 horizontalAlignment: Text.AlignHCenter
@@ -176,8 +176,8 @@ Item {
                     const centerY = height / 2;
                     const maxBarHeight = centerY - 2; // 2px padding from edges
 
-                    const playedColor = String(Theme.palette.m3primary);
-                    const unplayedColor = Qt.alpha(Theme.palette.m3onSurface, 0.15);
+                    const playedColor = String(Theme.palette.primary);
+                    const unplayedColor = Qt.alpha(Theme.palette.onSurface, 0.15);
                     const progressBarIndex = Math.floor(progress * barCount);
 
                     for (let i = 0; i < barCount; i++) {
@@ -218,7 +218,7 @@ Item {
                 anchors.centerIn: parent
                 visible: waveformModel.loading && waveformModel.peaks.length === 0
                 text: qsTr("Loading waveform\u2026")
-                color: Theme.palette.m3outline
+                color: Theme.palette.outline
                 font.pointSize: Theme.font.size.sm
             }
         }
@@ -232,7 +232,7 @@ Item {
             StyledText {
                 readonly property int posSeconds: Math.floor(mediaPlayer.position / 1000)
                 text: Math.floor(posSeconds / 60) + ":" + (posSeconds % 60 < 10 ? "0" : "") + (posSeconds % 60)
-                color: Theme.palette.m3onSurfaceVariant
+                color: Theme.palette.onSurfaceVariant
                 font.pointSize: Theme.font.size.xs
                 font.family: Theme.font.family.mono
             }
@@ -242,7 +242,7 @@ Item {
             // Play state indicator
             MaterialIcon {
                 text: root.isPlaying ? "pause" : "play_arrow"
-                color: root.isPlaying ? Theme.palette.m3primary : Theme.palette.m3outline
+                color: root.isPlaying ? Theme.palette.primary : Theme.palette.outline
                 font.pointSize: Theme.font.size.md
 
                 Behavior on color {
@@ -255,7 +255,7 @@ Item {
             // Total duration
             StyledText {
                 text: root.audioDuration !== "" ? root.audioDuration : "--:--"
-                color: Theme.palette.m3onSurfaceVariant
+                color: Theme.palette.onSurfaceVariant
                 font.pointSize: Theme.font.size.xs
                 font.family: Theme.font.family.mono
             }
@@ -266,7 +266,7 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             visible: !root.isPlaying && mediaPlayer.playbackState === MediaPlayer.StoppedState
             text: qsTr("Ctrl+P \u2192 Play / Pause")
-            color: Qt.alpha(Theme.palette.m3outline, 0.6)
+            color: Qt.alpha(Theme.palette.outline, 0.6)
             font.pointSize: Theme.font.size.xs
         }
     }

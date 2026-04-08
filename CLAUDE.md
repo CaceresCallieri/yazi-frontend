@@ -97,7 +97,7 @@ Five model classes in C++ namespace `symmetria::filemanager::models`:
 
 ### Symmetria Shell Dependency (One-Sided)
 
-Symmetria Shell imports `Symmetria.FileManager.Models` in 5 QML files (wallpaper grid, file dialog, etc.) — it depends on this plugin being installed. Symmetria File Manager does NOT depend on the shell.
+Symmetria Shell imports `Symmetria.FileManager.Models` in 5 QML files (wallpaper grid, file dialog, etc.) — it depends on this plugin being installed. Symmetria File Manager does NOT depend on the shell at runtime — it reads theme data directly from config files on disk (`color-scheme.json`, `shell.json`), not via IPC.
 
 If the plugin is not installed, Symmetria Shell's wallpaper picker and file dialog will fail to load. After any plugin API changes, verify the shell still works.
 
@@ -253,8 +253,9 @@ Use `Paths.basename(path)` and `Paths.parentDir(path)` instead of inline `substr
 
 ### Theme & Typography
 
-- All colors from `Theme.palette.*` (M3 design tokens, synced with Symmetria Shell via IPC)
-- **Indicator colors** via `Theme.indicator.cut`, `.yank`, `.selection` — hardcoded deliberately because theme IPC overwrites M3 palette tokens with wallpaper-derived values
+- All colors from `Theme.palette.*` — property names match `color-scheme.json` keys directly (e.g., `Theme.palette.surface`, `Theme.palette.onSurface`, `Theme.palette.primary`)
+- **Theme source**: Reads palette from `~/.config/quickshell/symmetria/config/color-scheme.json` directly (no IPC — works without Symmetria Shell running). Reads transparency from `shell.json`. Layout tokens (rounding, spacing, padding, fonts) are file-manager-specific and NOT synced from the shell.
+- **Indicator colors** via `Theme.indicator.cut`, `.yank`, `.selection` — hardcoded deliberately because palette tokens change with wallpaper-derived color schemes
 - **Overlay colors** via `Theme.overlay.subtle` (0.06 white), `.emphasis` (0.10 white) — for separators, keycap backgrounds, subtle highlights
 - Sans: `Theme.font.family.sans` (Rubik), Mono: `Theme.font.family.mono` (CaskaydiaCove NF), Icons: `Theme.font.family.material`
 - Spacing/padding/rounding accessed via `Theme.spacing.*`, `Theme.padding.*`, `Theme.rounding.*`
@@ -272,5 +273,7 @@ Use `FileSystemModel.Alphabetical`, `.Modified`, `.Size`, `.Extension`, `.Natura
 **QML Loader quirks** — `anchors.margins` silently fails inside Loader `sourceComponent` blocks. Always use explicit x/y/width/height positioning and explicit imports inside Loaders. See `QUIRKS.md` for details.
 
 **QML Singleton lazy-init** — QuickShell singletons don't initialize until first referenced. `shell.qml` must contain `void WindowFactory;` to force IpcHandler registration at startup.
+
+**QML `on` prefix restriction** — QML reserves identifiers starting with `on` + uppercase letter for signal handlers. The palette uses `property var` (plain JS object) instead of `QtObject` because M3 token names like `onSurface`, `onPrimary`, `onSecondaryContainer` would clash with signal handler syntax inside `QtObject`. This means palette updates must use immutable reassignment (`root.palette = {...}`) to trigger bindings — do NOT mutate individual keys.
 
 **Vim chord detection** — Uses timer-based multi-key detection (500ms timeout), NOT Symmetria's KeyChords module (those are for global shell shortcuts).

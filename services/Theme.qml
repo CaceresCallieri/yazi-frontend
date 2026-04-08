@@ -7,31 +7,37 @@ import QtQuick
 Singleton {
     id: root
 
-    // === Symmetria integration state ===
-    property bool _pendingRequery: false
+    // === Symmetria config directory ===
     readonly property string _configDir: Paths.home + "/.config/quickshell/symmetria/config"
 
-    // === M3 Palette (defaults from Symmetria M3Palette; overwritten by IPC) ===
-    property QtObject palette: QtObject {
-        property color m3background: "#191114"
-        property color m3surface: "#191114"
-        property color m3surfaceContainerLowest: "#130c0e"
-        property color m3surfaceContainerLow: "#22191c"
-        property color m3surfaceContainer: "#261d20"
-        property color m3surfaceContainerHigh: "#31282a"
-        property color m3surfaceContainerHighest: "#3c3235"
-        property color m3onSurface: "#efdfe2"
-        property color m3onSurfaceVariant: "#d5c2c6"
-        property color m3primary: "#ffb0ca"
-        property color m3onPrimary: "#541d34"
-        property color m3outline: "#9e8c91"
-        property color m3outlineVariant: "#514347"
-        property color m3secondary: "#e2bdc7"
-        property color m3secondaryContainer: "#5a3f48"
-        property color m3onSecondaryContainer: "#ffd9e3"
-        property color m3error: "#ffb4ab"
-        property color m3shadow: "#000000"
-    }
+    // === Palette (defaults: warm-neutral monochrome; overwritten from color-scheme.json) ===
+    // Stored as a plain JS object (not QtObject) because QML reserves
+    // identifiers starting with "on" + uppercase for signal handlers,
+    // which would clash with M3 names like onSurface, onPrimary, etc.
+    // Use immutable reassignment (root.palette = {...}) to trigger bindings.
+    property var palette: ({
+        background: "#1a1818",
+        surface: "#1a1818",
+        surfaceContainerLowest: "#141212",
+        surfaceContainerLow: "#1c1a1a",
+        surfaceContainer: "#262424",
+        surfaceContainerHigh: "#302e2e",
+        surfaceContainerHighest: "#3a3838",
+        onSurface: "#eee5da",
+        onSurfaceVariant: "#c8c4bc",
+        primary: "#c8c4bc",
+        onPrimary: "#333130",
+        primaryContainer: "#887f74",
+        onPrimaryContainer: "#eee5da",
+        outline: "#8a8580",
+        outlineVariant: "#484442",
+        secondary: "#b0a89e",
+        secondaryContainer: "#585350",
+        onSecondaryContainer: "#c8c4bc",
+        surfaceVariant: "#484442",
+        error: "#ffb4ab",
+        shadow: "#000000"
+    })
 
     // === Typography ===
     property QtObject font: QtObject {
@@ -116,13 +122,13 @@ Singleton {
     }
 
     // Precomputed matte styles for current consumers
-    readonly property var pillMedium: _mattePill(palette.m3surfaceContainerHigh, matte.medium)
-    readonly property var pillStrong: _mattePill(palette.m3surfaceContainerHigh, matte.strong)
+    readonly property var pillMedium: _mattePill(palette.surfaceContainerHigh, matte.medium)
+    readonly property var pillStrong: _mattePill(palette.surfaceContainerHigh, matte.strong)
 
     // === Fixed indicator colors ===
-    // Hardcoded deliberately: Symmetria's _applyTheme IPC overwrites m3*
-    // palette tokens with wallpaper-derived values, so indicators must
-    // stay fixed to remain visually distinguishable.
+    // Hardcoded deliberately: palette tokens change with wallpaper-derived
+    // color schemes, so indicators must stay fixed to remain visually
+    // distinguishable.
     property QtObject indicator: QtObject {
         property color cut: "#e57373"
         property color yank: "#4caf7d"
@@ -138,75 +144,67 @@ Singleton {
     // === Misc ===
     property bool light: false
 
-    // === Symmetria IPC: query theme on startup and on changes ===
-    Process {
-        id: themeQuery
-        command: ["qs", "-c", "symmetria", "ipc", "call", "theme", "getTheme"]
-        stdout: StdioCollector {
-            onStreamFinished: root._applyTheme(text)
-        }
-        onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0) {
-                Logger.warn("Theme", "Symmetria IPC unavailable, using defaults");
-            }
-            if (root._pendingRequery) {
-                root._pendingRequery = false;
-                themeQuery.running = true;
-            }
-        }
-    }
+    // === Read theme directly from Symmetria config files ===
+    // No IPC needed — works even when Symmetria Shell is not running.
 
-    // file:// + absolute path = file:///path (triple-slash is correct per RFC 3986)
-    // This FileView triggers the initial IPC query via onLoaded; the shell.json
-    // watcher below only monitors for changes (appearance tokens update less often)
     FileView {
+        id: colorSchemeView
         path: "file://" + root._configDir + "/color-scheme.json"
         watchChanges: true
-        onFileChanged: queryDebounce.restart()
-        onLoaded: themeQuery.running = true
+        onLoaded: root._applyColorScheme(text())
+        onFileChanged: colorSchemeDebounce.restart()
     }
 
     FileView {
+        id: shellConfigView
         path: "file://" + root._configDir + "/shell.json"
         watchChanges: true
-        onFileChanged: queryDebounce.restart()
+        onLoaded: root._applyAppearance(text())
+        onFileChanged: appearanceDebounce.restart()
     }
 
     Timer {
-        id: queryDebounce
+        id: colorSchemeDebounce
         interval: 100
-        onTriggered: {
-            if (themeQuery.running)
-                root._pendingRequery = true;
-            else
-                themeQuery.running = true;
+        onTriggered: root._applyColorScheme(colorSchemeView.text())
+    }
+
+    Timer {
+        id: appearanceDebounce
+        interval: 100
+        onTriggered: root._applyAppearance(shellConfigView.text())
+    }
+
+    // === Apply palette from color-scheme.json ===
+    // The JSON stores colors without "#" prefix (e.g., "surface": "1a1818").
+    // Uses immutable reassignment to trigger QML bindings on the var palette.
+    function _applyColorScheme(json: string): void {
+        try {
+            const scheme = JSON.parse(json);
+            root.light = scheme.mode === "light";
+
+            const colours = scheme.colours;
+            const updated = Object.assign({}, root.palette);
+            for (const [key, value] of Object.entries(colours))
+                if (key in updated)
+                    updated[key] = "#" + value;
+            root.palette = updated;
+        } catch (e) {
+            Logger.warn("Theme", "failed to parse color-scheme.json: " + e);
         }
     }
 
-    // === Apply theme data from IPC JSON response ===
-    function _applyTheme(json: string): void {
+    // === Apply appearance tokens from shell.json ===
+    // Only syncs transparency — layout tokens (rounding, spacing, padding,
+    // fonts) are intentionally kept independent because the file manager
+    // uses a denser layout than the shell.
+    function _applyAppearance(json: string): void {
         try {
-            const t = JSON.parse(json);
-            root.light = t.meta.light;
-
-            // Apply palette colors — only set properties that exist locally
-            for (const [key, value] of Object.entries(t.palette))
-                if (root.palette.hasOwnProperty(key))
-                    root.palette[key] = value;
-
-            // Apply appearance tokens
-            const a = t.appearance;
-            if (a?.rounding) _applyObject(root.rounding, a.rounding);
-            if (a?.spacing) _applyObject(root.spacing, a.spacing);
-            if (a?.padding) _applyObject(root.padding, a.padding);
-            if (a?.font?.family) _applyObject(root.font.family, a.font.family);
-            if (a?.font?.size) _applyObject(root.font.size, a.font.size);
-            if (a?.anim?.duration !== undefined) root.animDuration = a.anim.duration;
-            if (a?.anim?.curves?.standard) root.animCurveStandard = a.anim.curves.standard;
-            if (a?.anim?.curves?.standardDecel) root.animCurveStandardDecel = a.anim.curves.standardDecel;
+            const config = JSON.parse(json);
+            const a = config.appearance;
             if (a?.transparency) _applyObject(root.transparency, a.transparency);
         } catch (e) {
-            Logger.warn("Theme", "failed to parse IPC response: " + e);
+            Logger.warn("Theme", "failed to parse shell.json: " + e);
         }
     }
 

@@ -30,7 +30,7 @@ Item {
                     return "description";
                 return FileManagerService.iconNameForMime(root.entry.mimeType);
             }
-            materialColor: Theme.palette.m3outline
+            materialColor: Theme.palette.outline
             materialPointSize: Theme.font.size.xxl * 2
             materialWeight: 500
         }
@@ -40,7 +40,7 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             Layout.maximumWidth: parent.width
             text: root.entry?.name ?? ""
-            color: Theme.palette.m3onSurface
+            color: Theme.palette.onSurface
             font.pointSize: Theme.font.size.lg
             font.weight: Font.Medium
             horizontalAlignment: Text.AlignHCenter
@@ -53,7 +53,7 @@ Item {
         StyledText {
             Layout.alignment: Qt.AlignHCenter
             text: root.entry ? FileManagerService.formatSize(root.entry.size) : ""
-            color: Theme.palette.m3onSurfaceVariant
+            color: Theme.palette.onSurfaceVariant
             font.pointSize: Theme.font.size.sm
             font.family: Theme.font.family.mono
         }
@@ -62,7 +62,7 @@ Item {
         StyledText {
             Layout.alignment: Qt.AlignHCenter
             text: root.entry?.mimeType ?? ""
-            color: Theme.palette.m3outline
+            color: Theme.palette.outline
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono
         }
@@ -73,7 +73,7 @@ Item {
             Layout.topMargin: Theme.padding.sm
             Layout.bottomMargin: Theme.padding.sm
             height: 1
-            color: Theme.palette.m3outlineVariant
+            color: Theme.palette.outlineVariant
         }
 
         // Metadata detail grid
@@ -86,13 +86,13 @@ Item {
             // Modified
             StyledText {
                 text: qsTr("Modified")
-                color: Theme.palette.m3outline
+                color: Theme.palette.outline
                 font.pointSize: Theme.font.size.xs
                 font.family: Theme.font.family.mono
             }
             StyledText {
                 text: root.entry ? FileManagerService.formatDate(root.entry.modifiedDate) : ""
-                color: Theme.palette.m3onSurfaceVariant
+                color: Theme.palette.onSurfaceVariant
                 font.pointSize: Theme.font.size.xs
                 font.family: Theme.font.family.mono
             }
@@ -100,13 +100,13 @@ Item {
             // Permissions
             StyledText {
                 text: qsTr("Permissions")
-                color: Theme.palette.m3outline
+                color: Theme.palette.outline
                 font.pointSize: Theme.font.size.xs
                 font.family: Theme.font.family.mono
             }
             StyledText {
                 text: root.entry?.permissions ?? ""
-                color: Theme.palette.m3onSurfaceVariant
+                color: Theme.palette.onSurfaceVariant
                 font.pointSize: Theme.font.size.xs
                 font.family: Theme.font.family.mono
             }
@@ -115,14 +115,14 @@ Item {
             StyledText {
                 visible: root._showOwner
                 text: qsTr("Owner")
-                color: Theme.palette.m3outline
+                color: Theme.palette.outline
                 font.pointSize: Theme.font.size.xs
                 font.family: Theme.font.family.mono
             }
             StyledText {
                 visible: root._showOwner
                 text: root.entry?.owner ?? ""
-                color: Theme.palette.m3onSurfaceVariant
+                color: Theme.palette.onSurfaceVariant
                 font.pointSize: Theme.font.size.xs
                 font.family: Theme.font.family.mono
             }
@@ -131,7 +131,7 @@ Item {
             StyledText {
                 visible: root._showSymlinkTarget
                 text: qsTr("Target")
-                color: Theme.palette.m3outline
+                color: Theme.palette.outline
                 font.pointSize: Theme.font.size.xs
                 font.family: Theme.font.family.mono
             }
@@ -140,7 +140,7 @@ Item {
                 // Constrain width: two sides × two levels of padding (column + outer item)
                 Layout.maximumWidth: root.width - Theme.padding.lg * 4
                 text: root.entry?.symlinkTarget ?? ""
-                color: Theme.palette.m3onSurfaceVariant
+                color: Theme.palette.onSurfaceVariant
                 font.pointSize: Theme.font.size.xs
                 font.family: Theme.font.family.mono
                 elide: Text.ElideMiddle

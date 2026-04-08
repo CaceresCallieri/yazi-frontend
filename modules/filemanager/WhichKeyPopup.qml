@@ -61,7 +61,7 @@ Item {
                 width: root.windowState && root.windowState.bookmarkSubModeActive ? 32 : 22
                 height: 22
                 radius: 6
-                color: Qt.alpha(Theme.palette.m3primary, 0.18)
+                color: Qt.alpha(Theme.palette.primary, 0.18)
 
                 StyledText {
                     anchors.centerIn: parent
@@ -71,7 +71,7 @@ Item {
                         if (root.windowState.bookmarkSubMode === "delete") return "gx";
                         return root.windowState.activeChordPrefix;
                     }
-                    color: Theme.palette.m3primary
+                    color: Theme.palette.primary
                     font.family: Theme.font.family.mono
                     font.pointSize: Theme.font.size.sm
                     font.weight: Font.Bold
@@ -90,7 +90,7 @@ Item {
                     const bindings = root.windowState.chordBindings;
                     return bindings.hasOwnProperty(prefix) ? bindings[prefix].label : "";
                 }
-                color: Theme.palette.m3onSurfaceVariant
+                color: Theme.palette.onSurfaceVariant
                 font.pointSize: Theme.font.size.sm
                 font.weight: Font.Medium
             }
@@ -131,17 +131,17 @@ Item {
                         width: 22
                         height: 22
                         radius: 6
-                        color: modelData.isUser ? Qt.alpha(Theme.palette.m3primary, 0.15)
+                        color: modelData.isUser ? Qt.alpha(Theme.palette.primary, 0.15)
                                                 : Qt.alpha("#ffffff", 0.06)
-                        border.color: modelData.isUser ? Qt.alpha(Theme.palette.m3primary, 0.30)
+                        border.color: modelData.isUser ? Qt.alpha(Theme.palette.primary, 0.30)
                                                        : Theme.overlay.emphasis
                         border.width: 1
 
                         StyledText {
                             anchors.centerIn: parent
                             text: modelData.key ?? ""
-                            color: modelData.isUser ? Theme.palette.m3primary
-                                                    : Theme.palette.m3onSurface
+                            color: modelData.isUser ? Theme.palette.primary
+                                                    : Theme.palette.onSurface
                             font.family: Theme.font.family.mono
                             font.pointSize: Theme.font.size.xs
                             font.weight: Font.DemiBold
@@ -151,16 +151,16 @@ Item {
                     // Icon
                     MaterialIcon {
                         text: modelData.icon ?? ""
-                        color: modelData.isAction ? Qt.alpha(Theme.palette.m3onSurfaceVariant, 0.6)
-                                                  : Theme.palette.m3onSurfaceVariant
+                        color: modelData.isAction ? Qt.alpha(Theme.palette.onSurfaceVariant, 0.6)
+                                                  : Theme.palette.onSurfaceVariant
                         font.pointSize: Theme.font.size.md
                     }
 
                     // Label
                     StyledText {
                         text: modelData.label ?? ""
-                        color: modelData.isAction ? Qt.alpha(Theme.palette.m3onSurface, 0.6)
-                                                  : Theme.palette.m3onSurface
+                        color: modelData.isAction ? Qt.alpha(Theme.palette.onSurface, 0.6)
+                                                  : Theme.palette.onSurface
                         font.pointSize: Theme.font.size.sm
                     }
                 }

@@ -21,8 +21,8 @@ Item {
         const lowerName = name.toLowerCase();
         const lowerQuery = query.toLowerCase();
         const qLen = query.length;
-        const spanOpen = "<span style=\"background-color: " + Theme.palette.m3secondaryContainer
-                       + "; color: " + Theme.palette.m3onSecondaryContainer + ";\">";
+        const spanOpen = "<span style=\"background-color: " + Theme.palette.secondaryContainer
+                       + "; color: " + Theme.palette.onSecondaryContainer + ";\">";
         const spanClose = "</span>";
 
         let result = "";
@@ -51,12 +51,12 @@ Item {
         const replacedEnd = Math.min(afterMatchStart + label.length, name.length);
         const after = name.substring(replacedEnd);
 
-        const querySpan = "<span style=\"background-color: " + Theme.palette.m3secondaryContainer
-                        + "; color: " + Theme.palette.m3onSecondaryContainer + ";\">"
+        const querySpan = "<span style=\"background-color: " + Theme.palette.secondaryContainer
+                        + "; color: " + Theme.palette.onSecondaryContainer + ";\">"
                         + root._htmlEscape(match) + "</span>";
 
-        const labelSpan = "<span style=\"background-color: " + Theme.palette.m3primary
-                        + "; color: " + Theme.palette.m3onPrimary
+        const labelSpan = "<span style=\"background-color: " + Theme.palette.primary
+                        + "; color: " + Theme.palette.onPrimary
                         + "; font-weight: 700; font-family: " + Theme.font.family.mono + ";\">"
                         + root._htmlEscape(label) + "</span>";
 
@@ -81,7 +81,7 @@ Item {
         anchors.leftMargin: Theme.padding.sm
         anchors.rightMargin: Theme.padding.sm
         radius: Theme.rounding.full
-        color: Theme.palette.m3onSurface
+        color: Theme.palette.onSurface
         opacity: root.isSearchMatch ? 0.06 : 0
         Behavior on opacity { Anim {} }
     }
@@ -180,7 +180,7 @@ Item {
                     return "image";
                 return FileManagerService.iconNameForMime(root.modelData.mimeType);
             }
-            materialColor: root.modelData?.isDir ? Theme.palette.m3primary : Theme.palette.m3onSurfaceVariant
+            materialColor: root.modelData?.isDir ? Theme.palette.primary : Theme.palette.onSurfaceVariant
             materialFill: root.modelData?.isDir ? 1 : 0
             Layout.preferredWidth: implicitWidth
             Layout.preferredHeight: implicitHeight
@@ -190,7 +190,7 @@ Item {
         MaterialIcon {
             visible: root.modelData.isRemoteMount
             text: "lan"
-            color: Theme.palette.m3primary
+            color: Theme.palette.primary
             font.pointSize: Theme.font.size.xs
         }
 
@@ -208,7 +208,7 @@ Item {
                     return root._highlightMatches(name, root.searchQuery);
                 return name;
             }
-            color: Theme.palette.m3onSurface
+            color: Theme.palette.onSurface
             font.pointSize: Theme.font.size.md
         }
 
@@ -217,7 +217,7 @@ Item {
             visible: root.modelData?.isSymlink ?? false
             Layout.fillWidth: true
             text: "→ " + Paths.shortenHomeBare(root.modelData?.symlinkTarget ?? "")
-            color: Theme.palette.m3outline
+            color: Theme.palette.outline
             font.pointSize: Theme.font.size.xs
             elide: Text.ElideMiddle
         }
@@ -226,7 +226,7 @@ Item {
         StyledText {
             visible: !(root.modelData?.isDir ?? true)
             text: root.modelData ? FileManagerService.formatSize(root.modelData.size) : ""
-            color: Theme.palette.m3onSurfaceVariant
+            color: Theme.palette.onSurfaceVariant
             font.pointSize: Theme.font.size.xs
             font.family: Theme.font.family.mono
             horizontalAlignment: Text.AlignRight

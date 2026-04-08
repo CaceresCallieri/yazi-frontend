@@ -215,7 +215,7 @@ Singleton {
 
             property string initialPath: Paths.home
 
-            color: Theme.layer(Theme.palette.m3surface, 0)
+            color: Theme.layer(Theme.palette.surface, 0)
             title: qsTr("File Manager")
 
             implicitWidth: Config.fileManager.sizes.windowWidth
@@ -259,7 +259,7 @@ Singleton {
 
             property string initialPath: Paths.home
 
-            color: Theme.layer(Theme.palette.m3surface, 0)
+            color: Theme.layer(Theme.palette.surface, 0)
             title: FileManagerService.pickerTitle || qsTr("Select a File")
 
             implicitWidth: Config.fileManager.sizes.windowWidth
@@ -387,7 +387,7 @@ Singleton {
                 ClippingRect {
                     anchors.fill: parent
                     radius: Theme.rounding.lg
-                    color: Theme.layer(Theme.palette.m3surface, 0)
+                    color: Theme.layer(Theme.palette.surface, 0)
 
                     // Absorb clicks on the card to prevent them reaching
                     // the click-outside MouseArea and triggering close.

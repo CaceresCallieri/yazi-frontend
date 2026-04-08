@@ -45,7 +45,7 @@ Loader {
             anchors.horizontalCenter: parent.horizontalCenter
             y: parent.height * 0.2
             radius: Theme.rounding.lg
-            color: Theme.palette.m3surfaceContainerHigh
+            color: Theme.palette.surfaceContainerHigh
 
             width: Math.min(parent.width - Theme.padding.lg * 4, 360)
             implicitHeight: createLayout.implicitHeight + Theme.padding.lg * 3
@@ -80,13 +80,13 @@ Loader {
 
                     MaterialIcon {
                         text: "add"
-                        color: Theme.palette.m3primary
+                        color: Theme.palette.primary
                         font.pointSize: Theme.font.size.lg
                     }
 
                     StyledText {
                         text: qsTr("Create:")
-                        color: Theme.palette.m3onSurface
+                        color: Theme.palette.onSurface
                         font.pointSize: Theme.font.size.md
                         font.weight: Font.DemiBold
                     }
@@ -96,7 +96,7 @@ Loader {
                 StyledRect {
                     Layout.fillWidth: true
                     radius: Theme.rounding.sm
-                    color: Qt.alpha(Theme.palette.m3onSurface, 0.06)
+                    color: Qt.alpha(Theme.palette.onSurface, 0.06)
                     implicitHeight: createInput.implicitHeight + Theme.padding.md * 2
 
                     TextInput {
@@ -108,11 +108,11 @@ Loader {
                         anchors.leftMargin: Theme.padding.lg
                         anchors.rightMargin: Theme.padding.lg
 
-                        color: Theme.palette.m3onSurface
+                        color: Theme.palette.onSurface
                         font.pointSize: Theme.font.size.sm
                         font.family: Theme.font.family.mono
-                        selectionColor: Theme.palette.m3primary
-                        selectedTextColor: Theme.palette.m3onPrimary
+                        selectionColor: Theme.palette.primary
+                        selectedTextColor: Theme.palette.onPrimary
                         clip: true
                         focus: true
 
@@ -137,7 +137,7 @@ Loader {
                     Layout.fillWidth: true
                     visible: text !== ""
                     text: ""
-                    color: Theme.palette.m3error
+                    color: Theme.palette.error
                     font.pointSize: Theme.font.size.xs
                     font.family: Theme.font.family.mono
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere

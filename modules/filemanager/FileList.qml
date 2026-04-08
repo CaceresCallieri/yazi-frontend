@@ -173,7 +173,7 @@ Item {
     // Background
     StyledRect {
         anchors.fill: parent
-        color: Theme.layer(Theme.palette.m3surfaceContainerLow, 1)
+        color: Theme.layer(Theme.palette.surfaceContainerLow, 1)
     }
 
     // Empty state
@@ -220,7 +220,7 @@ Item {
             contentItem: Rectangle {
                 implicitWidth: 6
                 radius: width / 2
-                color: Theme.palette.m3onSurfaceVariant
+                color: Theme.palette.onSurfaceVariant
                 opacity: 0.4
             }
         }

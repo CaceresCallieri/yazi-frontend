@@ -6,7 +6,7 @@ Text {
 
     renderType: Text.NativeRendering
     textFormat: Text.PlainText
-    color: Theme.palette.m3onSurface
+    color: Theme.palette.onSurface
     font.family: Theme.font.family.sans
     font.pointSize: Theme.font.size.sm
 

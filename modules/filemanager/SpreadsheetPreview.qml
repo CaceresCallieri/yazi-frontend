@@ -77,8 +77,8 @@ Item {
                     height: tabLabel.implicitHeight + Theme.padding.sm * 2
                     radius: Theme.rounding.sm
                     color: (index === spreadsheetModel.activeSheet
-                        ? Theme.palette.m3primaryContainer
-                        : Theme.palette.m3surfaceContainer) ?? "transparent"
+                        ? Theme.palette.primaryContainer
+                        : Theme.palette.surfaceContainer) ?? "transparent"
 
                     StyledText {
                         id: tabLabel
@@ -86,8 +86,8 @@ Item {
                         anchors.centerIn: parent
                         text: modelData
                         color: (index === spreadsheetModel.activeSheet
-                            ? Theme.palette.m3onPrimaryContainer
-                            : Theme.palette.m3onSurfaceVariant) ?? Theme.palette.m3onSurface
+                            ? Theme.palette.onPrimaryContainer
+                            : Theme.palette.onSurfaceVariant) ?? Theme.palette.onSurface
                         font.pointSize: Theme.font.size.sm
                         font.family: Theme.font.family.mono
                         font.weight: index === spreadsheetModel.activeSheet ? Font.DemiBold : Font.Normal
@@ -118,12 +118,12 @@ Item {
                 delegate: Rectangle {
                     implicitWidth: root._colWidth
                     implicitHeight: root._rowHeight
-                    color: Theme.palette.m3surfaceContainerHigh
+                    color: Theme.palette.surfaceContainerHigh
 
                     StyledText {
                         anchors.centerIn: parent
                         text: display ?? ""
-                        color: Theme.palette.m3onSurfaceVariant
+                        color: Theme.palette.onSurfaceVariant
                         font.pointSize: Theme.font.size.sm
                         font.family: Theme.font.family.mono
                         font.weight: Font.DemiBold
@@ -158,8 +158,8 @@ Item {
                     implicitWidth: root._colWidth
                     implicitHeight: root._rowHeight
                     color: row % 2 === 0
-                        ? Theme.palette.m3surfaceContainerLowest
-                        : Theme.palette.m3surfaceContainer
+                        ? Theme.palette.surfaceContainerLowest
+                        : Theme.palette.surfaceContainer
 
                     StyledText {
                         anchors.fill: parent
@@ -168,7 +168,7 @@ Item {
                         text: display ?? ""
                         elide: Text.ElideRight
                         verticalAlignment: Text.AlignVCenter
-                        color: Theme.palette.m3onSurface
+                        color: Theme.palette.onSurface
                         font.pointSize: Theme.font.size.xs
                         font.family: Theme.font.family.mono
                     }
@@ -200,7 +200,7 @@ Item {
                     parts.push(qsTr("%1 of %2 columns").arg(spreadsheetModel.columnCount()).arg(spreadsheetModel.totalCols));
                 return parts.join(", ");
             }
-            color: Theme.palette.m3outline
+            color: Theme.palette.outline
             font.pointSize: Theme.font.size.sm
             font.family: Theme.font.family.mono
         }

@@ -6,7 +6,7 @@ MouseArea {
 
     property bool disabled
     property bool showHoverBackground: true
-    property color color: Theme.palette.m3onSurface
+    property color color: Theme.palette.onSurface
     property real radius: parent?.radius ?? 0
 
     anchors.fill: parent

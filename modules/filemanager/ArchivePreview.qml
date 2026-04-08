@@ -82,8 +82,8 @@ Item {
                 MaterialIcon {
                     text: delegateRoot.isDir ? "folder" : "description"
                     color: delegateRoot.isDir
-                        ? Theme.palette.m3primary
-                        : Theme.palette.m3onSurfaceVariant
+                        ? Theme.palette.primary
+                        : Theme.palette.onSurfaceVariant
                     font.pointSize: Theme.font.size.xs
                     font.weight: delegateRoot.isDir ? Font.DemiBold : Font.Normal
                 }
@@ -92,14 +92,14 @@ Item {
                     Layout.fillWidth: true
                     text: delegateRoot.name
                     elide: Text.ElideRight
-                    color: Theme.palette.m3onSurface
+                    color: Theme.palette.onSurface
                     font.pointSize: Theme.font.size.xs
                 }
 
                 StyledText {
                     visible: !delegateRoot.isDir
                     text: FileManagerService.formatSize(delegateRoot.size)
-                    color: Theme.palette.m3outline
+                    color: Theme.palette.outline
                     font.pointSize: Theme.font.size.sm
                     font.family: Theme.font.family.mono
                 }
@@ -120,7 +120,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottomMargin: Theme.padding.sm
         text: qsTr("Showing %1 of %2 entries").arg(archiveListView.count).arg(archiveModel.totalEntries)
-        color: Theme.palette.m3outline
+        color: Theme.palette.outline
         font.pointSize: Theme.font.size.sm
         font.family: Theme.font.family.mono
     }

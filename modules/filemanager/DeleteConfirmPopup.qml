@@ -37,7 +37,7 @@ Loader {
 
         StyledRect {
             anchors.fill: parent
-            color: Qt.alpha(Theme.palette.m3shadow, 0.5)
+            color: Qt.alpha(Theme.palette.shadow, 0.5)
         }
 
         // Dialog card
@@ -46,7 +46,7 @@ Loader {
 
             anchors.centerIn: parent
             radius: Theme.rounding.lg
-            color: Theme.palette.m3surfaceContainerHigh
+            color: Theme.palette.surfaceContainerHigh
 
             width: Math.min(parent.width - Theme.padding.lg * 4, dialogLayout.implicitWidth + Theme.padding.lg * 3)
             implicitHeight: dialogLayout.implicitHeight + Theme.padding.lg * 3
@@ -120,7 +120,7 @@ Loader {
                 MaterialIcon {
                     Layout.alignment: Qt.AlignHCenter
                     text: "delete"
-                    color: Theme.palette.m3error
+                    color: Theme.palette.error
                     font.pointSize: Theme.font.size.xxl
                     font.weight: Font.Medium
                 }
@@ -145,7 +145,7 @@ Loader {
                             return names.join("\n");
                         return names.slice(0, 3).join("\n") + "\n\u2026 and " + (names.length - 3) + " more";
                     }
-                    color: Theme.palette.m3onSurfaceVariant
+                    color: Theme.palette.onSurfaceVariant
                     font.pointSize: Theme.font.size.sm
                     font.family: Theme.font.family.mono
                     horizontalAlignment: Text.AlignHCenter
@@ -163,8 +163,8 @@ Loader {
 
                         radius: Theme.rounding.sm
                         color: yesButton.activeFocus
-                            ? Qt.alpha(Theme.palette.m3error, 0.25)
-                            : Qt.alpha(Theme.palette.m3error, 0.12)
+                            ? Qt.alpha(Theme.palette.error, 0.25)
+                            : Qt.alpha(Theme.palette.error, 0.12)
                         implicitWidth: yesRow.implicitWidth + Theme.padding.lg * 2
                         implicitHeight: yesRow.implicitHeight + Theme.padding.md * 2
                         focus: true
@@ -181,21 +181,21 @@ Loader {
 
                             StyledText {
                                 text: qsTr("Yes")
-                                color: Theme.palette.m3error
+                                color: Theme.palette.error
                                 font.pointSize: Theme.font.size.sm
                                 font.weight: Font.DemiBold
                             }
 
                             StyledText {
                                 text: "(Y)"
-                                color: Qt.alpha(Theme.palette.m3error, 0.6)
+                                color: Qt.alpha(Theme.palette.error, 0.6)
                                 font.pointSize: Theme.font.size.xs
                                 font.family: Theme.font.family.mono
                             }
                         }
 
                         StateLayer {
-                            color: Theme.palette.m3error
+                            color: Theme.palette.error
                             onClicked: {
                                 if (!trashProcess.running)
                                     trashProcess.running = true;
@@ -209,8 +209,8 @@ Loader {
 
                         radius: Theme.rounding.sm
                         color: noButton.activeFocus
-                            ? Qt.alpha(Theme.palette.m3onSurface, 0.12)
-                            : Qt.alpha(Theme.palette.m3onSurface, 0.06)
+                            ? Qt.alpha(Theme.palette.onSurface, 0.12)
+                            : Qt.alpha(Theme.palette.onSurface, 0.06)
                         implicitWidth: noRow.implicitWidth + Theme.padding.lg * 2
                         implicitHeight: noRow.implicitHeight + Theme.padding.md * 2
 
@@ -231,7 +231,7 @@ Loader {
 
                             StyledText {
                                 text: "(N)"
-                                color: Theme.palette.m3onSurfaceVariant
+                                color: Theme.palette.onSurfaceVariant
                                 font.pointSize: Theme.font.size.xs
                                 font.family: Theme.font.family.mono
                             }

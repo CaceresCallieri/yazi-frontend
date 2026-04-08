@@ -245,7 +245,7 @@ Loader {
 
         StyledRect {
             anchors.fill: parent
-            color: Qt.alpha(Theme.palette.m3shadow, 0.5)
+            color: Qt.alpha(Theme.palette.shadow, 0.5)
         }
 
         // Dialog card
@@ -254,7 +254,7 @@ Loader {
 
             anchors.centerIn: parent
             radius: Theme.rounding.lg
-            color: Theme.palette.m3surfaceContainerHigh
+            color: Theme.palette.surfaceContainerHigh
 
             width: Math.min(parent.width - Theme.padding.lg * 4, 400)
             implicitHeight: dialogContent.implicitHeight + Theme.padding.lg * 3
@@ -297,14 +297,14 @@ Loader {
 
                     MaterialIcon {
                         text: "more_horiz"
-                        color: Theme.palette.m3primary
+                        color: Theme.palette.primary
                         font.pointSize: Theme.font.size.lg
                         font.weight: Font.Medium
                     }
 
                     StyledText {
                         text: popupScope.targetName
-                        color: Theme.palette.m3onSurface
+                        color: Theme.palette.onSurface
                         font.pointSize: Theme.font.size.md
                         font.weight: Font.DemiBold
                         elide: Text.ElideMiddle
@@ -337,7 +337,7 @@ Loader {
                                 Layout.fillWidth: true
                                 radius: Theme.rounding.sm
                                 color: index === popupScope.actionIndex
-                                    ? Qt.alpha(Theme.palette.m3primary, 0.12)
+                                    ? Qt.alpha(Theme.palette.primary, 0.12)
                                     : "transparent"
                                 implicitHeight: actionRow.implicitHeight + Theme.padding.md * 2
 
@@ -366,7 +366,7 @@ Loader {
                                         StyledText {
                                             anchors.centerIn: parent
                                             text: modelData.key
-                                            color: Theme.palette.m3onSurface
+                                            color: Theme.palette.onSurface
                                             font.family: Theme.font.family.mono
                                             font.pointSize: Theme.font.size.xs
                                             font.weight: Font.DemiBold
@@ -379,7 +379,7 @@ Loader {
                                         Layout.alignment: Qt.AlignVCenter
                                         horizontalAlignment: Text.AlignHCenter
                                         text: modelData.icon
-                                        color: Theme.palette.m3onSurfaceVariant
+                                        color: Theme.palette.onSurfaceVariant
                                         font.pointSize: Theme.font.size.md
                                     }
 
@@ -388,7 +388,7 @@ Loader {
                                         Layout.fillWidth: true
                                         Layout.alignment: Qt.AlignVCenter
                                         text: modelData.label
-                                        color: Theme.palette.m3onSurface
+                                        color: Theme.palette.onSurface
                                         font.pointSize: Theme.font.size.sm
                                     }
                                 }
@@ -414,7 +414,7 @@ Loader {
                         StyledRect {
                             Layout.fillWidth: true
                             radius: Theme.rounding.sm
-                            color: Qt.alpha(Theme.palette.m3onSurface, 0.06)
+                            color: Qt.alpha(Theme.palette.onSurface, 0.06)
                             implicitHeight: filterRow.implicitHeight + Theme.padding.md * 2
 
                             RowLayout {
@@ -429,7 +429,7 @@ Loader {
 
                                 MaterialIcon {
                                     text: "search"
-                                    color: Theme.palette.m3outline
+                                    color: Theme.palette.outline
                                     font.pointSize: Theme.font.size.sm
                                 }
 
@@ -437,11 +437,11 @@ Loader {
                                     id: filterInput
 
                                     Layout.fillWidth: true
-                                    color: Theme.palette.m3onSurface
+                                    color: Theme.palette.onSurface
                                     font.pointSize: Theme.font.size.sm
                                     font.family: Theme.font.family.mono
-                                    selectionColor: Theme.palette.m3primary
-                                    selectedTextColor: Theme.palette.m3onPrimary
+                                    selectionColor: Theme.palette.primary
+                                    selectedTextColor: Theme.palette.onPrimary
                                     clip: true
                                     Component.onCompleted: forceActiveFocus()
 
@@ -466,7 +466,7 @@ Loader {
                         StyledText {
                             visible: mimeQueryProcess.running
                             text: "Loading applications\u2026"
-                            color: Theme.palette.m3outline
+                            color: Theme.palette.outline
                             font.pointSize: Theme.font.size.sm
                         }
 
@@ -476,7 +476,7 @@ Loader {
                             text: popupScope.appFilterQuery !== ""
                                 ? "No matching applications"
                                 : "No registered applications"
-                            color: Theme.palette.m3outline
+                            color: Theme.palette.outline
                             font.pointSize: Theme.font.size.sm
                         }
 
@@ -495,7 +495,7 @@ Loader {
                                 width: appListView.width
                                 radius: Theme.rounding.sm
                                 color: index === popupScope.appIndex
-                                    ? Qt.alpha(Theme.palette.m3primary, 0.12)
+                                    ? Qt.alpha(Theme.palette.primary, 0.12)
                                     : "transparent"
                                 implicitHeight: appRow.implicitHeight + Theme.padding.sm * 2
 
@@ -513,7 +513,7 @@ Loader {
 
                                     MaterialIcon {
                                         text: "apps"
-                                        color: Theme.palette.m3onSurfaceVariant
+                                        color: Theme.palette.onSurfaceVariant
                                         font.pointSize: Theme.font.size.md
                                     }
 
@@ -523,14 +523,14 @@ Loader {
 
                                         StyledText {
                                             text: modelData.name
-                                            color: Theme.palette.m3onSurface
+                                            color: Theme.palette.onSurface
                                             font.pointSize: Theme.font.size.sm
                                             font.weight: Font.Medium
                                         }
 
                                         StyledText {
                                             text: modelData.desktopId
-                                            color: Theme.palette.m3onSurfaceVariant
+                                            color: Theme.palette.onSurfaceVariant
                                             font.pointSize: Theme.font.size.xs
                                             font.family: Theme.font.family.mono
                                         }
@@ -550,7 +550,7 @@ Loader {
                         // Back hint
                         StyledText {
                             text: "Esc to go back"
-                            color: Theme.palette.m3outline
+                            color: Theme.palette.outline
                             font.pointSize: Theme.font.size.xs
                         }
                     }
@@ -571,10 +571,10 @@ Loader {
                             Layout.alignment: Qt.AlignHCenter
                             text: popupScope.extractionDone ? "check_circle" : "unarchive"
                             color: popupScope.extractionDone
-                                ? Theme.palette.m3primary
+                                ? Theme.palette.primary
                                 : popupScope.extractionError !== ""
-                                    ? Theme.palette.m3error
-                                    : Theme.palette.m3onSurfaceVariant
+                                    ? Theme.palette.error
+                                    : Theme.palette.onSurfaceVariant
                             font.pointSize: Theme.font.size.xxl
                             font.weight: Font.Medium
                         }
@@ -592,7 +592,7 @@ Loader {
                                 return "Preparing\u2026";
                             }
                             color: popupScope.extractionError !== ""
-                                ? Theme.palette.m3error : Theme.palette.m3onSurface
+                                ? Theme.palette.error : Theme.palette.onSurface
                             font.pointSize: Theme.font.size.sm
                         }
 
@@ -601,13 +601,13 @@ Loader {
                             Layout.fillWidth: true
                             height: 4
                             radius: 2
-                            color: Qt.alpha(Theme.palette.m3onSurface, 0.06)
+                            color: Qt.alpha(Theme.palette.onSurface, 0.06)
 
                             StyledRect {
                                 height: parent.height
                                 radius: parent.radius
                                 color: popupScope.extractionError !== ""
-                                    ? Theme.palette.m3error : Theme.palette.m3primary
+                                    ? Theme.palette.error : Theme.palette.primary
                                 width: popupScope.extractTotalCount > 0
                                     ? parent.width * Math.min(popupScope.extractedCount / popupScope.extractTotalCount, 1)
                                     : 0
@@ -620,7 +620,7 @@ Loader {
                             Layout.alignment: Qt.AlignHCenter
                             visible: popupScope.extractionDone || popupScope.extractionError !== ""
                             text: "Press Enter or Escape to close"
-                            color: Theme.palette.m3outline
+                            color: Theme.palette.outline
                             font.pointSize: Theme.font.size.xs
                         }
                     }

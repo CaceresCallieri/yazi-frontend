@@ -67,7 +67,7 @@ Item {
                     anchors.fill: parent
                     radius: Theme.rounding.full
                     color: tabItem.isActive ? Theme.pillMedium.background : "transparent"
-                    border.color: tabItem.isActive ? Theme.pillMedium.border : Theme.palette.m3outlineVariant
+                    border.color: tabItem.isActive ? Theme.pillMedium.border : Theme.palette.outlineVariant
                     border.width: 1
 
                     // NOTE: Do NOT add a Behavior on color here — StyledRect already
@@ -98,7 +98,7 @@ Item {
                     anchors.horizontalCenterOffset: tabItem.isHovered ? -(closeBtn.width + Theme.spacing.sm) / 2 : 0
 
                     text: (tabItem.index + 1) + " " + tabItem.tabLabel
-                    color: tabItem.isActive ? Theme.palette.m3onSurface : Theme.palette.m3onSurfaceVariant
+                    color: tabItem.isActive ? Theme.palette.onSurface : Theme.palette.onSurfaceVariant
                     font.pixelSize: Theme.font.size.sm
 
                     Behavior on anchors.horizontalCenterOffset { Anim {} }
@@ -122,7 +122,7 @@ Item {
 
                         anchors.centerIn: parent
                         text: "close"
-                        color: Theme.palette.m3onSurfaceVariant
+                        color: Theme.palette.onSurfaceVariant
                         font.pixelSize: Theme.font.size.sm
                     }
 

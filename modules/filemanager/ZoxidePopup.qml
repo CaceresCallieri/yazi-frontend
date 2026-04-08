@@ -45,7 +45,7 @@ Loader {
 
         StyledRect {
             anchors.fill: parent
-            color: Qt.alpha(Theme.palette.m3shadow, 0.5)
+            color: Qt.alpha(Theme.palette.shadow, 0.5)
         }
 
         // === Dialog card ===
@@ -54,7 +54,7 @@ Loader {
 
             anchors.centerIn: parent
             radius: Theme.rounding.lg
-            color: Theme.palette.m3surfaceContainerHigh
+            color: Theme.palette.surfaceContainerHigh
 
             width: Math.min(parent.width - Theme.padding.lg * 4, 500)
             implicitHeight: dialogLayout.implicitHeight + Theme.padding.lg * 3
@@ -95,13 +95,13 @@ Loader {
 
                     MaterialIcon {
                         text: "jump_to_element"
-                        color: Theme.palette.m3primary
+                        color: Theme.palette.primary
                         font.pointSize: Theme.font.size.lg
                     }
 
                     StyledText {
                         text: qsTr("Jump to directory")
-                        color: Theme.palette.m3onSurface
+                        color: Theme.palette.onSurface
                         font.pointSize: Theme.font.size.md
                         font.weight: Font.DemiBold
                     }
@@ -111,7 +111,7 @@ Loader {
                 StyledRect {
                     Layout.fillWidth: true
                     radius: Theme.rounding.sm
-                    color: Qt.alpha(Theme.palette.m3onSurface, 0.06)
+                    color: Qt.alpha(Theme.palette.onSurface, 0.06)
                     implicitHeight: searchInput.implicitHeight + Theme.padding.md * 2
 
                     TextInput {
@@ -123,11 +123,11 @@ Loader {
                         anchors.leftMargin: Theme.padding.lg
                         anchors.rightMargin: Theme.padding.lg
 
-                        color: Theme.palette.m3onSurface
+                        color: Theme.palette.onSurface
                         font.pointSize: Theme.font.size.sm
                         font.family: Theme.font.family.mono
-                        selectionColor: Theme.palette.m3primary
-                        selectedTextColor: Theme.palette.m3onPrimary
+                        selectionColor: Theme.palette.primary
+                        selectedTextColor: Theme.palette.onPrimary
                         clip: true
                         focus: true
 
@@ -173,7 +173,7 @@ Loader {
                             width: parent.width
                             radius: Theme.rounding.sm
                             color: index === popupScope.selectedIndex
-                                ? Qt.alpha(Theme.palette.m3primary, 0.15)
+                                ? Qt.alpha(Theme.palette.primary, 0.15)
                                 : "transparent"
                             implicitHeight: resultRow.implicitHeight + Theme.padding.sm * 2
 
@@ -195,7 +195,7 @@ Loader {
                                 StyledText {
                                     Layout.preferredWidth: 50
                                     text: Math.round(modelData.score).toString()
-                                    color: Theme.palette.m3onSurfaceVariant
+                                    color: Theme.palette.onSurfaceVariant
                                     font.pointSize: Theme.font.size.xs
                                     font.family: Theme.font.family.mono
                                     horizontalAlignment: Text.AlignRight
@@ -206,8 +206,8 @@ Loader {
                                     Layout.fillWidth: true
                                     text: Paths.shortenHome(modelData.path)
                                     color: index === popupScope.selectedIndex
-                                        ? Theme.palette.m3onSurface
-                                        : Theme.palette.m3onSurfaceVariant
+                                        ? Theme.palette.onSurface
+                                        : Theme.palette.onSurfaceVariant
                                     font.pointSize: Theme.font.size.sm
                                     font.family: Theme.font.family.mono
                                     elide: Text.ElideMiddle
@@ -231,7 +231,7 @@ Loader {
                     Layout.topMargin: Theme.spacing.md
                     visible: popupScope.results.length === 0 && !popupScope._loading
                     text: qsTr("No matches")
-                    color: Theme.palette.m3onSurfaceVariant
+                    color: Theme.palette.onSurfaceVariant
                     font.pointSize: Theme.font.size.sm
                     horizontalAlignment: Text.AlignHCenter
                 }

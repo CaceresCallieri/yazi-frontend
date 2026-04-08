@@ -113,7 +113,7 @@ Item {
 
     StyledRect {
         anchors.fill: parent
-        color: Theme.layer(Theme.palette.m3surfaceContainerLow, 1)
+        color: Theme.layer(Theme.palette.surfaceContainerLow, 1)
     }
 
     // --- Layout: preview area + metadata strip ---
@@ -219,7 +219,7 @@ Item {
                     MaterialIcon {
                         Layout.alignment: Qt.AlignHCenter
                         text: "lan"
-                        color: Theme.palette.m3outline
+                        color: Theme.palette.outline
                         font.pointSize: Theme.font.size.xxl * 2
                         font.weight: Font.Medium
                     }
@@ -227,7 +227,7 @@ Item {
                     StyledText {
                         Layout.alignment: Qt.AlignHCenter
                         text: qsTr("Remote directory")
-                        color: Theme.palette.m3outline
+                        color: Theme.palette.outline
                         font.pointSize: Theme.font.size.xl
                         font.weight: Font.Medium
                     }
@@ -235,7 +235,7 @@ Item {
                     StyledText {
                         Layout.alignment: Qt.AlignHCenter
                         text: qsTr("Press Enter to browse")
-                        color: Theme.palette.m3outlineVariant
+                        color: Theme.palette.outlineVariant
                         font.pointSize: Theme.font.size.sm
                     }
                 }

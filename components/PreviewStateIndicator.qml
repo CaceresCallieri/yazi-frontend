@@ -14,7 +14,7 @@ ColumnLayout {
     MaterialIcon {
         Layout.alignment: Qt.AlignHCenter
         text: root.iconName
-        color: Theme.palette.m3outline
+        color: Theme.palette.outline
         font.pointSize: Theme.font.size.xxl * 2
         font.weight: Font.Medium
     }
@@ -22,7 +22,7 @@ ColumnLayout {
     StyledText {
         Layout.alignment: Qt.AlignHCenter
         text: root.message
-        color: Theme.palette.m3outline
+        color: Theme.palette.outline
         font.pointSize: Theme.font.size.xl
         font.weight: Font.Medium
     }

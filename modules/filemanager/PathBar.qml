@@ -73,7 +73,7 @@ Item {
 
                 anchors.centerIn: parent
                 text: "arrow_back"
-                color: root.windowState && root.windowState.canGoBack ? Theme.palette.m3onSurface : Theme.palette.m3outline
+                color: root.windowState && root.windowState.canGoBack ? Theme.palette.onSurface : Theme.palette.outline
                 grade: 200
             }
         }
@@ -94,7 +94,7 @@ Item {
 
                 anchors.centerIn: parent
                 text: "arrow_forward"
-                color: root.windowState && root.windowState.canGoForward ? Theme.palette.m3onSurface : Theme.palette.m3outline
+                color: root.windowState && root.windowState.canGoForward ? Theme.palette.onSurface : Theme.palette.outline
                 grade: 200
             }
         }
@@ -135,7 +135,7 @@ Item {
                             Layout.rightMargin: 0
                             visible: segment.index > 0
                             text: "/"
-                            color: Theme.palette.m3onSurfaceVariant
+                            color: Theme.palette.onSurfaceVariant
                             font.bold: true
                         }
 
@@ -160,7 +160,7 @@ Item {
                                 anchors.centerIn: parent
 
                                 text: segment.modelData.name
-                                color: segment.index < root._segments.length - 1 ? Theme.palette.m3onSurfaceVariant : Theme.palette.m3onSurface
+                                color: segment.index < root._segments.length - 1 ? Theme.palette.onSurfaceVariant : Theme.palette.onSurface
                                 font.bold: true
                             }
                         }
@@ -189,7 +189,7 @@ Item {
 
                 anchors.centerIn: parent
                 text: Config.fileManager.showHidden ? "visibility" : "visibility_off"
-                color: Config.fileManager.showHidden ? Theme.palette.m3onSurface : Theme.palette.m3outline
+                color: Config.fileManager.showHidden ? Theme.palette.onSurface : Theme.palette.outline
                 grade: 200
             }
         }
