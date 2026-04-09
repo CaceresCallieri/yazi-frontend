@@ -25,16 +25,14 @@ Loader {
 
         property int selectedIndex: 0
 
-        Component.onCompleted: {
-            fuzzyModel.showHidden = Config.fileManager.showHidden;
-            fuzzyModel.searchPath = root.windowState.currentPath;
-        }
+        Component.onCompleted: fuzzyModel.searchPath = root.windowState.currentPath;
 
         Component.onDestruction: fuzzyModel.clear()
 
         // === C++ fuzzy finder model ===
         FuzzyFinder {
             id: fuzzyModel
+            showHidden: Config.fileManager.showHidden
         }
 
         // === Scrim backdrop — click to cancel ===
@@ -247,7 +245,7 @@ Loader {
                                     : Theme.palette.onSurfaceVariant
                                 font.pointSize: Theme.font.size.sm
                                 font.family: Theme.font.family.mono
-                                elide: Text.ElideMiddle
+                                clip: true
                             }
                         }
 
@@ -282,6 +280,8 @@ Loader {
             if (fuzzyModel.resultCount === 0 || popupScope.selectedIndex < 0
                 || popupScope.selectedIndex >= fuzzyModel.resultCount)
                 return;
+
+            root.windowState.closeModal();
 
             const idx = fuzzyModel.index(popupScope.selectedIndex, 0);
             const targetFullPath = fuzzyModel.data(idx, FuzzyFinder.FullPathRole);
@@ -332,7 +332,8 @@ Loader {
         }
 
         function _htmlEscape(str: string): string {
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                       .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
         }
 
         // === Debounce timer ===

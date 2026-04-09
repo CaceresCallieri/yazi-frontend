@@ -305,8 +305,6 @@ static ScoreResult smithWatermanScore(
     // H[i][j] = best score aligning query[0..i-1] with text[0..j-1]
     // Use flat arrays for performance
     QVector<int> H(static_cast<int>((qLen + 1) * (tLen + 1)), 0);
-    // Track whether the previous cell was a match (for consecutive bonus)
-    QVector<bool> consecutive(static_cast<int>((qLen + 1) * (tLen + 1)), false);
 
     auto idx = [tLen](qsizetype i, qsizetype j) -> int {
         return static_cast<int>(i * (tLen + 1) + j);
@@ -318,19 +316,24 @@ static ScoreResult smithWatermanScore(
     const QString textLower = text.toLower();
     const QString queryLower = query.toLower();
 
-    // D[i][j] = best score ending with query[i-1] matched to text[j-1].
+    // H[i][j] = best score ending with query[i-1] matched to text[j-1].
     // Only populated when characters match; zero otherwise.
-    // This guarantees that D[qLen][j] > 0 only if ALL query chars are aligned.
+    // This guarantees that H[qLen][j] > 0 only if ALL query chars are aligned.
     for (qsizetype i = 1; i <= qLen; ++i) {
+        // rowMax tracks max(H[i-1][0..j-1]) as j advances, eliminating the O(n) inner scan.
+        int rowMax = 0;
         for (qsizetype j = 1; j <= tLen; ++j) {
+            // Update rowMax with H[i-1][j-1] before processing column j.
+            // This gives us max(H[i-1][0..j-1]) without a separate inner loop.
+            if (i > 1)
+                rowMax = std::max(rowMax, H[idx(i - 1, j - 1)]);
+
             if (queryLower[i - 1] != textLower[j - 1]) {
                 // No match — cell stays 0 (default). Skip.
                 continue;
             }
 
             // Characters match (case-insensitive).
-            // Find the best predecessor: max of H[i-1][k] for k < j (any earlier text position
-            // that aligned the previous query char). We track this as a running max.
             int matchScore = 16;  // base match
 
             // Consecutive match bonus (previous query char aligned to previous text char)
@@ -349,23 +352,13 @@ static ScoreResult smithWatermanScore(
             if (query[i - 1] == text[j - 1])
                 matchScore += 2;
 
-            // Best predecessor score: max H[i-1][k] for k in [0, j-1]
-            int bestPrev = 0;
-            for (qsizetype k = 0; k < j; ++k) {
-                if (H[idx(i - 1, k)] > bestPrev)
-                    bestPrev = H[idx(i - 1, k)];
-            }
-
-            // For the first query char (i==1), no predecessor needed
+            // For the first query char (i==1), no predecessor needed.
+            // For i>1, rowMax holds max(H[i-1][0..j-1]) — the best predecessor.
             if (i == 1)
                 H[idx(i, j)] = matchScore;
-            else if (bestPrev > 0)
-                H[idx(i, j)] = bestPrev + matchScore;
-            // else: can't reach here with all previous chars matched → stays 0
-
-            // Track consecutive flag for next iteration
-            if (H[idx(i, j)] > 0)
-                consecutive[idx(i, j)] = true;
+            else if (rowMax > 0)
+                H[idx(i, j)] = rowMax + matchScore;
+            // else: no valid predecessor for this query position → cell stays 0
 
             // Track best score at the last query row
             if (i == qLen && H[idx(i, j)] > bestScore) {
@@ -487,7 +480,7 @@ int FuzzyFinder::rowCount(const QModelIndex& parent) const {
 }
 
 QVariant FuzzyFinder::data(const QModelIndex& index, int role) const {
-    if (!index.isValid() || index.row() < 0 || index.row() >= m_results.size())
+    if (!index.isValid() || index.row() < 0 || index.row() >= static_cast<int>(m_results.size()))
         return {};
 
     const auto& entry = m_results.at(index.row());

@@ -312,7 +312,9 @@ private slots:
 
         FuzzyFinder model;
 
-        // Set first path, then immediately set second path
+        // Set first path, then immediately set second path.
+        // The generation counter is incremented synchronously in setSearchPath,
+        // so the first walk's result is discarded even if it arrives last.
         model.setSearchPath(tmp1.path());
         model.setSearchPath(tmp2.path());
 
@@ -396,6 +398,39 @@ private slots:
         QVERIFY(foundFile);
         QVERIFY(foundDir);
     }
+    void queryBeforeWalkCompletes() {
+        // Tests the code path where setQuery is called before the async walk
+        // finishes. startScoring() returns early when m_cachedPaths is empty;
+        // the walk-completion handler then calls startScoring() automatically.
+        QTemporaryDir tmp;
+        QVERIFY(tmp.isValid());
+        createFile(tmp.path(), "hello.txt");
+        createFile(tmp.path(), "world.txt");
+
+        FuzzyFinder model;
+
+        // Set the query BEFORE setting the path (before the walk even starts)
+        model.setQuery("hello");
+
+        // Now start the walk — the walk completion handler should auto-score
+        model.setSearchPath(tmp.path());
+
+        // Wait for the walk + scoring to complete
+        QVERIFY(waitForScan(model));
+        QVERIFY(waitForScore(model));
+
+        // Should find the file despite the query arriving before the walk
+        QVERIFY(model.resultCount() > 0);
+        bool found = false;
+        for (int i = 0; i < model.resultCount(); ++i) {
+            if (model.data(model.index(i, 0), FuzzyFinder::NameRole).toString() == "hello.txt") {
+                found = true;
+                break;
+            }
+        }
+        QVERIFY2(found, "hello.txt should be found when query was set before walk started");
+    }
+
 };
 
 QTEST_MAIN(FuzzyFinderTest)
