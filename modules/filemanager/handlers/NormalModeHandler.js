@@ -270,6 +270,12 @@ function handleKey(event, root, view, pasteProcess, clipboardCopyProcess) {
         event.accepted = true;
         break;
 
+    case Qt.Key_F:
+        windowState.saveCursor(windowState.currentPath, view.currentIndex);
+        windowState.requestFuzzyFinder();
+        event.accepted = true;
+        break;
+
     case Qt.Key_A:
         windowState.requestCreate();
         event.accepted = true;

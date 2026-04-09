@@ -285,6 +285,7 @@ QtObject {
     readonly property int modalRename: 3
     readonly property int modalContextMenu: 4
     readonly property int modalZoxide: 5
+    readonly property int modalFuzzyFinder: 6
 
     property int activeModal: modalNone
 
@@ -297,6 +298,7 @@ QtObject {
 
     signal createCompleted(filename: string)
     signal renameCompleted(newName: string)
+    signal fuzzyFinderNavigated(filename: string)
 
     function requestDelete(paths: var): void {
         deleteConfirmPaths = paths;
@@ -323,6 +325,10 @@ QtObject {
 
     function requestZoxide(): void {
         activeModal = modalZoxide;
+    }
+
+    function requestFuzzyFinder(): void {
+        activeModal = modalFuzzyFinder;
     }
 
     function closeModal(): void {

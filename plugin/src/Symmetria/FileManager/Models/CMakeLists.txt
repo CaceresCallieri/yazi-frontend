@@ -10,6 +10,7 @@ qt_add_qml_module(symmetria-filemanager-models
         archivepreviewmodel.hpp archivepreviewmodel.cpp
         spreadsheetpreviewmodel.hpp spreadsheetpreviewmodel.cpp
         audiowaveformmodel.hpp audiowaveformmodel.cpp
+        fuzzyfinder.hpp fuzzyfinder.cpp
 )
 
 target_link_libraries(symmetria-filemanager-models PRIVATE

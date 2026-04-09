@@ -153,6 +153,10 @@ Item {
             root._pendingFocusName = newName;
         }
 
+        function onFuzzyFinderNavigated(filename: string) {
+            root._pendingFocusName = filename;
+        }
+
         function onFlashJump(column: string, index: int, path: string) {
             FlashHandler.handleJump(column, index, path, root, view);
         }
@@ -247,6 +251,20 @@ Item {
                     if (view.count === 0)
                         return;
                     root._pathJustChanged = false;
+                    // Fuzzy finder navigation: focus a specific file in the newly-navigated
+                    // directory (set by fuzzyFinderNavigated signal before navigate() call).
+                    if (root._pendingFocusName !== "") {
+                        const pendingName = root._pendingFocusName;
+                        root._pendingFocusName = "";
+                        const entries = fsModel.entries;
+                        for (let i = 0; i < entries.length; i++) {
+                            if (entries[i].name === pendingName) {
+                                view.currentIndex = i;
+                                view.positionViewAtIndex(i, ListView.Contain);
+                                return;
+                            }
+                        }
+                    }
                     const restored = root.windowState ? root.windowState.restoreCursor(fsModel.path) : 0;
                     const safeIndex = Math.min(restored, Math.max(view.count - 1, 0));
                     view.currentIndex = safeIndex;
