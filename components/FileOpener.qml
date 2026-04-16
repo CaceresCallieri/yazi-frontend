@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import "../services"
 import Symmetria.FileManager.Models
 import Quickshell.Io
@@ -10,13 +12,18 @@ Item {
     width: 0
     height: 0
 
+    // Single-slot pending path — open() is called at most once per user keypress
+    // (keyboard-first UI prevents rapid concurrent calls), so no queue is needed.
     property string _pendingPath: ""
 
     function open(path: string, mimeType: string): void {
         const resolved = _previewHelper.resolvePathForOpen(path);
         root._pendingPath = resolved;
-        // Check if the default handler is a terminal app (Terminal=true in .desktop).
-        // Headless services can't attach a TTY, so terminal apps silently fail via xdg-open.
+        // _handlerCheck output contract (three cases):
+        //   1. Terminal=true handler found  → prints the Exec line (non-empty stdout)
+        //   2. Terminal=false handler found → prints nothing, exits 0
+        //   3. No handler found             → prints nothing, exits 0
+        // onStreamFinished routes to _terminalOpen (case 1) or _xdgOpen (cases 2 & 3).
         _handlerCheck.command = ["sh", "-c",
             'handler=$(xdg-mime query default "$1"); ' +
             '[ -z "$handler" ] && case "$1" in text/*) handler=$(xdg-mime query default text/plain);; esac; ' +
@@ -24,8 +31,8 @@ Item {
             'for dir in "$HOME/.local/share/applications" /usr/share/applications /usr/local/share/applications; do ' +
             'f="$dir/$handler"; if [ -f "$f" ]; then ' +
             'if grep -q "^Terminal=true" "$f"; then ' +
-            'grep "^Exec=" "$f" | head -1 | sed "s/^Exec=//; s/ %[fFuUnNdDickvm]//g"; fi; ' +
-            'exit 0; fi; done',
+            'grep "^Exec=" "$f" | head -1 | sed "s/^Exec=//; s/%[fFuUnNdDick]//g; s/  */ /g; s/^ //; s/ $//"; fi; ' +
+            'exit 0; fi; done; exit 0',
             "sh", mimeType
         ];
         _handlerCheck.running = true;
@@ -48,9 +55,11 @@ Item {
             onStreamFinished: {
                 const execLine = text.trim();
                 if (execLine) {
-                    // Terminal=true handler — launch via xdg-terminal-exec
-                    const parts = execLine.split(/\s+/);
-                    _terminalOpen.command = ["xdg-terminal-exec"].concat(parts).concat([root._pendingPath]);
+                    // Terminal=true handler — launch via xdg-terminal-exec.
+                    // Wrap the Exec line in `sh -c` and pass the path as $1, so the
+                    // shell handles any quoting in the Exec line correctly (e.g.,
+                    // arguments with embedded spaces like --profile="My Profile").
+                    _terminalOpen.command = ["xdg-terminal-exec", "sh", "-c", execLine + ' "$@"', "sh", root._pendingPath];
                     _terminalOpen.running = true;
                 } else {
                     // GUI handler — use xdg-open
