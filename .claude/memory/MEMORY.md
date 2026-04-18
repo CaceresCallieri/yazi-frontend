@@ -1,0 +1,4 @@
+- [feedback_restart_service.md](feedback_restart_service.md) — Check for open windows before restarting symmetria-fm service after QML changes
+- [project_observability_vision.md](project_observability_vision.md) — Long-term plan for project-wide structured logging and automated monitoring across all Symmetria components
+- [feedback_anim_vs_canim.md](feedback_anim_vs_canim.md) — Never use Anim (NumberAnimation) on color properties; use CAnim (ColorAnimation) instead
+- [feedback_qtobject_no_children.md](feedback_qtobject_no_children.md) — QtObject has no default property; use Qt.createQmlObject() for child objects like Timer
