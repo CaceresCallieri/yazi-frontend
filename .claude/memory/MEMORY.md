@@ -1,3 +1,98 @@
+# Symmetria File Manager — Project Memory
+
+## Project Goal
+Build a keyboard-first graphical file manager as a FloatingWindow
+inside the Symmetria QuickShell desktop shell. Pure native Qt/QML/C++
+implementation inspired by Yazi's UX philosophy — no Yazi runtime dependency.
+
+## Architecture Decision: Pure Native (No Yazi Backend)
+- **Browsing**: C++ `FileSystemModel` (async scanning, QFileSystemWatcher, zero latency)
+- **Operations**: QML `Process` calling `gio trash`, `cp`, `mv`, `rm`, `xdg-open`
+- **State**: Two-tier — `WindowState` per-window (navigation, search, chords, modals) + `FileManagerService` singleton (clipboard, picker, utilities)
+- **Window**: `WindowFactory` Singleton creates FloatingWindow on demand (self-destructs)
+- Rationale: DDS is push-only (no query), bridge adds complexity, native is instant
+
+## Key Paths
+- Project: `/home/jc/projects/symmetria-file-manager/` (renamed from yazi-frontend on 2026-03-24)
+- PRD: `symmetria-file-manager/PRD.md` (authoritative spec, 10 sections)
+- Research: `symmetria-file-manager/RESEARCH.md`
+- C++ Plugin: `symmetria-file-manager/plugin/` (builds `Symmetria.FileManager.Models` QML module)
+- FileSystemModel C++: `plugin/src/Symmetria/FileManager/Models/filesystemmodel.hpp`
+- Preview models: `plugin/src/Symmetria/FileManager/Models/` (archive, spreadsheet, syntax, image)
+- Plugin install path: `/usr/lib/qt6/qml/Symmetria/FileManager/Models/`
+- Build script: `symmetria-file-manager/build-plugin.sh` (cmake build + install + restart service)
+- Symmetria Shell root: `/home/jc/.config/quickshell/symmetria/`
+- FileDialog reference: `symmetria/components/filedialog/FileDialog.qml`
+- Config registration: `symmetria/config/Config.qml` (JsonAdapter at line ~567)
+- Shell entry: `symmetria/shell.qml`
+- Shortcuts/IPC: `symmetria/modules/Shortcuts.qml`
+
+## C++ Plugin Architecture (Symmetria.FileManager.Models)
+- Extracted from Symmetria Shell's plugin to decouple projects (2026-03-24)
+- URI: `Symmetria.FileManager.Models` — imported by both the file manager and Symmetria Shell
+- C++ namespace: `symmetria::filemanager::models`
+- 5 classes: FileSystemModel, ArchivePreviewModel, SpreadsheetPreviewModel, SyntaxHighlightHelper, PreviewImageHelper
+- Dependencies: Qt6 (Core/Qml/Gui/Concurrent/GuiPrivate), KF6::SyntaxHighlighting, libarchive, QXlsx, freexl
+- CMake uses `CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT` guard to default to `/usr`
+- Symmetria Shell depends on this plugin (one-sided: Shell → File Manager, not reverse)
+- C++ changes: run `./build-plugin.sh` → only symmetria-fm restarts, Shell untouched
+
+## Naming Convention (Symmetria Ecosystem)
+- **Symmetria Shell** — desktop shell (`~/.config/quickshell/symmetria/`)
+- **Symmetria File Manager** — this project (`symmetria-fm` service, `symmetria-file-manager` repo)
+- Service name: `symmetria-fm.service`
+- QuickShell config: `qs -c symmetria-fm` (symlink: `~/.config/quickshell/symmetria-fm/`)
+- GitHub repo: `symmetria-file-manager`
+
+## Install Strategy
+- Symlinks from Symmetria dirs into project repo (modules/, services/, config/)
+- QuickShell auto-maps `qs.*` imports from directory structure (no qmldir needed)
+- Manual steps: add import + component to shell.qml, register config in Config.qml
+- `install.sh` creates symlinks, prints manual integration steps
+
+## Symmetria Patterns
+- FloatingWindow: `WindowFactory` Singleton → `Component.createObject()` → `onVisibleChanged: destroy()`
+- Modules: `import "modules/name"` in shell.qml, `qs.modules.name` elsewhere
+- Config: `JsonObject` subclass → registered in `Config.qml`'s `JsonAdapter`
+- Services: QML Singletons in `services/` dir, auto-available as `qs.services`
+- IPC: `IpcHandler { target: "name" }` → `qs -c symmetria ipc call name method args`
+- Shortcuts: `CustomShortcut { name: "x" }` bound to keybinds in shell.json
+- Theming: `Colours.tPalette.m3*`, `Appearance.anim.durations.*`, `Appearance.rounding.*`
+- Must clear QML cache after changes: `rm -rf ~/.cache/quickshell/qmlcache`
+- QML changes require a shell restart to take effect (cache clear alone is not enough)
+- C++ plugin changes require CMake rebuild + shell restart
+- NEVER restart the shell process autonomously — the user may have windows/state open. Always inform the user that a restart is needed and let them do it manually
+
+## XDG Desktop Portal Integration
+- Custom portal backend: `portal/symmetria_portal.py` (Python, dbus-fast)
+- Implements `org.freedesktop.impl.portal.FileChooser` (OpenFile, SaveFile, SaveFiles)
+- Communication: Python → qs IPC → QML picker window → FIFO → Python → D-Bus response
+- Registration: `portal/symmetria.portal` + D-Bus service + systemd service
+- Install: `portal/install-portal.sh` (copies to /usr/lib/symmetria, /usr/share/...)
+- FM runs as headless systemd service: `symmetria-fm.service` (auto-starts at login)
+- Keybinding: `Super+E` → `qs ipc --any-display -c symmetria-fm call filemanager open ""`
+- QML Singleton lazy-init gotcha: must `void WindowFactory;` in shell.qml to force IpcHandler registration
+- Future: Rust migration roadmap in `FUTURE.md`
+
+## Per-Window State Architecture (Resolved)
+- `WindowState.qml` (non-singleton) owns: navigation, search, chords, modals — instantiated per FileManager
+- `FileManagerService.qml` (singleton) owns: clipboard, picker mode, format utilities
+- Threading: FileManager → MillerColumns/PathBar/StatusBar → FileList/ParentPanel/WhichKeyPopup/Popups
+- WindowFactory passes `initialPath` to each window via `createObject(dummy, { "initialPath": path })`
+
+## Workflow Feedback
+- [Always clear QML cache after edits](feedback_clear_qml_cache.md) — run `rm -rf ~/.cache/quickshell/qmlcache` yourself after any QML edit, don't leave it to the user
+
+## QML Quirks (see QUIRKS.md)
+- [QML Loader quirks](feedback_qml_loader_quirks.md) — anchors.margins silently fails in Loader sourceComponents; always use explicit x/y/width/height and explicit imports
+
+## Keyboard Architecture
+- Vim-style modal: Normal / Visual / Command modes
+- Multi-key chords (gg, yy, dd, pp) via timer-based detection (500ms timeout)
+- NOT using Symmetria's KeyChords module (those are for global shell shortcuts)
+- FloatingWindow needs `WlrKeyboardFocus.Exclusive` to prevent Hyprland key conflicts
+
+## Additional Topic Files (absorbed from prior symmetria-file-manager memory)
 - [feedback_restart_service.md](feedback_restart_service.md) — Check for open windows before restarting symmetria-fm service after QML changes
 - [project_observability_vision.md](project_observability_vision.md) — Long-term plan for project-wide structured logging and automated monitoring across all Symmetria components
 - [feedback_anim_vs_canim.md](feedback_anim_vs_canim.md) — Never use Anim (NumberAnimation) on color properties; use CAnim (ColorAnimation) instead
