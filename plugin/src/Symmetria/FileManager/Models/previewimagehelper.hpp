@@ -24,10 +24,17 @@ public:
     [[nodiscard]] QString resolvedUrl() const;
     [[nodiscard]] bool loading() const;
 
-    /// Returns a file:// URL suitable for xdg-open.  For encrypted formats
-    /// (.rpgmvp, .png_, .icns) this returns the cached decrypted PNG;
-    /// for normal files it returns the original path unchanged.
+    /// Path to launch with xdg-open. Redirects to the cached file ONLY for
+    /// formats whose cache IS the user-facing artifact (decrypted .rpgmvp /
+    /// .png_). PDFs, ICNS, and all other files open by their source path so
+    /// the user's configured handler (e.g. sioyek for PDF) is invoked.
     Q_INVOKABLE static QString resolvePathForOpen(const QString& path);
+
+    /// Path for the preview pane to render. Returns the cached PNG if one
+    /// already exists for this source (any format that supports cached
+    /// previews), otherwise the source path. Never generates the cache —
+    /// asynchronous generation lives in processSource().
+    Q_INVOKABLE static QString resolvePathForPreview(const QString& path);
 
 signals:
     void sourceChanged();
@@ -38,6 +45,8 @@ private:
     void processSource();
     void applyResolvedUrl(const QString& url);
     static bool needsCachedDecode(const QString& path);
+    static bool cacheIsOpenableArtifact(const QString& path);
+    static QString cachedPreviewPathFor(const QString& sourcePath);
     static QString generateCachedPreview(const QString& sourcePath, const QString& cachePath);
     static QString decryptRpgmvp(const QString& sourcePath, const QString& cachePath);
     static const QString& cacheDir();

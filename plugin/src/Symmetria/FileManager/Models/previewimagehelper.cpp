@@ -91,8 +91,7 @@ void PreviewImageHelper::processSource() {
     }
 
     // PDF / RPGMV / .icns — check cache first, then generate asynchronously
-    const auto cacheKey = buildCacheKey(m_source);
-    const auto cachePath = cacheDir() + QStringLiteral("/") + cacheKey + QStringLiteral(".png");
+    const auto cachePath = cachedPreviewPathFor(m_source);
 
     // Cache hit — return immediately without spinning up a thread
     if (QFileInfo::exists(cachePath)) {
@@ -143,6 +142,19 @@ bool PreviewImageHelper::needsCachedDecode(const QString& path) {
         || path.endsWith(QStringLiteral(".rpgmvp"), Qt::CaseInsensitive)
         || path.endsWith(QStringLiteral(".png_"), Qt::CaseInsensitive)
         || path.endsWith(QStringLiteral(".icns"), Qt::CaseInsensitive);
+}
+
+// True only for formats where the cached file IS the artifact the user wants
+// to open — i.e. decrypted RPGMV game assets whose source bytes are unusable
+// without decryption. PDFs and ICNS are NOT in this set: their cache is just
+// a thumbnail; the source is what the user actually wants to launch.
+bool PreviewImageHelper::cacheIsOpenableArtifact(const QString& path) {
+    return path.endsWith(QStringLiteral(".rpgmvp"), Qt::CaseInsensitive)
+        || path.endsWith(QStringLiteral(".png_"), Qt::CaseInsensitive);
+}
+
+QString PreviewImageHelper::cachedPreviewPathFor(const QString& sourcePath) {
+    return cacheDir() + QStringLiteral("/") + buildCacheKey(sourcePath) + QStringLiteral(".png");
 }
 
 QString PreviewImageHelper::generateCachedPreview(const QString& sourcePath, const QString& cachePath) {
@@ -216,25 +228,30 @@ QString PreviewImageHelper::decryptRpgmvp(const QString& sourcePath, const QStri
 }
 
 QString PreviewImageHelper::resolvePathForOpen(const QString& path) {
-    if (!needsCachedDecode(path))
+    // Only RPGMV-style decrypted assets need cache redirection at open time.
+    // Every other format — including PDF and ICNS — must open by source path
+    // so the user's configured handler launches (e.g. sioyek for PDFs).
+    // Returning the cached PNG here used to misroute PDFs into the image
+    // viewer because the preview pane had already populated the cache.
+    if (!cacheIsOpenableArtifact(path))
         return path;
 
-    const auto cacheKey = buildCacheKey(path);
-    const auto cachePath = cacheDir() + QStringLiteral("/") + cacheKey + QStringLiteral(".png");
+    const auto cachePath = cachedPreviewPathFor(path);
 
     if (QFileInfo::exists(cachePath))
         return cachePath;
 
-    // Cache miss:
-    // RPGMV formats (.rpgmvp / .png_) are a trivial header-skip + memcopy — safe to do
-    // synchronously on the GUI thread (typically <1ms even for large files).
-    // .icns and .pdf both involve real I/O or rendering (IcnsDecoder / QImageReader) —
-    // return the original path and let xdg-open open the source file directly.
-    if (path.endsWith(QStringLiteral(".rpgmvp"), Qt::CaseInsensitive)
-        || path.endsWith(QStringLiteral(".png_"), Qt::CaseInsensitive))
-        return generateCachedPreview(path, cachePath);
+    // Cache miss for RPGMV: trivial header-skip + memcopy, safe on the GUI
+    // thread (<1ms even for large files).
+    return generateCachedPreview(path, cachePath);
+}
 
-    return path;
+QString PreviewImageHelper::resolvePathForPreview(const QString& path) {
+    if (!needsCachedDecode(path))
+        return path;
+
+    const auto cachePath = cachedPreviewPathFor(path);
+    return QFileInfo::exists(cachePath) ? cachePath : path;
 }
 
 const QString& PreviewImageHelper::cacheDir() {
