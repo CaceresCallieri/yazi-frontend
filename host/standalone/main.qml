@@ -13,7 +13,6 @@ import QtQuick
 QtObject {
     id: root
 
-    property var _windows: []
     property var _pickerWindow: null
 
     property Component _fileManagerWindowComponent: Component {
@@ -80,10 +79,12 @@ QtObject {
 
     function _spawnFileManager(initialPath: string): void {
         const path = initialPath || Paths.home;
-        const win = fileManagerWindowComponent.createObject(root, {
+        // createObject(root, …) gives the window a QObject parent, so its
+        // lifetime is owned by the host — no JS-side tracking array needed.
+        // The window self-destroys on `onClosing`.
+        fileManagerWindowComponent.createObject(root, {
             initialPath: path
         });
-        root._windows = root._windows.concat([win]);
     }
 
     function _spawnPicker(options: var): void {

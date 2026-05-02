@@ -212,12 +212,17 @@ void FileWatcher::onWatcherDirectoryChanged(const QString& changedPath)
     if (info.absolutePath() != changedPath)
         return;
     if (!info.exists()) {
-        // File disappeared from the directory.
+        // File disappeared from the directory. Atomic-replace patterns
+        // (nvim :w, mv old new) unlink before renaming the new file in;
+        // we expect the second directoryChanged event within milliseconds.
+        // We DO NOT clear m_text here — keeping the stale content avoids a
+        // single-frame "blank" being read by consumers (e.g. FmTheme bindings)
+        // during the unlink/rename gap. Only `loaded` flips to false so
+        // consumers that gate on it (`onLoadedChanged: if (loaded) …`) skip
+        // the transient state entirely.
         if (m_loaded) {
             m_loaded = false;
-            m_text.clear();
             emit loadedChanged();
-            emit textChanged();
         }
         return;
     }

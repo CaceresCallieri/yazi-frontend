@@ -121,6 +121,25 @@ private slots:
         QCOMPARE(runner.running(), false);
     }
 
+    void badExecutableEmitsError()
+    {
+        // QProcess fires errorOccurred with FailedToStart asynchronously when
+        // exec() can't find the binary. Verifies the documented invariant in
+        // ShellRunner::onErrorOccurred — m_running stays false (start() never
+        // emitted started()), so no extra state correction is needed.
+        ShellRunner runner;
+        runner.setCommand({"/no/such/binary_xyz_should_not_exist"});
+
+        QSignalSpy errorSpy(&runner, &ShellRunner::errorOccurred);
+        QSignalSpy startedSpy(&runner, &ShellRunner::started);
+        runner.start();
+
+        QVERIFY(waitForSpy(errorSpy));
+        QCOMPARE(errorSpy.count(), 1);
+        QCOMPARE(startedSpy.count(), 0);
+        QCOMPARE(runner.running(), false);
+    }
+
     void environmentMergesOverInherited()
     {
         // Inherited env has PATH, etc. The override adds SYMMETRIA_TEST_VAR.

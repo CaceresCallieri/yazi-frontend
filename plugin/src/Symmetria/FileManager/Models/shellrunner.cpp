@@ -173,14 +173,13 @@ void ShellRunner::emitLines(QString& buffer, void (ShellRunner::*signal)(const Q
     }
 }
 
-void ShellRunner::onErrorOccurred(QProcess::ProcessError error)
+void ShellRunner::onErrorOccurred(QProcess::ProcessError /*error*/)
 {
+    // FailedToStart fires before started(), so m_running is still false here —
+    // no state correction needed. Subsequent errors (Crashed, Timedout, …)
+    // are followed by `finished()`, which clears m_running. We just surface
+    // the message to QML.
     emit errorOccurred(m_process.errorString());
-    // FailedToStart fires before started(); keep state consistent.
-    if (error == QProcess::FailedToStart && m_running) {
-        m_running = false;
-        emit runningChanged();
-    }
 }
 
 } // namespace symmetria::filemanager::models
