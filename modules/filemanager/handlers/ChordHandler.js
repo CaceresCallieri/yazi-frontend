@@ -97,7 +97,7 @@ function _executeChord(prefix, keyChar, root, view, clipboardCopyProcess) {
         // "d" copies the current directory regardless of selection state
         if (keyChar === "d") {
             clipboardCopyProcess.command = ["wl-copy", "--", windowState.currentPath];
-            clipboardCopyProcess.running = true;
+            clipboardCopyProcess.start();
             return;
         }
         var textToCopy;
@@ -134,7 +134,7 @@ function _executeChord(prefix, keyChar, root, view, clipboardCopyProcess) {
             }
         }
         clipboardCopyProcess.command = ["wl-copy", "--", textToCopy];
-        clipboardCopyProcess.running = true;
+        clipboardCopyProcess.start();
     } else if (prefix === ",") {
         if (keyChar === "")
             return;

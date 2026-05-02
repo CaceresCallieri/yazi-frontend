@@ -1,9 +1,10 @@
 pragma Singleton
 
 import Quickshell
+import Symmetria.FileManager.Models
 
 Singleton {
-    readonly property string home: Quickshell.env("HOME")
+    readonly property string home: Env.get("HOME")
     readonly property string _homeSlash: home + "/"
 
     function shortenHomeBare(path: string): string {

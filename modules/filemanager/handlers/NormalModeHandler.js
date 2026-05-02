@@ -367,7 +367,7 @@ function _copyPickerPathToClipboard(root, clipboardCopyProcess, onDone) {
         return;
     clipboardCopyProcess._pendingCallback = onDone;
     clipboardCopyProcess.command = ["wl-copy", "--", text];
-    clipboardCopyProcess.running = true;
+    clipboardCopyProcess.start();
 }
 
 function _executePaste(root, pasteProcess) {
@@ -386,7 +386,7 @@ function _executePaste(root, pasteProcess) {
     else
         pasteProcess.command = ["mv", "--"].concat(paths).concat([destDir]);
 
-    pasteProcess.running = true;
+    pasteProcess.start();
 }
 
 function _halfPageCount(view) {

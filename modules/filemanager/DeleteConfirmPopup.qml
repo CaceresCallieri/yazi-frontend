@@ -1,6 +1,6 @@
 import "../../components"
 import "../../services"
-import Quickshell.Io
+import Symmetria.FileManager.Models
 import QtQuick
 import QtQuick.Layouts
 
@@ -76,7 +76,7 @@ Loader {
                 case Qt.Key_Y:
                     // Y always confirms, regardless of which button has focus
                     if (!trashProcess.running)
-                        trashProcess.running = true;
+                        trashProcess.start();
                     event.accepted = true;
                     break;
                 case Qt.Key_Return:
@@ -85,7 +85,7 @@ Loader {
                     if (noButton.activeFocus)
                         root.windowState.closeModal();
                     else if (!trashProcess.running)
-                        trashProcess.running = true;
+                        trashProcess.start();
                     event.accepted = true;
                     break;
                 case Qt.Key_N:
@@ -198,7 +198,7 @@ Loader {
                             color: Theme.palette.error
                             onClicked: {
                                 if (!trashProcess.running)
-                                    trashProcess.running = true;
+                                    trashProcess.start();
                             }
                         }
                     }
@@ -246,7 +246,7 @@ Loader {
         }
 
         // gio trash process
-        Process {
+        ShellRunner {
             id: trashProcess
             command: ["gio", "trash", "--"].concat(popupScope.targetPaths)
             onExited: (exitCode, exitStatus) => {

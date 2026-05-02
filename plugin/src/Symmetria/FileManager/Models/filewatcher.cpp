@@ -2,8 +2,24 @@
 
 #include <qfile.h>
 #include <qfileinfo.h>
+#include <qurl.h>
 
 namespace symmetria::filemanager::models {
+
+namespace {
+// Quickshell.Io.FileView accepts both `file://` URLs and raw paths. We accept
+// both for callsite compatibility, normalizing to a raw absolute path
+// internally so QFileSystemWatcher and QFile both work.
+QString normalizePath(const QString& input)
+{
+    if (input.startsWith(QStringLiteral("file://"))) {
+        const QUrl url(input);
+        if (url.isLocalFile())
+            return url.toLocalFile();
+    }
+    return input;
+}
+} // namespace
 
 FileWatcher::FileWatcher(QObject* parent)
     : QObject(parent)
@@ -22,7 +38,8 @@ QString FileWatcher::path() const { return m_path; }
 
 void FileWatcher::setPath(const QString& path)
 {
-    if (m_path == path)
+    const QString normalized = normalizePath(path);
+    if (m_path == normalized)
         return;
 
     if (!m_watcher.files().isEmpty())
@@ -30,7 +47,7 @@ void FileWatcher::setPath(const QString& path)
     if (!m_watcher.directories().isEmpty())
         m_watcher.removePaths(m_watcher.directories());
 
-    m_path = path;
+    m_path = normalized;
     m_loaded = false;
     m_hasEmittedInitialLoad = false;
     m_text.clear();

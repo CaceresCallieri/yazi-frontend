@@ -1,6 +1,6 @@
 import "../../components"
 import "../../services"
-import Quickshell.Io
+import Symmetria.FileManager.Models
 import QtQuick
 import QtQuick.Layouts
 
@@ -185,11 +185,11 @@ Loader {
             checkProcess.pendingNewPath = newPath;
             checkProcess.pendingNewName = newName;
             checkProcess.command = ["test", "-e", newPath];
-            checkProcess.running = true;
+            checkProcess.start();
         }
 
         // Existence check process
-        Process {
+        ShellRunner {
             id: checkProcess
 
             property string pendingNewPath: ""
@@ -206,11 +206,11 @@ Loader {
 
         function _runRename(): void {
             renameProcess.command = ["mv", "--", originalPath, checkProcess.pendingNewPath];
-            renameProcess.running = true;
+            renameProcess.start();
         }
 
         // Rename process
-        Process {
+        ShellRunner {
             id: renameProcess
             onExited: (exitCode, exitStatus) => {
                 if (exitCode === 0) {

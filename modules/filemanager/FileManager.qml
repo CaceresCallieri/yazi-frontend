@@ -1,7 +1,7 @@
 import "../../components"
 import "../../services"
 import "../../config"
-import Quickshell.Io
+import Symmetria.FileManager.Models
 import QtQuick
 import QtQuick.Layouts
 
@@ -86,10 +86,10 @@ Item {
 
     // Train zoxide's frecency database on every directory visit.
     // Fire-and-forget: exit code is irrelevant.
-    // _zoxidePendingPath holds the most-recent path that arrived while the
+    // _pendingPath holds the most-recent path that arrived while the
     // process was busy — replayed in onExited so rapid navigation doesn't
     // silently drop directory visits from zoxide's database.
-    Process {
+    ShellRunner {
         id: zoxideAddProcess
 
         property string _pendingPath: ""
@@ -99,7 +99,7 @@ Item {
                 const path = _pendingPath;
                 _pendingPath = "";
                 zoxideAddProcess.command = ["zoxide", "add", "--", path];
-                zoxideAddProcess.running = true;
+                zoxideAddProcess.start();
             }
         }
     }
@@ -115,7 +115,7 @@ Item {
                 zoxideAddProcess._pendingPath = path;
             } else {
                 zoxideAddProcess.command = ["zoxide", "add", "--", path];
-                zoxideAddProcess.running = true;
+                zoxideAddProcess.start();
             }
         }
     }

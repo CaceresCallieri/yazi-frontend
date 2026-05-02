@@ -1,7 +1,7 @@
 pragma Singleton
 
 import Quickshell
-import Quickshell.Io
+import Symmetria.FileManager.Models
 import QtQuick
 
 Singleton {
@@ -144,32 +144,32 @@ Singleton {
     // === Read theme directly from Symmetria config files ===
     // No IPC needed — works even when Symmetria Shell is not running.
 
-    FileView {
+    FileWatcher {
         id: colorSchemeView
-        path: "file://" + root._configDir + "/color-scheme.json"
+        path: root._configDir + "/color-scheme.json"
         watchChanges: true
-        onLoaded: root._applyColorScheme(text())
+        onLoadedChanged: if (loaded) root._applyColorScheme(text)
         onFileChanged: colorSchemeDebounce.restart()
     }
 
-    FileView {
+    FileWatcher {
         id: shellConfigView
-        path: "file://" + root._configDir + "/shell.json"
+        path: root._configDir + "/shell.json"
         watchChanges: true
-        onLoaded: root._applyAppearance(text())
+        onLoadedChanged: if (loaded) root._applyAppearance(text)
         onFileChanged: appearanceDebounce.restart()
     }
 
     Timer {
         id: colorSchemeDebounce
         interval: 100
-        onTriggered: root._applyColorScheme(colorSchemeView.text())
+        onTriggered: root._applyColorScheme(colorSchemeView.text)
     }
 
     Timer {
         id: appearanceDebounce
         interval: 100
-        onTriggered: root._applyAppearance(shellConfigView.text())
+        onTriggered: root._applyAppearance(shellConfigView.text)
     }
 
     // === Apply palette from color-scheme.json ===

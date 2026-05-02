@@ -1,7 +1,7 @@
 pragma Singleton
 
 import Quickshell
-import Quickshell.Io
+import Symmetria.FileManager.Models
 import QtQuick
 
 Singleton {
@@ -95,7 +95,7 @@ Singleton {
         }
 
         writeProcess.payload = lines.join("\n") + "\n";
-        writeProcess.running = true;
+        writeProcess.start();
     }
 
     Timer {
@@ -106,7 +106,7 @@ Singleton {
     }
 
     // Ensure log directory exists + write buffered content
-    Process {
+    ShellRunner {
         id: writeProcess
         property string payload: ""
 

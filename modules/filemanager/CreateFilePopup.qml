@@ -1,6 +1,6 @@
 import "../../components"
 import "../../services"
-import Quickshell.Io
+import Symmetria.FileManager.Models
 import QtQuick
 import QtQuick.Layouts
 
@@ -166,7 +166,7 @@ Loader {
             // No -- needed: basePath is always absolute, so the path can never
             // be mistaken for a flag.  test(1) does not support -- anyway.
             checkProcess.command = ["test", "-e", basePath + "/" + topLevelName];
-            checkProcess.running = true;
+            checkProcess.start();
         }
 
         function _runCreate(): void {
@@ -182,26 +182,26 @@ Loader {
             if (_isDirectory) {
                 // Directory: single mkdir -p suffices; pass args as array (no shell).
                 createProcess.command = ["mkdir", "-p", "--", fullPath];
-                createProcess.running = true;
+                createProcess.start();
             } else {
                 const lastSlash = fullPath.lastIndexOf("/");
                 const parentDir = fullPath.substring(0, lastSlash);
                 if (parentDir !== basePath) {
                     // Nested file: first create intermediate dirs, then touch the file
-                    // in mkdirProcess.onExited. Two separate Process objects avoid sh -c.
+                    // in mkdirProcess.onExited. Two separate ShellRunner objects avoid sh -c.
                     mkdirProcess.pendingTouchPath = fullPath;
                     mkdirProcess.command = ["mkdir", "-p", "--", parentDir];
-                    mkdirProcess.running = true;
+                    mkdirProcess.start();
                 } else {
                     // Top-level file: no intermediate dirs needed — touch directly.
                     createProcess.command = ["touch", "--", fullPath];
-                    createProcess.running = true;
+                    createProcess.start();
                 }
             }
         }
 
         // Existence check process
-        Process {
+        ShellRunner {
             id: checkProcess
             onExited: (exitCode, exitStatus) => {
                 if (exitCode === 0) {
@@ -218,7 +218,7 @@ Loader {
         }
 
         // Intermediate directory creation process (nested file paths only)
-        Process {
+        ShellRunner {
             id: mkdirProcess
 
             property string pendingTouchPath: ""
@@ -226,7 +226,7 @@ Loader {
             onExited: (exitCode, exitStatus) => {
                 if (exitCode === 0) {
                     createProcess.command = ["touch", "--", pendingTouchPath];
-                    createProcess.running = true;
+                    createProcess.start();
                 } else {
                     errorLabel.text = qsTr("Creation failed (exit code %1)").arg(exitCode);
                 }
@@ -234,7 +234,7 @@ Loader {
         }
 
         // File/directory creation process
-        Process {
+        ShellRunner {
             id: createProcess
             onExited: (exitCode, exitStatus) => {
                 if (exitCode === 0) {

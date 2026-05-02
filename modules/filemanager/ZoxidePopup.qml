@@ -1,6 +1,6 @@
 import "../../components"
 import "../../services"
-import Quickshell.Io
+import Symmetria.FileManager.Models
 import QtQuick
 import QtQuick.Layouts
 
@@ -33,7 +33,7 @@ Loader {
         // process fires onStreamFinished / onExited on a destroyed QML object.
         Component.onDestruction: {
             if (zoxideProcess.running)
-                zoxideProcess.running = false;
+                zoxideProcess.terminate();
         }
 
         // === Scrim backdrop — click to cancel ===
@@ -254,7 +254,7 @@ Loader {
             }
             _loading = true;
             zoxideProcess.command = cmd;
-            zoxideProcess.running = true;
+            zoxideProcess.start();
         }
 
         function _parseResults(text: string): void {
@@ -293,20 +293,18 @@ Loader {
         }
 
         // === Zoxide query process ===
-        Process {
+        ShellRunner {
             id: zoxideProcess
-
-            stdout: StdioCollector {
-                onStreamFinished: popupScope._parseResults(text)
-            }
 
             onExited: (exitCode, exitStatus) => {
                 popupScope._loading = false;
                 if (exitCode !== 0) {
                     // Non-zero exit: either no matches (exit 1) or zoxide not found.
-                    // We can't reliably distinguish the two inside QuickShell's
-                    // Process (no shell, so no exit code 127 convention).
+                    // ShellRunner exposes both via QProcess (no shell, so no exit
+                    // code 127 convention to distinguish them reliably).
                     popupScope.results = [];
+                } else {
+                    popupScope._parseResults(stdoutText);
                 }
                 if (popupScope._dirty) {
                     popupScope._dirty = false;

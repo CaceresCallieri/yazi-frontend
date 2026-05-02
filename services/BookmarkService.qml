@@ -1,7 +1,7 @@
 pragma Singleton
 
 import Quickshell
-import Quickshell.Io
+import Symmetria.FileManager.Models
 import QtQuick
 
 Singleton {
@@ -87,7 +87,7 @@ Singleton {
             return;
         }
         writeProcess.payload = json;
-        writeProcess.running = true;
+        writeProcess.start();
     }
 
     function _applyBookmarks(json: string): void {
@@ -101,34 +101,19 @@ Singleton {
         _loaded = true;
     }
 
-    Component.onCompleted: readProcess.running = true
-
-    // Watch for external edits to the bookmarks file
-    FileView {
-        path: "file://" + root._configPath
+    // FileWatcher reads the file directly into `text` on construction, so we
+    // skip the cat-via-ShellRunner roundtrip the QuickShell port needed.
+    // First-run seeding still goes through ShellRunner because we need
+    // mkdir -p && write semantics.
+    FileWatcher {
+        id: readWatcher
+        path: root._configPath
         watchChanges: true
-        onFileChanged: readProcess.running = true
-    }
-
-    // Read the bookmarks file via cat — gracefully handles missing file
-    Process {
-        id: readProcess
-
-        command: ["cat", root._configPath]
-
-        property string _capturedText: ""
-
-        stdout: StdioCollector {
-            onStreamFinished: readProcess._capturedText = text
-        }
-
-        onExited: (exitCode, exitStatus) => {
-            const captured = _capturedText;
-            _capturedText = "";
-            if (exitCode === 0 && captured.trim() !== "") {
-                root._applyBookmarks(captured);
-            } else if (!_loaded) {
-                // First run — seed with default bookmarks and persist
+        onLoadedChanged: if (loaded) root._applyBookmarks(text)
+        onFileChanged: root._applyBookmarks(text)
+        onLoadFailed: {
+            // File doesn't exist on first run — seed defaults and persist.
+            if (!_loaded) {
                 bookmarks = Object.assign({}, _defaultBookmarks);
                 _loaded = true;
                 _save();
@@ -137,7 +122,7 @@ Singleton {
     }
 
     // Write full JSON to disk (mkdir -p for first run)
-    Process {
+    ShellRunner {
         id: writeProcess
         property string payload: ""
         property string _pendingPayload: ""
@@ -156,7 +141,7 @@ Singleton {
             if (_pendingPayload !== "") {
                 payload = _pendingPayload;
                 _pendingPayload = "";
-                running = true;
+                start();
             }
         }
     }

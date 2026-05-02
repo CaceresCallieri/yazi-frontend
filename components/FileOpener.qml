@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 
 import "../services"
 import Symmetria.FileManager.Models
-import Quickshell.Io
 import QtQuick
 
 Item {
@@ -23,7 +22,7 @@ Item {
         //   1. Terminal=true handler found  → prints the Exec line (non-empty stdout)
         //   2. Terminal=false handler found → prints nothing, exits 0
         //   3. No handler found             → prints nothing, exits 0
-        // onStreamFinished routes to _terminalOpen (case 1) or _xdgOpen (cases 2 & 3).
+        // onExited routes to _terminalOpen (case 1) or _xdgOpen (cases 2 & 3).
         _handlerCheck.command = ["sh", "-c",
             'handler=$(xdg-mime query default "$1"); ' +
             '[ -z "$handler" ] && case "$1" in text/*) handler=$(xdg-mime query default text/plain);; esac; ' +
@@ -35,12 +34,12 @@ Item {
             'exit 0; fi; done; exit 0',
             "sh", mimeType
         ];
-        _handlerCheck.running = true;
+        _handlerCheck.start();
     }
 
     function execute(path: string): void {
         _terminalExec.command = ["xdg-terminal-exec", path];
-        _terminalExec.running = true;
+        _terminalExec.start();
     }
 
     PreviewImageHelper {
@@ -48,59 +47,56 @@ Item {
     }
 
     // Step 1: check if the default handler needs a terminal
-    Process {
+    ShellRunner {
         id: _handlerCheck
 
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const execLine = text.trim();
-                if (execLine) {
-                    // Terminal=true handler — launch via xdg-terminal-exec.
-                    // Wrap the Exec line in `sh -c` and pass the path as $1, so the
-                    // shell handles any quoting in the Exec line correctly (e.g.,
-                    // arguments with embedded spaces like --profile="My Profile").
-                    _terminalOpen.command = ["xdg-terminal-exec", "sh", "-c", execLine + ' "$@"', "sh", root._pendingPath];
-                    _terminalOpen.running = true;
-                } else {
-                    // GUI handler — use xdg-open
-                    _xdgOpen.command = ["xdg-open", root._pendingPath];
-                    _xdgOpen.running = true;
-                }
-            }
-        }
-
         onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0)
+            if (exitCode !== 0) {
                 Logger.warn("FileOpener", "handler check failed with code " + exitCode);
+                return;
+            }
+            const execLine = stdoutText.trim();
+            if (execLine) {
+                // Terminal=true handler — launch via xdg-terminal-exec.
+                // Wrap the Exec line in `sh -c` and pass the path as $1, so the
+                // shell handles any quoting in the Exec line correctly (e.g.,
+                // arguments with embedded spaces like --profile="My Profile").
+                _terminalOpen.command = ["xdg-terminal-exec", "sh", "-c", execLine + ' "$@"', "sh", root._pendingPath];
+                _terminalOpen.start();
+            } else {
+                // GUI handler — use xdg-open
+                _xdgOpen.command = ["xdg-open", root._pendingPath];
+                _xdgOpen.start();
+            }
         }
     }
 
     // Step 2a: launch GUI app via xdg-open
-    Process {
+    ShellRunner {
         id: _xdgOpen
 
         onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0 || exitStatus !== Process.NormalExit)
+            if (exitCode !== 0 || exitStatus !== ShellRunner.NormalExit)
                 Logger.warn("FileOpener", "xdg-open exited with code " + exitCode + " for: " + command[1]);
         }
     }
 
     // Step 2b: launch terminal app via xdg-terminal-exec
-    Process {
+    ShellRunner {
         id: _terminalOpen
 
         onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0 || exitStatus !== Process.NormalExit)
+            if (exitCode !== 0 || exitStatus !== ShellRunner.NormalExit)
                 Logger.warn("FileOpener", "terminal open exited with code " + exitCode + " for: " + command.slice(1).join(" "));
         }
     }
 
     // Direct script execution (e.g. .sh files)
-    Process {
+    ShellRunner {
         id: _terminalExec
 
         onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0 || exitStatus !== Process.NormalExit)
+            if (exitCode !== 0 || exitStatus !== ShellRunner.NormalExit)
                 Logger.warn("FileOpener", "xdg-terminal-exec exited with code " + exitCode + " for: " + command[1]);
         }
     }

@@ -63,6 +63,8 @@ void ShellRunner::start()
 
     m_stdoutText.clear();
     m_stderrText.clear();
+    m_stdoutLineBuffer.clear();
+    m_stderrLineBuffer.clear();
     m_exitCode = 0;
     emit stdoutTextChanged();
     emit stderrTextChanged();
@@ -120,6 +122,19 @@ void ShellRunner::onFinished(int code, QProcess::ExitStatus status)
 {
     m_running = false;
     m_exitCode = code;
+
+    // Flush any trailing partial lines (no \n) that the process emitted
+    // before exit. Without this, single-line tools without trailing newlines
+    // would silently drop their output from the line-buffered consumers.
+    if (!m_stdoutLineBuffer.isEmpty()) {
+        emit stdoutLine(m_stdoutLineBuffer);
+        m_stdoutLineBuffer.clear();
+    }
+    if (!m_stderrLineBuffer.isEmpty()) {
+        emit stderrLine(m_stderrLineBuffer);
+        m_stderrLineBuffer.clear();
+    }
+
     emit runningChanged();
     emit exited(code, static_cast<int>(status));
 }
@@ -129,8 +144,11 @@ void ShellRunner::onReadyReadStdout()
     const QByteArray chunk = m_process.readAllStandardOutput();
     if (chunk.isEmpty())
         return;
-    m_stdoutText.append(QString::fromUtf8(chunk));
+    const QString s = QString::fromUtf8(chunk);
+    m_stdoutText.append(s);
     emit stdoutTextChanged();
+    m_stdoutLineBuffer.append(s);
+    emitLines(m_stdoutLineBuffer, &ShellRunner::stdoutLine);
 }
 
 void ShellRunner::onReadyReadStderr()
@@ -138,8 +156,21 @@ void ShellRunner::onReadyReadStderr()
     const QByteArray chunk = m_process.readAllStandardError();
     if (chunk.isEmpty())
         return;
-    m_stderrText.append(QString::fromUtf8(chunk));
+    const QString s = QString::fromUtf8(chunk);
+    m_stderrText.append(s);
     emit stderrTextChanged();
+    m_stderrLineBuffer.append(s);
+    emitLines(m_stderrLineBuffer, &ShellRunner::stderrLine);
+}
+
+void ShellRunner::emitLines(QString& buffer, void (ShellRunner::*signal)(const QString&))
+{
+    qsizetype nl;
+    while ((nl = buffer.indexOf(QChar('\n'))) != -1) {
+        const QString line = buffer.left(nl);
+        buffer.remove(0, nl + 1);
+        emit (this->*signal)(line);
+    }
 }
 
 void ShellRunner::onErrorOccurred(QProcess::ProcessError error)

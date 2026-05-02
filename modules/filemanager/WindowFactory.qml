@@ -3,6 +3,7 @@ pragma Singleton
 import "../../components"
 import "../../services"
 import "../../config"
+import Symmetria.FileManager.Models
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -118,7 +119,7 @@ Singleton {
             const rawPaths = paths.join("\n");
             fifoWriteProcess.fifoPath = fifoPath;
             fifoWriteProcess.payload = rawPaths;
-            fifoWriteProcess.running = true;
+            fifoWriteProcess.start();
         }
 
         function onPickerCancelled(fifoPath: string): void {
@@ -126,12 +127,12 @@ Singleton {
                 return;
 
             fifoCancelProcess.fifoPath = fifoPath;
-            fifoCancelProcess.running = true;
+            fifoCancelProcess.start();
         }
     }
 
     // Write selected URIs to FIFO (askpass pattern)
-    Process {
+    ShellRunner {
         id: fifoWriteProcess
 
         property string fifoPath: ""
@@ -160,13 +161,13 @@ Singleton {
         interval: 5000
         onTriggered: {
             Logger.error("WindowFactory", "FIFO write timeout — forcing close");
-            fifoWriteProcess.signal(9);
+            fifoWriteProcess.kill();
             root._closePickerWindow();
         }
     }
 
     // Write cancellation sentinel to FIFO
-    Process {
+    ShellRunner {
         id: fifoCancelProcess
 
         property string fifoPath: ""
@@ -194,7 +195,7 @@ Singleton {
         interval: 5000
         onTriggered: {
             Logger.error("WindowFactory", "FIFO cancel timeout — forcing close");
-            fifoCancelProcess.signal(9);
+            fifoCancelProcess.kill();
             root._closePickerWindow();
         }
     }

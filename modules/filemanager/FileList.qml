@@ -9,7 +9,6 @@ import "handlers/FlashHandler.js" as FlashHandler
 import "handlers/ChordHandler.js" as ChordHandler
 import "handlers/NormalModeHandler.js" as NormalModeHandler
 import Symmetria.FileManager.Models
-import Quickshell.Io
 import QtQuick
 import QtQuick.Controls
 
@@ -371,10 +370,10 @@ Item {
         id: fileOpener
     }
 
-    Process {
+    ShellRunner {
         id: pasteProcess
         onExited: (exitCode, exitStatus) => {
-            if (exitCode === 0 && exitStatus === Process.NormalExit) {
+            if (exitCode === 0 && exitStatus === ShellRunner.NormalExit) {
                 FileManagerService.clearClipboard();
             } else {
                 Logger.warn("FileList", "paste failed — exitCode: " + exitCode + " exitStatus: " + exitStatus);
@@ -383,7 +382,7 @@ Item {
         }
     }
 
-    Process {
+    ShellRunner {
         id: clipboardCopyProcess
 
         // Callback set by _copyPickerPathToClipboard() — called once wl-copy
@@ -391,7 +390,7 @@ Item {
         property var _pendingCallback: null
 
         onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0 || exitStatus !== Process.NormalExit)
+            if (exitCode !== 0 || exitStatus !== ShellRunner.NormalExit)
                 Logger.warn("FileList", "wl-copy failed — exitCode: " + exitCode + " exitStatus: " + exitStatus);
             const cb = _pendingCallback;
             _pendingCallback = null;

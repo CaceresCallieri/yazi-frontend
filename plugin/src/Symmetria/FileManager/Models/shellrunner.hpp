@@ -49,6 +49,15 @@ class ShellRunner : public QObject {
     Q_PROPERTY(int exitCode READ exitCode NOTIFY exited)
 
 public:
+    // Mirrors QProcess::ExitStatus so QML callsites can compare against
+    // ShellRunner.NormalExit / ShellRunner.CrashExit, matching the
+    // Quickshell.Io.Process.NormalExit pattern existing callsites use.
+    enum ExitStatus {
+        NormalExit = 0,
+        CrashExit = 1,
+    };
+    Q_ENUM(ExitStatus)
+
     explicit ShellRunner(QObject* parent = nullptr);
 
     [[nodiscard]] QStringList command() const;
@@ -81,6 +90,10 @@ signals:
     void started();
     void exited(int exitCode, int exitStatus);
     void errorOccurred(const QString& error);
+    // Line-buffered signals — emitted once per complete '\n'-terminated line.
+    // Partial trailing lines are flushed only when the process exits.
+    void stdoutLine(const QString& line);
+    void stderrLine(const QString& line);
 
 private:
     void onStarted();
@@ -89,11 +102,15 @@ private:
     void onReadyReadStderr();
     void onErrorOccurred(QProcess::ProcessError error);
 
+    void emitLines(QString& buffer, void (ShellRunner::*signal)(const QString&));
+
     QStringList m_command;
     QString m_workingDirectory;
     QVariantMap m_environment;
     QString m_stdoutText;
     QString m_stderrText;
+    QString m_stdoutLineBuffer;  // partial trailing line (no \n yet)
+    QString m_stderrLineBuffer;
     int m_exitCode = 0;
     bool m_running = false;
     QProcess m_process;

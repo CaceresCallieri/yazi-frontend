@@ -1,7 +1,6 @@
 import "../../components"
 import "../../services"
 import Symmetria.FileManager.Models
-import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 
@@ -70,7 +69,7 @@ Loader {
                 viewMode = "openWith";
                 if (targetMimeType !== "") {
                     mimeQueryProcess.command = ["gio", "mime", targetMimeType];
-                    mimeQueryProcess.running = true;
+                    mimeQueryProcess.start();
                 } else {
                     appList = [];
                     _updateFilteredApps();
@@ -139,7 +138,7 @@ Loader {
 
             mkdirProcess.destDir = destDir;
             mkdirProcess.command = ["mkdir", "-p", "--", destDir];
-            mkdirProcess.running = true;
+            mkdirProcess.start();
         }
 
         function _handleActionsKeys(event): void {
@@ -213,7 +212,7 @@ Loader {
                 if (filteredApps.length > 0) {
                     const app = filteredApps[appIndex];
                     openWithProcess.command = ["gio", "launch", app.desktopId, targetPath];
-                    openWithProcess.running = true;
+                    openWithProcess.start();
                     root.windowState.closeModal();
                 }
                 event.accepted = true;
@@ -540,7 +539,7 @@ Loader {
                                 StateLayer {
                                     onClicked: {
                                         openWithProcess.command = ["gio", "launch", modelData.desktopId, popupScope.targetPath];
-                                        openWithProcess.running = true;
+                                        openWithProcess.start();
                                         root.windowState.closeModal();
                                     }
                                 }
@@ -631,19 +630,19 @@ Loader {
         // === Processes ===
 
         // Query registered applications for the MIME type
-        Process {
+        ShellRunner {
             id: mimeQueryProcess
-            stdout: StdioCollector {
-                onStreamFinished: popupScope._parseMimeOutput(text)
-            }
             onExited: (exitCode, exitStatus) => {
-                if (exitCode !== 0)
+                if (exitCode !== 0) {
                     Logger.warn("ContextMenuPopup", "gio mime failed, exit code " + exitCode);
+                    return;
+                }
+                popupScope._parseMimeOutput(stdoutText);
             }
         }
 
         // Launch selected application
-        Process {
+        ShellRunner {
             id: openWithProcess
             onExited: (exitCode, exitStatus) => {
                 if (exitCode !== 0)
@@ -666,27 +665,23 @@ Loader {
         }
 
         // Create destination subfolder
-        Process {
+        ShellRunner {
             id: mkdirProcess
             property string destDir: ""
             onExited: (exitCode, exitStatus) => {
                 if (exitCode === 0) {
                     extractProcess.command = ["bsdtar", "-xvf", popupScope.targetPath, "-C", destDir];
-                    extractProcess.running = true;
+                    extractProcess.start();
                 } else {
                     popupScope.extractionError = "Failed to create directory";
                 }
             }
         }
 
-        // Extraction process with line-by-line progress
-        Process {
+        // Extraction process with line-by-line progress (one stderr line per entry).
+        ShellRunner {
             id: extractProcess
-            stderr: SplitParser {
-                onRead: data => {
-                    popupScope.extractedCount++;
-                }
-            }
+            onStderrLine: popupScope.extractedCount++
             onExited: (exitCode, exitStatus) => {
                 if (exitCode === 0) {
                     popupScope.extractionDone = true;
