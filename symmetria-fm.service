@@ -2,8 +2,7 @@
 Description=Symmetria File Manager IPC Service
 
 [Service]
-ExecStartPre=/usr/bin/rm -rf %h/.cache/quickshell/qmlcache
-ExecStart=/usr/bin/qs -c symmetria-fm
+ExecStart=/usr/bin/symmetria-fm
 Restart=always
 RestartSec=2
 

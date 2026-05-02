@@ -5,9 +5,11 @@
 """Symmetria XDG Desktop Portal FileChooser backend.
 
 Implements org.freedesktop.impl.portal.FileChooser by delegating to
-the Symmetria File Manager via QuickShell IPC. Communication back
-from the picker uses a FIFO (named pipe) — the same pattern as
-Symmetria's askpass module.
+the Symmetria File Manager daemon via the symmetria-fm-cli CLI. The
+CLI opens a QLocalSocket to the running symmetria-fm daemon at
+$XDG_RUNTIME_DIR/symmetria-fm.sock and writes a single JSON line
+({"method": "createPicker", "args": {...}}). Communication back from
+the picker still uses a FIFO (named pipe) — same protocol as before.
 """
 
 import asyncio
@@ -37,10 +39,7 @@ FIFO_PREFIX = "/tmp/symmetria-picker-"
 FIFO_TIMEOUT_SECONDS = 300  # 5 minutes max wait for user interaction
 CANCELLED_SENTINEL = "__PICKER_CANCELLED__"
 
-QS_IPC_CMD = [
-    "qs", "ipc", "--any-display", "-c", "symmetria-fm",
-    "call", "filemanager", "createPicker",
-]
+PICKER_IPC_CMD = ["symmetria-fm-cli", "createPicker"]
 
 
 def decode_byte_array_path(variant_value) -> str:
@@ -111,8 +110,10 @@ def launch_picker_ipc(options_json: str) -> None:
 
     Uses Popen + communicate() in a daemon thread so the process is fully
     reaped and no zombie is left behind, without blocking the event loop.
+    The CLI exits within milliseconds (one socket write + reply read), so
+    the daemon thread is short-lived.
     """
-    cmd = QS_IPC_CMD + [options_json]
+    cmd = PICKER_IPC_CMD + [options_json]
     log.info("Launching picker: %s", " ".join(cmd))
 
     def _run():
