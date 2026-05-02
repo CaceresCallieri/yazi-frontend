@@ -19,7 +19,7 @@ Item {
     property string audioDuration: ""
 
     visible: !!entry
-    implicitHeight: metaLayout.implicitHeight + Theme.padding.sm * 2
+    implicitHeight: metaLayout.implicitHeight + FmTheme.padding.sm * 2
 
     // Subtle top separator
     Rectangle {
@@ -27,24 +27,24 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 1
-        color: Theme.palette.outlineVariant
+        color: FmTheme.palette.outlineVariant
     }
 
     RowLayout {
         id: metaLayout
 
         anchors.fill: parent
-        anchors.margins: Theme.padding.sm
-        anchors.leftMargin: Theme.padding.md
-        anchors.rightMargin: Theme.padding.md
-        spacing: Theme.spacing.sm
+        anchors.margins: FmTheme.padding.sm
+        anchors.leftMargin: FmTheme.padding.md
+        anchors.rightMargin: FmTheme.padding.md
+        spacing: FmTheme.spacing.sm
 
         // Symlink indicator
         MaterialIcon {
             visible: root.entry?.isSymlink ?? false
             text: "link"
-            color: Theme.palette.outline
-            font.pointSize: Theme.font.size.xs
+            color: FmTheme.palette.outline
+            font.pointSize: FmTheme.font.size.xs
         }
 
         // Filename (takes remaining space)
@@ -52,36 +52,36 @@ Item {
             Layout.fillWidth: true
             text: root.entry?.name ?? ""
             elide: Text.ElideMiddle
-            color: Theme.palette.onSurfaceVariant
-            font.pointSize: Theme.font.size.xs
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.onSurfaceVariant
+            font.pointSize: FmTheme.font.size.xs
+            font.family: FmTheme.font.family.mono
         }
 
         // Image/video dimensions (only shown when available)
         StyledText {
             visible: root.imageDimensions.width > 0
             text: root.imageDimensions.width + "\u00d7" + root.imageDimensions.height
-            color: Theme.palette.outline
-            font.pointSize: Theme.font.size.xs
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.outline
+            font.pointSize: FmTheme.font.size.xs
+            font.family: FmTheme.font.family.mono
         }
 
         // Text language badge (only shown for text previews)
         StyledText {
             visible: root.textLanguage !== ""
             text: root.textLanguage
-            color: Theme.palette.outline
-            font.pointSize: Theme.font.size.xs
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.outline
+            font.pointSize: FmTheme.font.size.xs
+            font.family: FmTheme.font.family.mono
         }
 
         // Text line count (only shown for text previews)
         StyledText {
             visible: root.textLineCount > 0
             text: qsTr("%1 lines").arg(root.textLineCount)
-            color: Theme.palette.outline
-            font.pointSize: Theme.font.size.xs
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.outline
+            font.pointSize: FmTheme.font.size.xs
+            font.family: FmTheme.font.family.mono
         }
 
         // Spreadsheet metadata (only shown for spreadsheet previews)
@@ -93,9 +93,9 @@ Item {
                     info = qsTr("Sheet %1 of %2").arg(root.spreadsheetActiveSheet + 1).arg(root.spreadsheetSheetCount) + " \u00b7 " + info;
                 return info;
             }
-            color: Theme.palette.outline
-            font.pointSize: Theme.font.size.xs
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.outline
+            font.pointSize: FmTheme.font.size.xs
+            font.family: FmTheme.font.family.mono
         }
 
         // Archive contents summary (only shown for archive previews)
@@ -109,35 +109,35 @@ Item {
                     parts.push(qsTr("%1 files").arg(root.archiveFileCount));
                 return parts.join(", ");
             }
-            color: Theme.palette.outline
-            font.pointSize: Theme.font.size.xs
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.outline
+            font.pointSize: FmTheme.font.size.xs
+            font.family: FmTheme.font.family.mono
         }
 
         // Audio duration (only shown for audio previews)
         StyledText {
             visible: root.audioDuration !== ""
             text: root.audioDuration
-            color: Theme.palette.outline
-            font.pointSize: Theme.font.size.xs
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.outline
+            font.pointSize: FmTheme.font.size.xs
+            font.family: FmTheme.font.family.mono
         }
 
         // Modified date
         StyledText {
             visible: !!root.entry
             text: root.entry ? FileManagerService.formatDate(root.entry.modifiedDate) : ""
-            color: Theme.palette.outline
-            font.pointSize: Theme.font.size.xs
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.outline
+            font.pointSize: FmTheme.font.size.xs
+            font.family: FmTheme.font.family.mono
         }
 
         // File size
         StyledText {
             text: root.entry ? FileManagerService.formatSize(root.entry.size) : ""
-            color: Theme.palette.outline
-            font.pointSize: Theme.font.size.xs
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.outline
+            font.pointSize: FmTheme.font.size.xs
+            font.family: FmTheme.font.family.mono
         }
     }
 }

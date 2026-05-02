@@ -16,22 +16,22 @@ Item {
 
     ColumnLayout {
         anchors.centerIn: parent
-        width: parent.width - Theme.padding.lg * 2
-        spacing: Theme.spacing.md
+        width: parent.width - FmTheme.padding.lg * 2
+        spacing: FmTheme.spacing.md
 
         // Mime-based icon via centralized FileManagerService.iconNameForMime()
         FileIcon {
             Layout.alignment: Qt.AlignHCenter
             entry: root.entry
-            implicitWidth: Theme.font.size.xxl * 4
-            implicitHeight: Theme.font.size.xxl * 4
+            implicitWidth: FmTheme.font.size.xxl * 4
+            implicitHeight: FmTheme.font.size.xxl * 4
             materialIconName: {
                 if (!root.entry)
                     return "description";
                 return FileManagerService.iconNameForMime(root.entry.mimeType);
             }
-            materialColor: Theme.palette.outline
-            materialPointSize: Theme.font.size.xxl * 2
+            materialColor: FmTheme.palette.outline
+            materialPointSize: FmTheme.font.size.xxl * 2
             materialWeight: 500
         }
 
@@ -40,8 +40,8 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             Layout.maximumWidth: parent.width
             text: root.entry?.name ?? ""
-            color: Theme.palette.onSurface
-            font.pointSize: Theme.font.size.lg
+            color: FmTheme.palette.onSurface
+            font.pointSize: FmTheme.font.size.lg
             font.weight: Font.Medium
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
@@ -53,96 +53,96 @@ Item {
         StyledText {
             Layout.alignment: Qt.AlignHCenter
             text: root.entry ? FileManagerService.formatSize(root.entry.size) : ""
-            color: Theme.palette.onSurfaceVariant
-            font.pointSize: Theme.font.size.sm
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.onSurfaceVariant
+            font.pointSize: FmTheme.font.size.sm
+            font.family: FmTheme.font.family.mono
         }
 
         // MIME type
         StyledText {
             Layout.alignment: Qt.AlignHCenter
             text: root.entry?.mimeType ?? ""
-            color: Theme.palette.outline
-            font.pointSize: Theme.font.size.xs
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.outline
+            font.pointSize: FmTheme.font.size.xs
+            font.family: FmTheme.font.family.mono
         }
 
         // Separator
         Rectangle {
             Layout.fillWidth: true
-            Layout.topMargin: Theme.padding.sm
-            Layout.bottomMargin: Theme.padding.sm
+            Layout.topMargin: FmTheme.padding.sm
+            Layout.bottomMargin: FmTheme.padding.sm
             height: 1
-            color: Theme.palette.outlineVariant
+            color: FmTheme.palette.outlineVariant
         }
 
         // Metadata detail grid
         GridLayout {
             Layout.alignment: Qt.AlignHCenter
             columns: 2
-            columnSpacing: Theme.spacing.md
-            rowSpacing: Theme.spacing.sm
+            columnSpacing: FmTheme.spacing.md
+            rowSpacing: FmTheme.spacing.sm
 
             // Modified
             StyledText {
                 text: qsTr("Modified")
-                color: Theme.palette.outline
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.outline
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
             StyledText {
                 text: root.entry ? FileManagerService.formatDate(root.entry.modifiedDate) : ""
-                color: Theme.palette.onSurfaceVariant
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.onSurfaceVariant
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
 
             // Permissions
             StyledText {
                 text: qsTr("Permissions")
-                color: Theme.palette.outline
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.outline
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
             StyledText {
                 text: root.entry?.permissions ?? ""
-                color: Theme.palette.onSurfaceVariant
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.onSurfaceVariant
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
 
             // Owner (hidden when empty)
             StyledText {
                 visible: root._showOwner
                 text: qsTr("Owner")
-                color: Theme.palette.outline
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.outline
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
             StyledText {
                 visible: root._showOwner
                 text: root.entry?.owner ?? ""
-                color: Theme.palette.onSurfaceVariant
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.onSurfaceVariant
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
 
             // Symlink target (only for symlinks)
             StyledText {
                 visible: root._showSymlinkTarget
                 text: qsTr("Target")
-                color: Theme.palette.outline
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.outline
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
             StyledText {
                 visible: root._showSymlinkTarget
                 // Constrain width: two sides × two levels of padding (column + outer item)
-                Layout.maximumWidth: root.width - Theme.padding.lg * 4
+                Layout.maximumWidth: root.width - FmTheme.padding.lg * 4
                 text: root.entry?.symlinkTarget ?? ""
-                color: Theme.palette.onSurfaceVariant
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.onSurfaceVariant
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
                 elide: Text.ElideMiddle
             }
         }

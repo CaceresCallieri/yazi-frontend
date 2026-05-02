@@ -46,10 +46,10 @@ Item {
     ListView {
         id: archiveListView
 
-        x: Theme.padding.sm
-        y: Theme.padding.sm
-        width: parent.width - Theme.padding.sm * 2
-        height: parent.height - Theme.padding.sm * 2
+        x: FmTheme.padding.sm
+        y: FmTheme.padding.sm
+        width: parent.width - FmTheme.padding.sm * 2
+        height: parent.height - FmTheme.padding.sm * 2
         clip: true
         focus: false
         interactive: false
@@ -75,16 +75,16 @@ Item {
                 id: delegateLayout
 
                 anchors.fill: parent
-                anchors.leftMargin: Theme.padding.md + (delegateRoot.depth * 18)
-                anchors.rightMargin: Theme.padding.md
-                spacing: Theme.spacing.sm
+                anchors.leftMargin: FmTheme.padding.md + (delegateRoot.depth * 18)
+                anchors.rightMargin: FmTheme.padding.md
+                spacing: FmTheme.spacing.sm
 
                 MaterialIcon {
                     text: delegateRoot.isDir ? "folder" : "description"
                     color: delegateRoot.isDir
-                        ? Theme.palette.primary
-                        : Theme.palette.onSurfaceVariant
-                    font.pointSize: Theme.font.size.xs
+                        ? FmTheme.palette.primary
+                        : FmTheme.palette.onSurfaceVariant
+                    font.pointSize: FmTheme.font.size.xs
                     font.weight: delegateRoot.isDir ? Font.DemiBold : Font.Normal
                 }
 
@@ -92,16 +92,16 @@ Item {
                     Layout.fillWidth: true
                     text: delegateRoot.name
                     elide: Text.ElideRight
-                    color: Theme.palette.onSurface
-                    font.pointSize: Theme.font.size.xs
+                    color: FmTheme.palette.onSurface
+                    font.pointSize: FmTheme.font.size.xs
                 }
 
                 StyledText {
                     visible: !delegateRoot.isDir
                     text: FileManagerService.formatSize(delegateRoot.size)
-                    color: Theme.palette.outline
-                    font.pointSize: Theme.font.size.sm
-                    font.family: Theme.font.family.mono
+                    color: FmTheme.palette.outline
+                    font.pointSize: FmTheme.font.size.sm
+                    font.family: FmTheme.font.family.mono
                 }
             }
         }
@@ -118,11 +118,11 @@ Item {
         visible: archiveModel.truncated
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottomMargin: Theme.padding.sm
+        anchors.bottomMargin: FmTheme.padding.sm
         text: qsTr("Showing %1 of %2 entries").arg(archiveListView.count).arg(archiveModel.totalEntries)
-        color: Theme.palette.outline
-        font.pointSize: Theme.font.size.sm
-        font.family: Theme.font.family.mono
+        color: FmTheme.palette.outline
+        font.pointSize: FmTheme.font.size.sm
+        font.family: FmTheme.font.family.mono
     }
 
     // Loading indicator

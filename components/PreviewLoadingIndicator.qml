@@ -6,19 +6,19 @@ import QtQuick.Layouts
 ColumnLayout {
     id: root
 
-    spacing: Theme.spacing.sm
+    spacing: FmTheme.spacing.sm
 
     MaterialIcon {
         Layout.alignment: Qt.AlignHCenter
         text: "hourglass_empty"
-        color: Theme.palette.outline
-        font.pointSize: Theme.font.size.xxl
+        color: FmTheme.palette.outline
+        font.pointSize: FmTheme.font.size.xxl
     }
 
     StyledText {
         Layout.alignment: Qt.AlignHCenter
         text: qsTr("Loading\u2026")
-        color: Theme.palette.outline
-        font.pointSize: Theme.font.size.md
+        color: FmTheme.palette.outline
+        font.pointSize: FmTheme.font.size.md
     }
 }

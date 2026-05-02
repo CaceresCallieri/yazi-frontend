@@ -1,10 +1,9 @@
 pragma Singleton
 
-import Quickshell
 import Symmetria.FileManager.Models
 import QtQuick
 
-Singleton {
+QtObject {
     id: root
 
     // Live bookmark map: { "p": { path: "/home/.../projects", label: "projects" }, ... }
@@ -105,7 +104,9 @@ Singleton {
     // skip the cat-via-ShellRunner roundtrip the QuickShell port needed.
     // First-run seeding still goes through ShellRunner because we need
     // mkdir -p && write semantics.
-    FileWatcher {
+    //
+    // QtObject has no default property — children declared as named properties.
+    property FileWatcher _readWatcher: FileWatcher {
         id: readWatcher
         path: root._configPath
         watchChanges: true
@@ -122,7 +123,7 @@ Singleton {
     }
 
     // Write full JSON to disk (mkdir -p for first run)
-    ShellRunner {
+    property ShellRunner _writeProcess: ShellRunner {
         id: writeProcess
         property string payload: ""
         property string _pendingPayload: ""

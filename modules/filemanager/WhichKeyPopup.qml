@@ -41,27 +41,27 @@ Item {
     // Matte pill background
     Rectangle {
         anchors.fill: parent
-        radius: Theme.rounding.sm
-        color: Theme.pillMedium.background
-        border.color: Theme.pillMedium.border
+        radius: FmTheme.rounding.sm
+        color: FmTheme.pillMedium.background
+        border.color: FmTheme.pillMedium.border
         border.width: 1
     }
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: Theme.padding.md
-        spacing: Theme.spacing.sm
+        anchors.margins: FmTheme.padding.md
+        spacing: FmTheme.spacing.sm
 
         // Header: prefix key badge + group label
         RowLayout {
             Layout.fillWidth: true
-            spacing: Theme.spacing.sm
+            spacing: FmTheme.spacing.sm
 
             Rectangle {
                 width: root.windowState && root.windowState.bookmarkSubModeActive ? 32 : 22
                 height: 22
                 radius: 6
-                color: Qt.alpha(Theme.palette.primary, 0.18)
+                color: Qt.alpha(FmTheme.palette.primary, 0.18)
 
                 StyledText {
                     anchors.centerIn: parent
@@ -71,9 +71,9 @@ Item {
                         if (root.windowState.bookmarkSubMode === "delete") return "gx";
                         return root.windowState.activeChordPrefix;
                     }
-                    color: Theme.palette.primary
-                    font.family: Theme.font.family.mono
-                    font.pointSize: Theme.font.size.sm
+                    color: FmTheme.palette.primary
+                    font.family: FmTheme.font.family.mono
+                    font.pointSize: FmTheme.font.size.sm
                     font.weight: Font.Bold
                 }
             }
@@ -90,8 +90,8 @@ Item {
                     const bindings = root.windowState.chordBindings;
                     return bindings.hasOwnProperty(prefix) ? bindings[prefix].label : "";
                 }
-                color: Theme.palette.onSurfaceVariant
-                font.pointSize: Theme.font.size.sm
+                color: FmTheme.palette.onSurfaceVariant
+                font.pointSize: FmTheme.font.size.sm
                 font.weight: Font.Medium
             }
         }
@@ -100,7 +100,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: Theme.overlay.subtle
+            color: FmTheme.overlay.subtle
         }
 
         // Binding rows
@@ -117,33 +117,33 @@ Item {
                     Layout.fillWidth: true
                     height: 1
                     visible: modelData.isSeparator === true
-                    color: Theme.overlay.subtle
+                    color: FmTheme.overlay.subtle
                 }
 
                 // Keybind row (hidden for separator entries)
                 RowLayout {
                     Layout.fillWidth: true
                     visible: modelData.isSeparator !== true
-                    spacing: Theme.spacing.sm
+                    spacing: FmTheme.spacing.sm
 
                     // Keycap badge — user bookmarks get a primary tint
                     Rectangle {
                         width: 22
                         height: 22
                         radius: 6
-                        color: modelData.isUser ? Qt.alpha(Theme.palette.primary, 0.15)
+                        color: modelData.isUser ? Qt.alpha(FmTheme.palette.primary, 0.15)
                                                 : Qt.alpha("#ffffff", 0.06)
-                        border.color: modelData.isUser ? Qt.alpha(Theme.palette.primary, 0.30)
-                                                       : Theme.overlay.emphasis
+                        border.color: modelData.isUser ? Qt.alpha(FmTheme.palette.primary, 0.30)
+                                                       : FmTheme.overlay.emphasis
                         border.width: 1
 
                         StyledText {
                             anchors.centerIn: parent
                             text: modelData.key ?? ""
-                            color: modelData.isUser ? Theme.palette.primary
-                                                    : Theme.palette.onSurface
-                            font.family: Theme.font.family.mono
-                            font.pointSize: Theme.font.size.xs
+                            color: modelData.isUser ? FmTheme.palette.primary
+                                                    : FmTheme.palette.onSurface
+                            font.family: FmTheme.font.family.mono
+                            font.pointSize: FmTheme.font.size.xs
                             font.weight: Font.DemiBold
                         }
                     }
@@ -151,17 +151,17 @@ Item {
                     // Icon
                     MaterialIcon {
                         text: modelData.icon ?? ""
-                        color: modelData.isAction ? Qt.alpha(Theme.palette.onSurfaceVariant, 0.6)
-                                                  : Theme.palette.onSurfaceVariant
-                        font.pointSize: Theme.font.size.md
+                        color: modelData.isAction ? Qt.alpha(FmTheme.palette.onSurfaceVariant, 0.6)
+                                                  : FmTheme.palette.onSurfaceVariant
+                        font.pointSize: FmTheme.font.size.md
                     }
 
                     // Label
                     StyledText {
                         text: modelData.label ?? ""
-                        color: modelData.isAction ? Qt.alpha(Theme.palette.onSurface, 0.6)
-                                                  : Theme.palette.onSurface
-                        font.pointSize: Theme.font.size.sm
+                        color: modelData.isAction ? Qt.alpha(FmTheme.palette.onSurface, 0.6)
+                                                  : FmTheme.palette.onSurface
+                        font.pointSize: FmTheme.font.size.sm
                     }
                 }
             }

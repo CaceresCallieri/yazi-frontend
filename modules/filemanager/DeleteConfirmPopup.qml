@@ -37,7 +37,7 @@ Loader {
 
         StyledRect {
             anchors.fill: parent
-            color: Qt.alpha(Theme.palette.shadow, 0.5)
+            color: Qt.alpha(FmTheme.palette.shadow, 0.5)
         }
 
         // Dialog card
@@ -45,11 +45,11 @@ Loader {
             id: dialog
 
             anchors.centerIn: parent
-            radius: Theme.rounding.lg
-            color: Theme.palette.surfaceContainerHigh
+            radius: FmTheme.rounding.lg
+            color: FmTheme.palette.surfaceContainerHigh
 
-            width: Math.min(parent.width - Theme.padding.lg * 4, dialogLayout.implicitWidth + Theme.padding.lg * 3)
-            implicitHeight: dialogLayout.implicitHeight + Theme.padding.lg * 3
+            width: Math.min(parent.width - FmTheme.padding.lg * 4, dialogLayout.implicitWidth + FmTheme.padding.lg * 3)
+            implicitHeight: dialogLayout.implicitHeight + FmTheme.padding.lg * 3
 
             // Start at 0.1 — the Behavior on scale animates to 1 (OutBack pop-in).
             // No live binding needed: this component is only created when
@@ -59,7 +59,7 @@ Loader {
 
             Behavior on scale {
                 NumberAnimation {
-                    duration: Theme.animDuration
+                    duration: FmTheme.animDuration
                     easing.type: Easing.OutBack
                     easing.overshoot: 1.5
                 }
@@ -114,14 +114,14 @@ Loader {
                 id: dialogLayout
 
                 anchors.fill: parent
-                anchors.margins: Theme.padding.lg * 1.5
-                spacing: Theme.spacing.md
+                anchors.margins: FmTheme.padding.lg * 1.5
+                spacing: FmTheme.spacing.md
 
                 MaterialIcon {
                     Layout.alignment: Qt.AlignHCenter
                     text: "delete"
-                    color: Theme.palette.error
-                    font.pointSize: Theme.font.size.xxl
+                    color: FmTheme.palette.error
+                    font.pointSize: FmTheme.font.size.xxl
                     font.weight: Font.Medium
                 }
 
@@ -130,7 +130,7 @@ Loader {
                     text: popupScope.targetPaths.length === 1
                         ? qsTr("Trash this item?")
                         : qsTr("Trash %1 files?").arg(popupScope.targetPaths.length)
-                    font.pointSize: Theme.font.size.xl
+                    font.pointSize: FmTheme.font.size.xl
                     font.weight: Font.DemiBold
                 }
 
@@ -145,28 +145,28 @@ Loader {
                             return names.join("\n");
                         return names.slice(0, 3).join("\n") + "\n\u2026 and " + (names.length - 3) + " more";
                     }
-                    color: Theme.palette.onSurfaceVariant
-                    font.pointSize: Theme.font.size.sm
-                    font.family: Theme.font.family.mono
+                    color: FmTheme.palette.onSurfaceVariant
+                    font.pointSize: FmTheme.font.size.sm
+                    font.family: FmTheme.font.family.mono
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 }
 
                 RowLayout {
-                    Layout.topMargin: Theme.spacing.md
+                    Layout.topMargin: FmTheme.spacing.md
                     Layout.alignment: Qt.AlignHCenter
-                    spacing: Theme.spacing.md
+                    spacing: FmTheme.spacing.md
 
                     // Yes button — focused by default
                     StyledRect {
                         id: yesButton
 
-                        radius: Theme.rounding.sm
+                        radius: FmTheme.rounding.sm
                         color: yesButton.activeFocus
-                            ? Qt.alpha(Theme.palette.error, 0.25)
-                            : Qt.alpha(Theme.palette.error, 0.12)
-                        implicitWidth: yesRow.implicitWidth + Theme.padding.lg * 2
-                        implicitHeight: yesRow.implicitHeight + Theme.padding.md * 2
+                            ? Qt.alpha(FmTheme.palette.error, 0.25)
+                            : Qt.alpha(FmTheme.palette.error, 0.12)
+                        implicitWidth: yesRow.implicitWidth + FmTheme.padding.lg * 2
+                        implicitHeight: yesRow.implicitHeight + FmTheme.padding.md * 2
                         focus: true
                         Component.onCompleted: forceActiveFocus()
 
@@ -177,25 +177,25 @@ Loader {
                         RowLayout {
                             id: yesRow
                             anchors.centerIn: parent
-                            spacing: Theme.spacing.sm
+                            spacing: FmTheme.spacing.sm
 
                             StyledText {
                                 text: qsTr("Yes")
-                                color: Theme.palette.error
-                                font.pointSize: Theme.font.size.sm
+                                color: FmTheme.palette.error
+                                font.pointSize: FmTheme.font.size.sm
                                 font.weight: Font.DemiBold
                             }
 
                             StyledText {
                                 text: "(Y)"
-                                color: Qt.alpha(Theme.palette.error, 0.6)
-                                font.pointSize: Theme.font.size.xs
-                                font.family: Theme.font.family.mono
+                                color: Qt.alpha(FmTheme.palette.error, 0.6)
+                                font.pointSize: FmTheme.font.size.xs
+                                font.family: FmTheme.font.family.mono
                             }
                         }
 
                         StateLayer {
-                            color: Theme.palette.error
+                            color: FmTheme.palette.error
                             onClicked: {
                                 if (!trashProcess.running)
                                     trashProcess.start();
@@ -207,12 +207,12 @@ Loader {
                     StyledRect {
                         id: noButton
 
-                        radius: Theme.rounding.sm
+                        radius: FmTheme.rounding.sm
                         color: noButton.activeFocus
-                            ? Qt.alpha(Theme.palette.onSurface, 0.12)
-                            : Qt.alpha(Theme.palette.onSurface, 0.06)
-                        implicitWidth: noRow.implicitWidth + Theme.padding.lg * 2
-                        implicitHeight: noRow.implicitHeight + Theme.padding.md * 2
+                            ? Qt.alpha(FmTheme.palette.onSurface, 0.12)
+                            : Qt.alpha(FmTheme.palette.onSurface, 0.06)
+                        implicitWidth: noRow.implicitWidth + FmTheme.padding.lg * 2
+                        implicitHeight: noRow.implicitHeight + FmTheme.padding.md * 2
 
                         Behavior on color {
                             CAnim {}
@@ -221,19 +221,19 @@ Loader {
                         RowLayout {
                             id: noRow
                             anchors.centerIn: parent
-                            spacing: Theme.spacing.sm
+                            spacing: FmTheme.spacing.sm
 
                             StyledText {
                                 text: qsTr("No")
-                                font.pointSize: Theme.font.size.sm
+                                font.pointSize: FmTheme.font.size.sm
                                 font.weight: Font.DemiBold
                             }
 
                             StyledText {
                                 text: "(N)"
-                                color: Theme.palette.onSurfaceVariant
-                                font.pointSize: Theme.font.size.xs
-                                font.family: Theme.font.family.mono
+                                color: FmTheme.palette.onSurfaceVariant
+                                font.pointSize: FmTheme.font.size.xs
+                                font.family: FmTheme.font.family.mono
                             }
                         }
 

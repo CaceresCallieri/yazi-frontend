@@ -244,7 +244,7 @@ Loader {
 
         StyledRect {
             anchors.fill: parent
-            color: Qt.alpha(Theme.palette.shadow, 0.5)
+            color: Qt.alpha(FmTheme.palette.shadow, 0.5)
         }
 
         // Dialog card
@@ -252,18 +252,18 @@ Loader {
             id: dialog
 
             anchors.centerIn: parent
-            radius: Theme.rounding.lg
-            color: Theme.palette.surfaceContainerHigh
+            radius: FmTheme.rounding.lg
+            color: FmTheme.palette.surfaceContainerHigh
 
-            width: Math.min(parent.width - Theme.padding.lg * 4, 400)
-            implicitHeight: dialogContent.implicitHeight + Theme.padding.lg * 3
+            width: Math.min(parent.width - FmTheme.padding.lg * 4, 400)
+            implicitHeight: dialogContent.implicitHeight + FmTheme.padding.lg * 3
 
             scale: 0.1
             Component.onCompleted: scale = 1
 
             Behavior on scale {
                 NumberAnimation {
-                    duration: Theme.animDuration
+                    duration: FmTheme.animDuration
                     easing.type: Easing.OutBack
                     easing.overshoot: 1.5
                 }
@@ -287,24 +287,24 @@ Loader {
                 id: dialogContent
 
                 anchors.fill: parent
-                anchors.margins: Theme.padding.lg * 1.5
-                spacing: Theme.spacing.md
+                anchors.margins: FmTheme.padding.lg * 1.5
+                spacing: FmTheme.spacing.md
 
                 // Header: filename
                 RowLayout {
-                    spacing: Theme.spacing.sm
+                    spacing: FmTheme.spacing.sm
 
                     MaterialIcon {
                         text: "more_horiz"
-                        color: Theme.palette.primary
-                        font.pointSize: Theme.font.size.lg
+                        color: FmTheme.palette.primary
+                        font.pointSize: FmTheme.font.size.lg
                         font.weight: Font.Medium
                     }
 
                     StyledText {
                         text: popupScope.targetName
-                        color: Theme.palette.onSurface
-                        font.pointSize: Theme.font.size.md
+                        color: FmTheme.palette.onSurface
+                        font.pointSize: FmTheme.font.size.md
                         font.weight: Font.DemiBold
                         elide: Text.ElideMiddle
                         Layout.fillWidth: true
@@ -315,7 +315,7 @@ Loader {
                 Rectangle {
                     Layout.fillWidth: true
                     height: 1
-                    color: Theme.overlay.subtle
+                    color: FmTheme.overlay.subtle
                 }
 
                 // === View: Actions list ===
@@ -325,7 +325,7 @@ Loader {
                     visible: active
 
                     sourceComponent: ColumnLayout {
-                        spacing: Theme.spacing.sm
+                        spacing: FmTheme.spacing.sm
 
                         Component.onCompleted: dialog.forceActiveFocus()
 
@@ -334,11 +334,11 @@ Loader {
 
                             StyledRect {
                                 Layout.fillWidth: true
-                                radius: Theme.rounding.sm
+                                radius: FmTheme.rounding.sm
                                 color: index === popupScope.actionIndex
-                                    ? Qt.alpha(Theme.palette.primary, 0.12)
+                                    ? Qt.alpha(FmTheme.palette.primary, 0.12)
                                     : "transparent"
-                                implicitHeight: actionRow.implicitHeight + Theme.padding.md * 2
+                                implicitHeight: actionRow.implicitHeight + FmTheme.padding.md * 2
 
                                 Behavior on color { CAnim {} }
 
@@ -348,9 +348,9 @@ Loader {
                                     anchors.left: parent.left
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
-                                    anchors.leftMargin: Theme.padding.lg
-                                    anchors.rightMargin: Theme.padding.lg
-                                    spacing: Theme.spacing.md
+                                    anchors.leftMargin: FmTheme.padding.lg
+                                    anchors.rightMargin: FmTheme.padding.lg
+                                    spacing: FmTheme.spacing.md
 
                                     // Keycap badge — fixed-width column
                                     Rectangle {
@@ -358,16 +358,16 @@ Loader {
                                         Layout.preferredHeight: 24
                                         Layout.alignment: Qt.AlignVCenter
                                         radius: 6
-                                        color: Theme.overlay.subtle
-                                        border.color: Theme.overlay.emphasis
+                                        color: FmTheme.overlay.subtle
+                                        border.color: FmTheme.overlay.emphasis
                                         border.width: 1
 
                                         StyledText {
                                             anchors.centerIn: parent
                                             text: modelData.key
-                                            color: Theme.palette.onSurface
-                                            font.family: Theme.font.family.mono
-                                            font.pointSize: Theme.font.size.xs
+                                            color: FmTheme.palette.onSurface
+                                            font.family: FmTheme.font.family.mono
+                                            font.pointSize: FmTheme.font.size.xs
                                             font.weight: Font.DemiBold
                                         }
                                     }
@@ -378,8 +378,8 @@ Loader {
                                         Layout.alignment: Qt.AlignVCenter
                                         horizontalAlignment: Text.AlignHCenter
                                         text: modelData.icon
-                                        color: Theme.palette.onSurfaceVariant
-                                        font.pointSize: Theme.font.size.md
+                                        color: FmTheme.palette.onSurfaceVariant
+                                        font.pointSize: FmTheme.font.size.md
                                     }
 
                                     // Label — fills remaining space
@@ -387,8 +387,8 @@ Loader {
                                         Layout.fillWidth: true
                                         Layout.alignment: Qt.AlignVCenter
                                         text: modelData.label
-                                        color: Theme.palette.onSurface
-                                        font.pointSize: Theme.font.size.sm
+                                        color: FmTheme.palette.onSurface
+                                        font.pointSize: FmTheme.font.size.sm
                                     }
                                 }
 
@@ -407,14 +407,14 @@ Loader {
                     visible: active
 
                     sourceComponent: ColumnLayout {
-                        spacing: Theme.spacing.sm
+                        spacing: FmTheme.spacing.sm
 
                         // Filter input
                         StyledRect {
                             Layout.fillWidth: true
-                            radius: Theme.rounding.sm
-                            color: Qt.alpha(Theme.palette.onSurface, 0.06)
-                            implicitHeight: filterRow.implicitHeight + Theme.padding.md * 2
+                            radius: FmTheme.rounding.sm
+                            color: Qt.alpha(FmTheme.palette.onSurface, 0.06)
+                            implicitHeight: filterRow.implicitHeight + FmTheme.padding.md * 2
 
                             RowLayout {
                                 id: filterRow
@@ -422,25 +422,25 @@ Loader {
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: Theme.padding.lg
-                                anchors.rightMargin: Theme.padding.lg
-                                spacing: Theme.spacing.sm
+                                anchors.leftMargin: FmTheme.padding.lg
+                                anchors.rightMargin: FmTheme.padding.lg
+                                spacing: FmTheme.spacing.sm
 
                                 MaterialIcon {
                                     text: "search"
-                                    color: Theme.palette.outline
-                                    font.pointSize: Theme.font.size.sm
+                                    color: FmTheme.palette.outline
+                                    font.pointSize: FmTheme.font.size.sm
                                 }
 
                                 TextInput {
                                     id: filterInput
 
                                     Layout.fillWidth: true
-                                    color: Theme.palette.onSurface
-                                    font.pointSize: Theme.font.size.sm
-                                    font.family: Theme.font.family.mono
-                                    selectionColor: Theme.palette.primary
-                                    selectedTextColor: Theme.palette.onPrimary
+                                    color: FmTheme.palette.onSurface
+                                    font.pointSize: FmTheme.font.size.sm
+                                    font.family: FmTheme.font.family.mono
+                                    selectionColor: FmTheme.palette.primary
+                                    selectedTextColor: FmTheme.palette.onPrimary
                                     clip: true
                                     Component.onCompleted: forceActiveFocus()
 
@@ -465,8 +465,8 @@ Loader {
                         StyledText {
                             visible: mimeQueryProcess.running
                             text: "Loading applications\u2026"
-                            color: Theme.palette.outline
-                            font.pointSize: Theme.font.size.sm
+                            color: FmTheme.palette.outline
+                            font.pointSize: FmTheme.font.size.sm
                         }
 
                         // No results
@@ -475,8 +475,8 @@ Loader {
                             text: popupScope.appFilterQuery !== ""
                                 ? "No matching applications"
                                 : "No registered applications"
-                            color: Theme.palette.outline
-                            font.pointSize: Theme.font.size.sm
+                            color: FmTheme.palette.outline
+                            font.pointSize: FmTheme.font.size.sm
                         }
 
                         // App list
@@ -492,11 +492,11 @@ Loader {
 
                             delegate: StyledRect {
                                 width: appListView.width
-                                radius: Theme.rounding.sm
+                                radius: FmTheme.rounding.sm
                                 color: index === popupScope.appIndex
-                                    ? Qt.alpha(Theme.palette.primary, 0.12)
+                                    ? Qt.alpha(FmTheme.palette.primary, 0.12)
                                     : "transparent"
-                                implicitHeight: appRow.implicitHeight + Theme.padding.sm * 2
+                                implicitHeight: appRow.implicitHeight + FmTheme.padding.sm * 2
 
                                 Behavior on color { CAnim {} }
 
@@ -506,14 +506,14 @@ Loader {
                                     anchors.left: parent.left
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
-                                    anchors.leftMargin: Theme.padding.lg
-                                    anchors.rightMargin: Theme.padding.lg
-                                    spacing: Theme.spacing.sm
+                                    anchors.leftMargin: FmTheme.padding.lg
+                                    anchors.rightMargin: FmTheme.padding.lg
+                                    spacing: FmTheme.spacing.sm
 
                                     MaterialIcon {
                                         text: "apps"
-                                        color: Theme.palette.onSurfaceVariant
-                                        font.pointSize: Theme.font.size.md
+                                        color: FmTheme.palette.onSurfaceVariant
+                                        font.pointSize: FmTheme.font.size.md
                                     }
 
                                     ColumnLayout {
@@ -522,16 +522,16 @@ Loader {
 
                                         StyledText {
                                             text: modelData.name
-                                            color: Theme.palette.onSurface
-                                            font.pointSize: Theme.font.size.sm
+                                            color: FmTheme.palette.onSurface
+                                            font.pointSize: FmTheme.font.size.sm
                                             font.weight: Font.Medium
                                         }
 
                                         StyledText {
                                             text: modelData.desktopId
-                                            color: Theme.palette.onSurfaceVariant
-                                            font.pointSize: Theme.font.size.xs
-                                            font.family: Theme.font.family.mono
+                                            color: FmTheme.palette.onSurfaceVariant
+                                            font.pointSize: FmTheme.font.size.xs
+                                            font.family: FmTheme.font.family.mono
                                         }
                                     }
                                 }
@@ -549,8 +549,8 @@ Loader {
                         // Back hint
                         StyledText {
                             text: "Esc to go back"
-                            color: Theme.palette.outline
-                            font.pointSize: Theme.font.size.xs
+                            color: FmTheme.palette.outline
+                            font.pointSize: FmTheme.font.size.xs
                         }
                     }
                 }
@@ -562,7 +562,7 @@ Loader {
                     visible: active
 
                     sourceComponent: ColumnLayout {
-                        spacing: Theme.spacing.md
+                        spacing: FmTheme.spacing.md
 
                         Component.onCompleted: dialog.forceActiveFocus()
 
@@ -570,11 +570,11 @@ Loader {
                             Layout.alignment: Qt.AlignHCenter
                             text: popupScope.extractionDone ? "check_circle" : "unarchive"
                             color: popupScope.extractionDone
-                                ? Theme.palette.primary
+                                ? FmTheme.palette.primary
                                 : popupScope.extractionError !== ""
-                                    ? Theme.palette.error
-                                    : Theme.palette.onSurfaceVariant
-                            font.pointSize: Theme.font.size.xxl
+                                    ? FmTheme.palette.error
+                                    : FmTheme.palette.onSurfaceVariant
+                            font.pointSize: FmTheme.font.size.xxl
                             font.weight: Font.Medium
                         }
 
@@ -591,8 +591,8 @@ Loader {
                                 return "Preparing\u2026";
                             }
                             color: popupScope.extractionError !== ""
-                                ? Theme.palette.error : Theme.palette.onSurface
-                            font.pointSize: Theme.font.size.sm
+                                ? FmTheme.palette.error : FmTheme.palette.onSurface
+                            font.pointSize: FmTheme.font.size.sm
                         }
 
                         // Progress bar
@@ -600,13 +600,13 @@ Loader {
                             Layout.fillWidth: true
                             height: 4
                             radius: 2
-                            color: Qt.alpha(Theme.palette.onSurface, 0.06)
+                            color: Qt.alpha(FmTheme.palette.onSurface, 0.06)
 
                             StyledRect {
                                 height: parent.height
                                 radius: parent.radius
                                 color: popupScope.extractionError !== ""
-                                    ? Theme.palette.error : Theme.palette.primary
+                                    ? FmTheme.palette.error : FmTheme.palette.primary
                                 width: popupScope.extractTotalCount > 0
                                     ? parent.width * Math.min(popupScope.extractedCount / popupScope.extractTotalCount, 1)
                                     : 0
@@ -619,8 +619,8 @@ Loader {
                             Layout.alignment: Qt.AlignHCenter
                             visible: popupScope.extractionDone || popupScope.extractionError !== ""
                             text: "Press Enter or Escape to close"
-                            color: Theme.palette.outline
-                            font.pointSize: Theme.font.size.xs
+                            color: FmTheme.palette.outline
+                            font.pointSize: FmTheme.font.size.xs
                         }
                     }
                 }

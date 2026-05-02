@@ -10,9 +10,9 @@ Item {
     required property QtObject entry
     required property string materialIconName
 
-    property color materialColor: Theme.palette.onSurfaceVariant
+    property color materialColor: FmTheme.palette.onSurfaceVariant
     property real materialFill: 0
-    property real materialPointSize: Theme.font.size.xl
+    property real materialPointSize: FmTheme.font.size.xl
     // -1 means "use the font's default weight". QML does not support binding font.weight
     // directly as a property initializer, so weight is applied in Component.onCompleted.
     property int materialWeight: -1
@@ -20,8 +20,8 @@ Item {
     readonly property bool useSystemIcon: Config.fileManager.iconMode === "system"
                                           && (root.entry?.iconPath ?? "") !== ""
 
-    implicitWidth: Theme.font.size.xl * 1.5
-    implicitHeight: Theme.font.size.xl * 1.5
+    implicitWidth: FmTheme.font.size.xl * 1.5
+    implicitHeight: FmTheme.font.size.xl * 1.5
 
     Image {
         anchors.centerIn: parent

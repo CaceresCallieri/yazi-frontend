@@ -23,10 +23,10 @@ Item {
     Flickable {
         id: textFlickable
 
-        x: Theme.padding.lg
-        y: Theme.padding.md
-        width: parent.width - Theme.padding.lg * 2
-        height: parent.height - Theme.padding.md * 2
+        x: FmTheme.padding.lg
+        y: FmTheme.padding.md
+        width: parent.width - FmTheme.padding.lg * 2
+        height: parent.height - FmTheme.padding.md * 2
         clip: true
         contentWidth: Math.max(textEdit.implicitWidth, textFlickable.width)
         contentHeight: textEdit.implicitHeight
@@ -42,8 +42,8 @@ Item {
             focus: false
             text: helper.highlightedContent
             textFormat: TextEdit.RichText
-            font.family: Theme.font.family.mono
-            font.pointSize: Theme.font.size.xs
+            font.family: FmTheme.font.family.mono
+            font.pointSize: FmTheme.font.size.xs
             wrapMode: TextEdit.NoWrap
             // Text color is set by the <pre style="color:..."> injected in SyntaxHighlightHelper.
             // The QML color property has no effect in RichText mode when the HTML provides its own color.

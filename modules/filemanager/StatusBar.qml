@@ -11,7 +11,7 @@ Item {
     required property var currentEntry
 
     // Horizontal inset matching PathBar pill spacing in PathBar and StatusBar
-    readonly property real _barHorizontalMargin: Theme.padding.lg + Theme.padding.md
+    readonly property real _barHorizontalMargin: FmTheme.padding.lg + FmTheme.padding.md
 
     // Collapses the repeated null-guard pattern used throughout this file.
     readonly property bool _searchActive: windowState ? windowState.searchActive : false
@@ -21,40 +21,40 @@ Item {
     // True when normal status bar content should be visible (no search, flash, or transient message)
     readonly property bool _normalVisible: !_searchActive && !_flashActive && _transientMessage === ""
 
-    implicitHeight: inner.implicitHeight + Theme.padding.sm * 4
+    implicitHeight: inner.implicitHeight + FmTheme.padding.sm * 4
 
     // Matte pill container with fully rounded corners
     StyledRect {
         id: pill
 
         anchors.fill: parent
-        anchors.topMargin: Theme.padding.sm
-        anchors.bottomMargin: Theme.padding.sm
+        anchors.topMargin: FmTheme.padding.sm
+        anchors.bottomMargin: FmTheme.padding.sm
         anchors.leftMargin: root._barHorizontalMargin
         anchors.rightMargin: root._barHorizontalMargin
-        radius: Theme.rounding.full
-        color: Theme.pillMedium.background
-        border.color: Theme.pillMedium.border
+        radius: FmTheme.rounding.full
+        color: FmTheme.pillMedium.background
+        border.color: FmTheme.pillMedium.border
         border.width: 1
 
         RowLayout {
             id: inner
 
             anchors.fill: parent
-            anchors.leftMargin: Theme.padding.lg
-            anchors.rightMargin: Theme.padding.lg
-            anchors.topMargin: Theme.padding.sm
-            anchors.bottomMargin: Theme.padding.sm
+            anchors.leftMargin: FmTheme.padding.lg
+            anchors.rightMargin: FmTheme.padding.lg
+            anchors.topMargin: FmTheme.padding.sm
+            anchors.bottomMargin: FmTheme.padding.sm
 
-            spacing: Theme.spacing.md
+            spacing: FmTheme.spacing.md
 
             // Transient bookmark feedback — overlays normal content when active
             StyledText {
                 visible: root._transientMessage !== "" && !root._searchActive && !root._flashActive
                 text: root._transientMessage
-                color: Theme.palette.primary
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.primary
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
                 Layout.fillWidth: true
             }
 
@@ -63,10 +63,10 @@ Item {
             StyledRect {
                 id: acceptBtn
                 visible: FileManagerService.pickerMode && root._normalVisible
-                color: _acceptEnabled ? Theme.palette.primary : Theme.palette.surfaceVariant
-                radius: Theme.rounding.full
-                implicitWidth: acceptLabel.implicitWidth + Theme.padding.lg * 2
-                implicitHeight: acceptLabel.implicitHeight + Theme.padding.sm * 2
+                color: _acceptEnabled ? FmTheme.palette.primary : FmTheme.palette.surfaceVariant
+                radius: FmTheme.rounding.full
+                implicitWidth: acceptLabel.implicitWidth + FmTheme.padding.lg * 2
+                implicitHeight: acceptLabel.implicitHeight + FmTheme.padding.sm * 2
 
                 readonly property bool _acceptEnabled: {
                     if (FileManagerService.pickerSaveMode)
@@ -92,8 +92,8 @@ Item {
                             return "Select (" + root._selectedCount + ")";
                         return "Select";
                     }
-                    color: acceptBtn._acceptEnabled ? Theme.palette.onPrimary : Theme.palette.onSurfaceVariant
-                    font.pointSize: Theme.font.size.xs
+                    color: acceptBtn._acceptEnabled ? FmTheme.palette.onPrimary : FmTheme.palette.onSurfaceVariant
+                    font.pointSize: FmTheme.font.size.xs
                     font.weight: Font.Medium
                 }
 
@@ -123,10 +123,10 @@ Item {
                 }
                 color: {
                     if (root._selectedCount > 0)
-                        return Theme.indicator.selection;
-                    return Theme.palette.onSurfaceVariant;
+                        return FmTheme.indicator.selection;
+                    return FmTheme.palette.onSurfaceVariant;
                 }
-                font.pointSize: Theme.font.size.xs
+                font.pointSize: FmTheme.font.size.xs
             }
 
             // Sort mode indicator
@@ -137,9 +137,9 @@ Item {
                     const arrow = root.windowState.sortReverse ? " ↓" : " ↑";
                     return root.windowState.sortLabel + arrow;
                 }
-                color: Theme.palette.onSurfaceVariant
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.onSurfaceVariant
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
 
             Item {
@@ -152,9 +152,9 @@ Item {
                 visible: root._normalVisible && FileManagerService.pickerSaveMode
                     && (FileManagerService.pickerSuggestedName !== "" || FileManagerService.saveNameEditing)
                 text: "Save as:"
-                color: Theme.palette.primary
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.primary
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
 
             TextInput {
@@ -163,11 +163,11 @@ Item {
                 visible: root._normalVisible && FileManagerService.pickerSaveMode
                     && (FileManagerService.pickerSuggestedName !== "" || FileManagerService.saveNameEditing)
                 text: FileManagerService.pickerSuggestedName
-                color: FileManagerService.saveNameEditing ? Theme.palette.onSurface : Theme.palette.primary
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
-                selectionColor: Theme.palette.primary
-                selectedTextColor: Theme.palette.onPrimary
+                color: FileManagerService.saveNameEditing ? FmTheme.palette.onSurface : FmTheme.palette.primary
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
+                selectionColor: FmTheme.palette.primary
+                selectedTextColor: FmTheme.palette.onPrimary
                 readOnly: !FileManagerService.saveNameEditing
                 activeFocusOnPress: false
                 clip: true
@@ -249,9 +249,9 @@ Item {
                         return root.currentEntry.name + "/";
                     return (root.currentEntry?.name ?? "") + "  " + FileManagerService.formatSize(root.currentEntry?.size ?? 0);
                 }
-                color: Theme.palette.onSurface
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.onSurface
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
 
             Item {
@@ -262,17 +262,17 @@ Item {
             // Cancel button (picker mode only)
             StyledRect {
                 visible: FileManagerService.pickerMode && root._normalVisible
-                color: Theme.palette.surfaceVariant
-                radius: Theme.rounding.full
-                implicitWidth: cancelLabel.implicitWidth + Theme.padding.lg * 2
-                implicitHeight: cancelLabel.implicitHeight + Theme.padding.sm * 2
+                color: FmTheme.palette.surfaceVariant
+                radius: FmTheme.rounding.full
+                implicitWidth: cancelLabel.implicitWidth + FmTheme.padding.lg * 2
+                implicitHeight: cancelLabel.implicitHeight + FmTheme.padding.sm * 2
 
                 StyledText {
                     id: cancelLabel
                     anchors.centerIn: parent
                     text: "Cancel"
-                    color: Theme.palette.onSurfaceVariant
-                    font.pointSize: Theme.font.size.xs
+                    color: FmTheme.palette.onSurfaceVariant
+                    font.pointSize: FmTheme.font.size.xs
                     font.weight: Font.Medium
                 }
 
@@ -289,9 +289,9 @@ Item {
             StyledText {
                 visible: root._searchActive
                 text: "/"
-                color: Theme.palette.primary
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.primary
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
 
             TextInput {
@@ -301,11 +301,11 @@ Item {
 
                 visible: root._searchActive
                 Layout.fillWidth: true
-                color: Theme.palette.onSurface
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
-                selectionColor: Theme.palette.primary
-                selectedTextColor: Theme.palette.onPrimary
+                color: FmTheme.palette.onSurface
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
+                selectionColor: FmTheme.palette.primary
+                selectedTextColor: FmTheme.palette.onPrimary
                 clip: true
 
                 onTextChanged: {
@@ -360,31 +360,31 @@ Item {
                 }
                 color: {
                     if (root.windowState && root.windowState.searchQuery !== "" && root.windowState.matchIndices.length === 0)
-                        return Theme.palette.error;
-                    return Theme.palette.onSurfaceVariant;
+                        return FmTheme.palette.error;
+                    return FmTheme.palette.onSurfaceVariant;
                 }
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
 
             // Flash navigation indicator (visible during flash mode)
             RowLayout {
                 visible: root._flashActive
-                spacing: Theme.spacing.md
+                spacing: FmTheme.spacing.md
 
                 StyledText {
                     text: "S"
-                    color: Theme.palette.primary
-                    font.pointSize: Theme.font.size.xs
-                    font.family: Theme.font.family.mono
+                    color: FmTheme.palette.primary
+                    font.pointSize: FmTheme.font.size.xs
+                    font.family: FmTheme.font.family.mono
                     font.weight: Font.Bold
                 }
 
                 StyledText {
                     text: root.windowState ? root.windowState.flashQuery : ""
-                    color: Theme.palette.onSurface
-                    font.pointSize: Theme.font.size.xs
-                    font.family: Theme.font.family.mono
+                    color: FmTheme.palette.onSurface
+                    font.pointSize: FmTheme.font.size.xs
+                    font.family: FmTheme.font.family.mono
                     Layout.fillWidth: true
                 }
 
@@ -400,19 +400,19 @@ Item {
                     color: {
                         if (root.windowState && root.windowState.flashQuery !== ""
                             && root.windowState.flashMatches.length === 0)
-                            return Theme.palette.error;
-                        return Theme.palette.onSurfaceVariant;
+                            return FmTheme.palette.error;
+                        return FmTheme.palette.onSurfaceVariant;
                     }
-                    font.pointSize: Theme.font.size.xs
-                    font.family: Theme.font.family.mono
+                    font.pointSize: FmTheme.font.size.xs
+                    font.family: FmTheme.font.family.mono
                 }
             }
 
             // Right: abbreviated path (always visible)
             StyledText {
                 text: root.windowState ? Paths.shortenHome(root.windowState.currentPath) : ""
-                color: Theme.palette.onSurfaceVariant
-                font.pointSize: Theme.font.size.xs
+                color: FmTheme.palette.onSurfaceVariant
+                font.pointSize: FmTheme.font.size.xs
                 elide: Text.ElideMiddle
                 Layout.maximumWidth: root.width * 0.3
             }

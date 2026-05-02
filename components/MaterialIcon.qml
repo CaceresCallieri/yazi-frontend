@@ -2,10 +2,10 @@ import "../services"
 
 StyledText {
     property real fill
-    property int grade: Theme.light ? 0 : -25
+    property int grade: FmTheme.light ? 0 : -25
 
-    font.family: Theme.font.family.material
-    font.pointSize: Theme.font.size.lg
+    font.family: FmTheme.font.family.material
+    font.pointSize: FmTheme.font.size.lg
     font.variableAxes: ({
             FILL: fill.toFixed(1),
             GRAD: grade,

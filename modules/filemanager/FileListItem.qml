@@ -21,8 +21,8 @@ Item {
         const lowerName = name.toLowerCase();
         const lowerQuery = query.toLowerCase();
         const qLen = query.length;
-        const spanOpen = "<span style=\"background-color: " + Theme.palette.secondaryContainer
-                       + "; color: " + Theme.palette.onSecondaryContainer + ";\">";
+        const spanOpen = "<span style=\"background-color: " + FmTheme.palette.secondaryContainer
+                       + "; color: " + FmTheme.palette.onSecondaryContainer + ";\">";
         const spanClose = "</span>";
 
         let result = "";
@@ -51,13 +51,13 @@ Item {
         const replacedEnd = Math.min(afterMatchStart + label.length, name.length);
         const after = name.substring(replacedEnd);
 
-        const querySpan = "<span style=\"background-color: " + Theme.palette.secondaryContainer
-                        + "; color: " + Theme.palette.onSecondaryContainer + ";\">"
+        const querySpan = "<span style=\"background-color: " + FmTheme.palette.secondaryContainer
+                        + "; color: " + FmTheme.palette.onSecondaryContainer + ";\">"
                         + root._htmlEscape(match) + "</span>";
 
-        const labelSpan = "<span style=\"background-color: " + Theme.palette.primary
-                        + "; color: " + Theme.palette.onPrimary
-                        + "; font-weight: 700; font-family: " + Theme.font.family.mono + ";\">"
+        const labelSpan = "<span style=\"background-color: " + FmTheme.palette.primary
+                        + "; color: " + FmTheme.palette.onPrimary
+                        + "; font-weight: 700; font-family: " + FmTheme.font.family.mono + ";\">"
                         + root._htmlEscape(label) + "</span>";
 
         return root._htmlEscape(before) + querySpan + labelSpan + root._htmlEscape(after);
@@ -78,10 +78,10 @@ Item {
     // Search match highlight — subtle gray tint behind matching rows
     Rectangle {
         anchors.fill: parent
-        anchors.leftMargin: Theme.padding.sm
-        anchors.rightMargin: Theme.padding.sm
-        radius: Theme.rounding.full
-        color: Theme.palette.onSurface
+        anchors.leftMargin: FmTheme.padding.sm
+        anchors.rightMargin: FmTheme.padding.sm
+        radius: FmTheme.rounding.full
+        color: FmTheme.palette.onSurface
         opacity: root.isSearchMatch ? 0.06 : 0
         Behavior on opacity { Anim {} }
     }
@@ -93,17 +93,17 @@ Item {
         id: selectionHighlight
 
         anchors.fill: parent
-        anchors.leftMargin: Theme.padding.sm
-        anchors.rightMargin: Theme.padding.sm
-        radius: Theme.rounding.full
-        color: Theme.pillStrong.background
-        border.color: Theme.pillStrong.border
+        anchors.leftMargin: FmTheme.padding.sm
+        anchors.rightMargin: FmTheme.padding.sm
+        radius: FmTheme.rounding.full
+        color: FmTheme.pillStrong.background
+        border.color: FmTheme.pillStrong.border
         border.width: root.ListView.isCurrentItem ? 1 : 0
         opacity: root.ListView.isCurrentItem ? 1 : 0
     }
 
     // Clipboard indicator strip — left edge, above selection highlight.
-    // Colors are hardcoded instead of using Theme palette tokens because
+    // Colors are hardcoded instead of using FmTheme palette tokens because
     // palette tokens change with wallpaper-derived color schemes, so
     // indicator colors must stay fixed to remain visually distinguishable.
     Item {
@@ -117,9 +117,9 @@ Item {
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            width: parent.width + Theme.rounding.sm
-            radius: Theme.rounding.sm
-            color: FileManagerService.clipboardMode === "cut" ? Theme.indicator.cut : Theme.indicator.yank
+            width: parent.width + FmTheme.rounding.sm
+            radius: FmTheme.rounding.sm
+            color: FileManagerService.clipboardMode === "cut" ? FmTheme.indicator.cut : FmTheme.indicator.yank
             // Read _clipboardSet directly so QML tracks the dependency and
             // re-evaluates when the set object reference changes.
             opacity: FileManagerService._clipboardSet[root.modelData?.path ?? ""]
@@ -145,9 +145,9 @@ Item {
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            width: parent.width + Theme.rounding.sm
-            radius: Theme.rounding.sm
-            color: Theme.indicator.selection
+            width: parent.width + FmTheme.rounding.sm
+            radius: FmTheme.rounding.sm
+            color: FmTheme.indicator.selection
             opacity: root.isSelected ? 0.85 : 0
 
             Behavior on opacity { Anim {} }
@@ -162,9 +162,9 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: Theme.padding.lg
-        anchors.rightMargin: Theme.padding.lg
-        spacing: Theme.spacing.md
+        anchors.leftMargin: FmTheme.padding.lg
+        anchors.rightMargin: FmTheme.padding.lg
+        spacing: FmTheme.spacing.md
         opacity: root.flashActive && !root.isFlashMatch ? 0.25 : 1.0
         Behavior on opacity { Anim {} }
 
@@ -180,7 +180,7 @@ Item {
                     return "image";
                 return FileManagerService.iconNameForMime(root.modelData.mimeType);
             }
-            materialColor: root.modelData?.isDir ? Theme.palette.primary : Theme.palette.onSurfaceVariant
+            materialColor: root.modelData?.isDir ? FmTheme.palette.primary : FmTheme.palette.onSurfaceVariant
             materialFill: root.modelData?.isDir ? 1 : 0
             Layout.preferredWidth: implicitWidth
             Layout.preferredHeight: implicitHeight
@@ -190,8 +190,8 @@ Item {
         MaterialIcon {
             visible: root.modelData.isRemoteMount
             text: "lan"
-            color: Theme.palette.primary
-            font.pointSize: Theme.font.size.xs
+            color: FmTheme.palette.primary
+            font.pointSize: FmTheme.font.size.xs
         }
 
         // File name
@@ -208,8 +208,8 @@ Item {
                     return root._highlightMatches(name, root.searchQuery);
                 return name;
             }
-            color: Theme.palette.onSurface
-            font.pointSize: Theme.font.size.md
+            color: FmTheme.palette.onSurface
+            font.pointSize: FmTheme.font.size.md
         }
 
         // Symlink target indicator
@@ -217,8 +217,8 @@ Item {
             visible: root.modelData?.isSymlink ?? false
             Layout.fillWidth: true
             text: "→ " + Paths.shortenHomeBare(root.modelData?.symlinkTarget ?? "")
-            color: Theme.palette.outline
-            font.pointSize: Theme.font.size.xs
+            color: FmTheme.palette.outline
+            font.pointSize: FmTheme.font.size.xs
             elide: Text.ElideMiddle
         }
 
@@ -226,9 +226,9 @@ Item {
         StyledText {
             visible: !(root.modelData?.isDir ?? true)
             text: root.modelData ? FileManagerService.formatSize(root.modelData.size) : ""
-            color: Theme.palette.onSurfaceVariant
-            font.pointSize: Theme.font.size.xs
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.onSurfaceVariant
+            font.pointSize: FmTheme.font.size.xs
+            font.family: FmTheme.font.family.mono
             horizontalAlignment: Text.AlignRight
             Layout.minimumWidth: 50
         }

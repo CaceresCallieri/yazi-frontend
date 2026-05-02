@@ -2,7 +2,7 @@ import "../services"
 import QtQuick
 
 ColorAnimation {
-    duration: Theme.animDuration
+    duration: FmTheme.animDuration
     easing.type: Easing.BezierSpline
-    easing.bezierCurve: Theme.animCurveStandard
+    easing.bezierCurve: FmTheme.animCurveStandard
 }

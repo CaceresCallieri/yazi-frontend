@@ -45,7 +45,7 @@ Loader {
 
         StyledRect {
             anchors.fill: parent
-            color: Qt.alpha(Theme.palette.shadow, 0.5)
+            color: Qt.alpha(FmTheme.palette.shadow, 0.5)
         }
 
         // === Dialog card ===
@@ -53,18 +53,18 @@ Loader {
             id: dialog
 
             anchors.centerIn: parent
-            radius: Theme.rounding.lg
-            color: Theme.palette.surfaceContainerHigh
+            radius: FmTheme.rounding.lg
+            color: FmTheme.palette.surfaceContainerHigh
 
-            width: Math.min(parent.width - Theme.padding.lg * 4, 500)
-            implicitHeight: dialogLayout.implicitHeight + Theme.padding.lg * 3
+            width: Math.min(parent.width - FmTheme.padding.lg * 4, 500)
+            implicitHeight: dialogLayout.implicitHeight + FmTheme.padding.lg * 3
 
             scale: 0.1
             Component.onCompleted: scale = 1
 
             Behavior on scale {
                 NumberAnimation {
-                    duration: Theme.animDuration
+                    duration: FmTheme.animDuration
                     easing.type: Easing.OutBack
                     easing.overshoot: 1.5
                 }
@@ -85,24 +85,24 @@ Loader {
                 id: dialogLayout
 
                 anchors.fill: parent
-                anchors.margins: Theme.padding.lg * 1.5
-                spacing: Theme.spacing.md
+                anchors.margins: FmTheme.padding.lg * 1.5
+                spacing: FmTheme.spacing.md
 
                 // Header row
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
-                    spacing: Theme.spacing.sm
+                    spacing: FmTheme.spacing.sm
 
                     MaterialIcon {
                         text: "jump_to_element"
-                        color: Theme.palette.primary
-                        font.pointSize: Theme.font.size.lg
+                        color: FmTheme.palette.primary
+                        font.pointSize: FmTheme.font.size.lg
                     }
 
                     StyledText {
                         text: qsTr("Jump to directory")
-                        color: Theme.palette.onSurface
-                        font.pointSize: Theme.font.size.md
+                        color: FmTheme.palette.onSurface
+                        font.pointSize: FmTheme.font.size.md
                         font.weight: Font.DemiBold
                     }
                 }
@@ -110,9 +110,9 @@ Loader {
                 // Search input container
                 StyledRect {
                     Layout.fillWidth: true
-                    radius: Theme.rounding.sm
-                    color: Qt.alpha(Theme.palette.onSurface, 0.06)
-                    implicitHeight: searchInput.implicitHeight + Theme.padding.md * 2
+                    radius: FmTheme.rounding.sm
+                    color: Qt.alpha(FmTheme.palette.onSurface, 0.06)
+                    implicitHeight: searchInput.implicitHeight + FmTheme.padding.md * 2
 
                     TextInput {
                         id: searchInput
@@ -120,14 +120,14 @@ Loader {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.leftMargin: Theme.padding.lg
-                        anchors.rightMargin: Theme.padding.lg
+                        anchors.leftMargin: FmTheme.padding.lg
+                        anchors.rightMargin: FmTheme.padding.lg
 
-                        color: Theme.palette.onSurface
-                        font.pointSize: Theme.font.size.sm
-                        font.family: Theme.font.family.mono
-                        selectionColor: Theme.palette.primary
-                        selectedTextColor: Theme.palette.onPrimary
+                        color: FmTheme.palette.onSurface
+                        font.pointSize: FmTheme.font.size.sm
+                        font.family: FmTheme.font.family.mono
+                        selectionColor: FmTheme.palette.primary
+                        selectedTextColor: FmTheme.palette.onPrimary
                         clip: true
                         focus: true
 
@@ -171,11 +171,11 @@ Loader {
                             required property int index
 
                             width: parent.width
-                            radius: Theme.rounding.sm
+                            radius: FmTheme.rounding.sm
                             color: index === popupScope.selectedIndex
-                                ? Qt.alpha(Theme.palette.primary, 0.15)
+                                ? Qt.alpha(FmTheme.palette.primary, 0.15)
                                 : "transparent"
-                            implicitHeight: resultRow.implicitHeight + Theme.padding.sm * 2
+                            implicitHeight: resultRow.implicitHeight + FmTheme.padding.sm * 2
 
                             Behavior on color {
                                 CAnim {}
@@ -187,17 +187,17 @@ Loader {
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                anchors.leftMargin: Theme.padding.md
-                                anchors.rightMargin: Theme.padding.md
-                                spacing: Theme.spacing.md
+                                anchors.leftMargin: FmTheme.padding.md
+                                anchors.rightMargin: FmTheme.padding.md
+                                spacing: FmTheme.spacing.md
 
                                 // Score (dimmed, right-aligned, fixed width)
                                 StyledText {
                                     Layout.preferredWidth: 50
                                     text: Math.round(modelData.score).toString()
-                                    color: Theme.palette.onSurfaceVariant
-                                    font.pointSize: Theme.font.size.xs
-                                    font.family: Theme.font.family.mono
+                                    color: FmTheme.palette.onSurfaceVariant
+                                    font.pointSize: FmTheme.font.size.xs
+                                    font.family: FmTheme.font.family.mono
                                     horizontalAlignment: Text.AlignRight
                                 }
 
@@ -206,10 +206,10 @@ Loader {
                                     Layout.fillWidth: true
                                     text: Paths.shortenHome(modelData.path)
                                     color: index === popupScope.selectedIndex
-                                        ? Theme.palette.onSurface
-                                        : Theme.palette.onSurfaceVariant
-                                    font.pointSize: Theme.font.size.sm
-                                    font.family: Theme.font.family.mono
+                                        ? FmTheme.palette.onSurface
+                                        : FmTheme.palette.onSurfaceVariant
+                                    font.pointSize: FmTheme.font.size.sm
+                                    font.family: FmTheme.font.family.mono
                                     elide: Text.ElideMiddle
                                 }
                             }
@@ -228,11 +228,11 @@ Loader {
                 // "No matches" flash before the first results arrive.
                 StyledText {
                     Layout.fillWidth: true
-                    Layout.topMargin: Theme.spacing.md
+                    Layout.topMargin: FmTheme.spacing.md
                     visible: popupScope.results.length === 0 && !popupScope._loading
                     text: qsTr("No matches")
-                    color: Theme.palette.onSurfaceVariant
-                    font.pointSize: Theme.font.size.sm
+                    color: FmTheme.palette.onSurfaceVariant
+                    font.pointSize: FmTheme.font.size.sm
                     horizontalAlignment: Text.AlignHCenter
                 }
             }

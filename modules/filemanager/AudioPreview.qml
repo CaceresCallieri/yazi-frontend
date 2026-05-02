@@ -73,8 +73,8 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        anchors.margins: Theme.padding.lg
-        spacing: Theme.spacing.md
+        anchors.margins: FmTheme.padding.lg
+        spacing: FmTheme.spacing.md
 
         // Album art or fallback icon
         Item {
@@ -105,8 +105,8 @@ Item {
                 anchors.centerIn: parent
                 visible: albumArt.status !== Image.Ready
                 text: "music_note"
-                color: Theme.palette.outline
-                font.pointSize: Theme.font.size.xxl * 1.5
+                color: FmTheme.palette.outline
+                font.pointSize: FmTheme.font.size.xxl * 1.5
                 font.weight: Font.Medium
 
                 opacity: waveformModel.loading ? 0.4 : 0.7
@@ -127,8 +127,8 @@ Item {
                 Layout.fillWidth: true
                 visible: root.audioTitle !== ""
                 text: root.audioTitle
-                color: Theme.palette.onSurface
-                font.pointSize: Theme.font.size.md
+                color: FmTheme.palette.onSurface
+                font.pointSize: FmTheme.font.size.md
                 font.weight: Font.DemiBold
                 elide: Text.ElideRight
                 horizontalAlignment: Text.AlignHCenter
@@ -138,8 +138,8 @@ Item {
                 Layout.fillWidth: true
                 visible: root.audioArtist !== ""
                 text: root.audioArtist
-                color: Theme.palette.onSurfaceVariant
-                font.pointSize: Theme.font.size.sm
+                color: FmTheme.palette.onSurfaceVariant
+                font.pointSize: FmTheme.font.size.sm
                 elide: Text.ElideRight
                 horizontalAlignment: Text.AlignHCenter
             }
@@ -176,8 +176,8 @@ Item {
                     const centerY = height / 2;
                     const maxBarHeight = centerY - 2; // 2px padding from edges
 
-                    const playedColor = String(Theme.palette.primary);
-                    const unplayedColor = Qt.alpha(Theme.palette.onSurface, 0.15);
+                    const playedColor = String(FmTheme.palette.primary);
+                    const unplayedColor = Qt.alpha(FmTheme.palette.onSurface, 0.15);
                     const progressBarIndex = Math.floor(progress * barCount);
 
                     for (let i = 0; i < barCount; i++) {
@@ -218,23 +218,23 @@ Item {
                 anchors.centerIn: parent
                 visible: waveformModel.loading && waveformModel.peaks.length === 0
                 text: qsTr("Loading waveform\u2026")
-                color: Theme.palette.outline
-                font.pointSize: Theme.font.size.sm
+                color: FmTheme.palette.outline
+                font.pointSize: FmTheme.font.size.sm
             }
         }
 
         // Time display and play state — tight with waveform
         RowLayout {
             Layout.fillWidth: true
-            spacing: Theme.spacing.sm
+            spacing: FmTheme.spacing.sm
 
             // Current position
             StyledText {
                 readonly property int posSeconds: Math.floor(mediaPlayer.position / 1000)
                 text: Math.floor(posSeconds / 60) + ":" + (posSeconds % 60 < 10 ? "0" : "") + (posSeconds % 60)
-                color: Theme.palette.onSurfaceVariant
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.onSurfaceVariant
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
 
             Item { Layout.fillWidth: true }
@@ -242,8 +242,8 @@ Item {
             // Play state indicator
             MaterialIcon {
                 text: root.isPlaying ? "pause" : "play_arrow"
-                color: root.isPlaying ? Theme.palette.primary : Theme.palette.outline
-                font.pointSize: Theme.font.size.md
+                color: root.isPlaying ? FmTheme.palette.primary : FmTheme.palette.outline
+                font.pointSize: FmTheme.font.size.md
 
                 Behavior on color {
                     CAnim {}
@@ -255,9 +255,9 @@ Item {
             // Total duration
             StyledText {
                 text: root.audioDuration !== "" ? root.audioDuration : "--:--"
-                color: Theme.palette.onSurfaceVariant
-                font.pointSize: Theme.font.size.xs
-                font.family: Theme.font.family.mono
+                color: FmTheme.palette.onSurfaceVariant
+                font.pointSize: FmTheme.font.size.xs
+                font.family: FmTheme.font.family.mono
             }
         }
 
@@ -266,8 +266,8 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             visible: !root.isPlaying && mediaPlayer.playbackState === MediaPlayer.StoppedState
             text: qsTr("Ctrl+P \u2192 Play / Pause")
-            color: Qt.alpha(Theme.palette.outline, 0.6)
-            font.pointSize: Theme.font.size.xs
+            color: Qt.alpha(FmTheme.palette.outline, 0.6)
+            font.pointSize: FmTheme.font.size.xs
         }
     }
 

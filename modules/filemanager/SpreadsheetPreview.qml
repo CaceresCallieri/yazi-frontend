@@ -62,8 +62,8 @@ Item {
 
             visible: spreadsheetModel.sheetCount > 1
             Layout.fillWidth: true
-            Layout.leftMargin: Theme.padding.sm
-            Layout.topMargin: Theme.padding.sm
+            Layout.leftMargin: FmTheme.padding.sm
+            Layout.topMargin: FmTheme.padding.sm
             spacing: 2
 
             Repeater {
@@ -73,12 +73,12 @@ Item {
                     required property int index
                     required property string modelData
 
-                    width: tabLabel.implicitWidth + Theme.padding.md * 2
-                    height: tabLabel.implicitHeight + Theme.padding.sm * 2
-                    radius: Theme.rounding.sm
+                    width: tabLabel.implicitWidth + FmTheme.padding.md * 2
+                    height: tabLabel.implicitHeight + FmTheme.padding.sm * 2
+                    radius: FmTheme.rounding.sm
                     color: (index === spreadsheetModel.activeSheet
-                        ? Theme.palette.primaryContainer
-                        : Theme.palette.surfaceContainer) ?? "transparent"
+                        ? FmTheme.palette.primaryContainer
+                        : FmTheme.palette.surfaceContainer) ?? "transparent"
 
                     StyledText {
                         id: tabLabel
@@ -86,10 +86,10 @@ Item {
                         anchors.centerIn: parent
                         text: modelData
                         color: (index === spreadsheetModel.activeSheet
-                            ? Theme.palette.onPrimaryContainer
-                            : Theme.palette.onSurfaceVariant) ?? Theme.palette.onSurface
-                        font.pointSize: Theme.font.size.sm
-                        font.family: Theme.font.family.mono
+                            ? FmTheme.palette.onPrimaryContainer
+                            : FmTheme.palette.onSurfaceVariant) ?? FmTheme.palette.onSurface
+                        font.pointSize: FmTheme.font.size.sm
+                        font.family: FmTheme.font.family.mono
                         font.weight: index === spreadsheetModel.activeSheet ? Font.DemiBold : Font.Normal
                     }
 
@@ -118,14 +118,14 @@ Item {
                 delegate: Rectangle {
                     implicitWidth: root._colWidth
                     implicitHeight: root._rowHeight
-                    color: Theme.palette.surfaceContainerHigh
+                    color: FmTheme.palette.surfaceContainerHigh
 
                     StyledText {
                         anchors.centerIn: parent
                         text: display ?? ""
-                        color: Theme.palette.onSurfaceVariant
-                        font.pointSize: Theme.font.size.sm
-                        font.family: Theme.font.family.mono
+                        color: FmTheme.palette.onSurfaceVariant
+                        font.pointSize: FmTheme.font.size.sm
+                        font.family: FmTheme.font.family.mono
                         font.weight: Font.DemiBold
                     }
                 }
@@ -138,9 +138,9 @@ Item {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
-                anchors.leftMargin: Theme.padding.sm
-                anchors.rightMargin: Theme.padding.sm
-                anchors.bottomMargin: Theme.padding.sm
+                anchors.leftMargin: FmTheme.padding.sm
+                anchors.rightMargin: FmTheme.padding.sm
+                anchors.bottomMargin: FmTheme.padding.sm
                 clip: true
                 focus: false
                 interactive: false
@@ -158,8 +158,8 @@ Item {
                     implicitWidth: root._colWidth
                     implicitHeight: root._rowHeight
                     color: row % 2 === 0
-                        ? Theme.palette.surfaceContainerLowest
-                        : Theme.palette.surfaceContainer
+                        ? FmTheme.palette.surfaceContainerLowest
+                        : FmTheme.palette.surfaceContainer
 
                     StyledText {
                         anchors.fill: parent
@@ -168,9 +168,9 @@ Item {
                         text: display ?? ""
                         elide: Text.ElideRight
                         verticalAlignment: Text.AlignVCenter
-                        color: Theme.palette.onSurface
-                        font.pointSize: Theme.font.size.xs
-                        font.family: Theme.font.family.mono
+                        color: FmTheme.palette.onSurface
+                        font.pointSize: FmTheme.font.size.xs
+                        font.family: FmTheme.font.family.mono
                     }
                 }
 
@@ -186,7 +186,7 @@ Item {
         StyledText {
             visible: spreadsheetModel.truncatedRows || spreadsheetModel.truncatedCols
             Layout.alignment: Qt.AlignHCenter
-            Layout.bottomMargin: Theme.padding.sm
+            Layout.bottomMargin: FmTheme.padding.sm
             text: {
                 // rowCount()/columnCount() are method calls and are not tracked by the
                 // QML binding engine on their own. They are safe here because this
@@ -200,9 +200,9 @@ Item {
                     parts.push(qsTr("%1 of %2 columns").arg(spreadsheetModel.columnCount()).arg(spreadsheetModel.totalCols));
                 return parts.join(", ");
             }
-            color: Theme.palette.outline
-            font.pointSize: Theme.font.size.sm
-            font.family: Theme.font.family.mono
+            color: FmTheme.palette.outline
+            font.pointSize: FmTheme.font.size.sm
+            font.family: FmTheme.font.family.mono
         }
     }
 

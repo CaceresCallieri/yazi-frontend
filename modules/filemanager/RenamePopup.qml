@@ -71,13 +71,13 @@ Loader {
             // Vertical: just below the selected item, clamped to stay in bounds
             y: {
                 const desiredY = root.targetItemY;
-                const maxY = parent.height - renameDialog.implicitHeight - Theme.padding.lg;
-                return Math.max(Theme.padding.sm, Math.min(desiredY, maxY));
+                const maxY = parent.height - renameDialog.implicitHeight - FmTheme.padding.lg;
+                return Math.max(FmTheme.padding.sm, Math.min(desiredY, maxY));
             }
 
-            radius: Theme.rounding.lg
-            color: Theme.palette.surfaceContainerHigh
-            implicitHeight: renameLayout.implicitHeight + Theme.padding.lg * 3
+            radius: FmTheme.rounding.lg
+            color: FmTheme.palette.surfaceContainerHigh
+            implicitHeight: renameLayout.implicitHeight + FmTheme.padding.lg * 3
 
             // Block clicks from reaching the dismiss MouseArea
             MouseArea {
@@ -88,23 +88,23 @@ Loader {
                 id: renameLayout
 
                 anchors.fill: parent
-                anchors.margins: Theme.padding.lg * 1.5
-                spacing: Theme.spacing.md
+                anchors.margins: FmTheme.padding.lg * 1.5
+                spacing: FmTheme.spacing.md
 
                 // Label row
                 RowLayout {
-                    spacing: Theme.spacing.sm
+                    spacing: FmTheme.spacing.sm
 
                     MaterialIcon {
                         text: "edit"
-                        color: Theme.palette.primary
-                        font.pointSize: Theme.font.size.lg
+                        color: FmTheme.palette.primary
+                        font.pointSize: FmTheme.font.size.lg
                     }
 
                     StyledText {
                         text: qsTr("Rename:")
-                        color: Theme.palette.onSurface
-                        font.pointSize: Theme.font.size.md
+                        color: FmTheme.palette.onSurface
+                        font.pointSize: FmTheme.font.size.md
                         font.weight: Font.DemiBold
                     }
                 }
@@ -112,9 +112,9 @@ Loader {
                 // Text input container
                 StyledRect {
                     Layout.fillWidth: true
-                    radius: Theme.rounding.sm
-                    color: Qt.alpha(Theme.palette.onSurface, 0.06)
-                    implicitHeight: renameInput.implicitHeight + Theme.padding.md * 2
+                    radius: FmTheme.rounding.sm
+                    color: Qt.alpha(FmTheme.palette.onSurface, 0.06)
+                    implicitHeight: renameInput.implicitHeight + FmTheme.padding.md * 2
 
                     TextInput {
                         id: renameInput
@@ -122,14 +122,14 @@ Loader {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.leftMargin: Theme.padding.lg
-                        anchors.rightMargin: Theme.padding.lg
+                        anchors.leftMargin: FmTheme.padding.lg
+                        anchors.rightMargin: FmTheme.padding.lg
 
-                        color: Theme.palette.onSurface
-                        font.pointSize: Theme.font.size.sm
-                        font.family: Theme.font.family.mono
-                        selectionColor: Theme.palette.primary
-                        selectedTextColor: Theme.palette.onPrimary
+                        color: FmTheme.palette.onSurface
+                        font.pointSize: FmTheme.font.size.sm
+                        font.family: FmTheme.font.family.mono
+                        selectionColor: FmTheme.palette.primary
+                        selectedTextColor: FmTheme.palette.onPrimary
                         clip: true
                         focus: true
 
@@ -157,9 +157,9 @@ Loader {
                     Layout.fillWidth: true
                     visible: text !== ""
                     text: ""
-                    color: Theme.palette.error
-                    font.pointSize: Theme.font.size.xs
-                    font.family: Theme.font.family.mono
+                    color: FmTheme.palette.error
+                    font.pointSize: FmTheme.font.size.xs
+                    font.family: FmTheme.font.family.mono
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 }
             }

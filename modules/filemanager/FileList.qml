@@ -88,7 +88,7 @@ Item {
     readonly property real currentItemBottomY: {
         if (view.currentIndex < 0 || view.count === 0) return 0;
         const itemY = view.currentIndex * Config.fileManager.sizes.itemHeight - view.contentY;
-        return itemY + Config.fileManager.sizes.itemHeight + Theme.padding.sm;
+        return itemY + Config.fileManager.sizes.itemHeight + FmTheme.padding.sm;
     }
 
     function _saveCursorAndNavigate(navigateFn: var): void {
@@ -189,7 +189,7 @@ Item {
     // Background
     StyledRect {
         anchors.fill: parent
-        color: Theme.layer(Theme.palette.surfaceContainerLow, 1)
+        color: FmTheme.layer(FmTheme.palette.surfaceContainerLow, 1)
     }
 
     // Empty state
@@ -213,8 +213,8 @@ Item {
         id: view
 
         anchors.fill: parent
-        anchors.margins: Theme.padding.sm
-        anchors.rightMargin: Theme.padding.sm + 10 // reserve space for re-parented scrollbar (6px wide + 4px clearance)
+        anchors.margins: FmTheme.padding.sm
+        anchors.rightMargin: FmTheme.padding.sm + 10 // reserve space for re-parented scrollbar (6px wide + 4px clearance)
 
         clip: true
         focus: true
@@ -230,13 +230,13 @@ Item {
             anchors.top: view.top
             anchors.bottom: view.bottom
             anchors.right: parent.right
-            anchors.rightMargin: Theme.padding.sm + 3 // right-aligns the 6px bar with 3px clearance from the window edge
+            anchors.rightMargin: FmTheme.padding.sm + 3 // right-aligns the 6px bar with 3px clearance from the window edge
             width: 6
 
             contentItem: Rectangle {
                 implicitWidth: 6
                 radius: width / 2
-                color: Theme.palette.onSurfaceVariant
+                color: FmTheme.palette.onSurfaceVariant
                 opacity: 0.4
             }
         }

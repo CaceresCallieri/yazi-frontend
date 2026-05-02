@@ -113,7 +113,7 @@ Item {
 
     StyledRect {
         anchors.fill: parent
-        color: Theme.layer(Theme.palette.surfaceContainerLow, 1)
+        color: FmTheme.layer(FmTheme.palette.surfaceContainerLow, 1)
     }
 
     // --- Layout: preview area + metadata strip ---
@@ -179,7 +179,7 @@ Item {
                         id: directoryView
 
                         anchors.fill: parent
-                        anchors.margins: Theme.padding.sm
+                        anchors.margins: FmTheme.padding.sm
                         clip: true
                         focus: false
                         interactive: false
@@ -214,29 +214,29 @@ Item {
                 asynchronous: true
 
                 sourceComponent: ColumnLayout {
-                    spacing: Theme.spacing.md
+                    spacing: FmTheme.spacing.md
 
                     MaterialIcon {
                         Layout.alignment: Qt.AlignHCenter
                         text: "lan"
-                        color: Theme.palette.outline
-                        font.pointSize: Theme.font.size.xxl * 2
+                        color: FmTheme.palette.outline
+                        font.pointSize: FmTheme.font.size.xxl * 2
                         font.weight: Font.Medium
                     }
 
                     StyledText {
                         Layout.alignment: Qt.AlignHCenter
                         text: qsTr("Remote directory")
-                        color: Theme.palette.outline
-                        font.pointSize: Theme.font.size.xl
+                        color: FmTheme.palette.outline
+                        font.pointSize: FmTheme.font.size.xl
                         font.weight: Font.Medium
                     }
 
                     StyledText {
                         Layout.alignment: Qt.AlignHCenter
                         text: qsTr("Press Enter to browse")
-                        color: Theme.palette.outlineVariant
-                        font.pointSize: Theme.font.size.sm
+                        color: FmTheme.palette.outlineVariant
+                        font.pointSize: FmTheme.font.size.sm
                     }
                 }
             }

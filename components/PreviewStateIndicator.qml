@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import "../services"
+import QtQuick
 import QtQuick.Layouts
 
 ColumnLayout {
@@ -9,21 +10,21 @@ ColumnLayout {
     required property string iconName
     required property string message
 
-    spacing: Theme.spacing.md
+    spacing: FmTheme.spacing.md
 
     MaterialIcon {
         Layout.alignment: Qt.AlignHCenter
         text: root.iconName
-        color: Theme.palette.outline
-        font.pointSize: Theme.font.size.xxl * 2
+        color: FmTheme.palette.outline
+        font.pointSize: FmTheme.font.size.xxl * 2
         font.weight: Font.Medium
     }
 
     StyledText {
         Layout.alignment: Qt.AlignHCenter
         text: root.message
-        color: Theme.palette.outline
-        font.pointSize: Theme.font.size.xl
+        color: FmTheme.palette.outline
+        font.pointSize: FmTheme.font.size.xl
         font.weight: Font.Medium
     }
 }

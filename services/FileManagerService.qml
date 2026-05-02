@@ -1,8 +1,8 @@
 pragma Singleton
 
-import Quickshell
+import QtQuick
 
-Singleton {
+QtObject {
     id: root
 
     // === Clipboard (yank/cut) — shared across all windows ===

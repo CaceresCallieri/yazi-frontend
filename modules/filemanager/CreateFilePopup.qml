@@ -44,11 +44,11 @@ Loader {
 
             anchors.horizontalCenter: parent.horizontalCenter
             y: parent.height * 0.2
-            radius: Theme.rounding.lg
-            color: Theme.palette.surfaceContainerHigh
+            radius: FmTheme.rounding.lg
+            color: FmTheme.palette.surfaceContainerHigh
 
-            width: Math.min(parent.width - Theme.padding.lg * 4, 360)
-            implicitHeight: createLayout.implicitHeight + Theme.padding.lg * 3
+            width: Math.min(parent.width - FmTheme.padding.lg * 4, 360)
+            implicitHeight: createLayout.implicitHeight + FmTheme.padding.lg * 3
 
             // Component is always created with activeModal === modalCreate (Loader
             // active is driven by it), so the initial scale is always 1.
@@ -56,7 +56,7 @@ Loader {
 
             Behavior on scale {
                 NumberAnimation {
-                    duration: Theme.animDuration
+                    duration: FmTheme.animDuration
                     easing.type: Easing.OutBack
                     easing.overshoot: 1.5
                 }
@@ -71,23 +71,23 @@ Loader {
                 id: createLayout
 
                 anchors.fill: parent
-                anchors.margins: Theme.padding.lg * 1.5
-                spacing: Theme.spacing.md
+                anchors.margins: FmTheme.padding.lg * 1.5
+                spacing: FmTheme.spacing.md
 
                 // Label row
                 RowLayout {
-                    spacing: Theme.spacing.sm
+                    spacing: FmTheme.spacing.sm
 
                     MaterialIcon {
                         text: "add"
-                        color: Theme.palette.primary
-                        font.pointSize: Theme.font.size.lg
+                        color: FmTheme.palette.primary
+                        font.pointSize: FmTheme.font.size.lg
                     }
 
                     StyledText {
                         text: qsTr("Create:")
-                        color: Theme.palette.onSurface
-                        font.pointSize: Theme.font.size.md
+                        color: FmTheme.palette.onSurface
+                        font.pointSize: FmTheme.font.size.md
                         font.weight: Font.DemiBold
                     }
                 }
@@ -95,9 +95,9 @@ Loader {
                 // Text input container
                 StyledRect {
                     Layout.fillWidth: true
-                    radius: Theme.rounding.sm
-                    color: Qt.alpha(Theme.palette.onSurface, 0.06)
-                    implicitHeight: createInput.implicitHeight + Theme.padding.md * 2
+                    radius: FmTheme.rounding.sm
+                    color: Qt.alpha(FmTheme.palette.onSurface, 0.06)
+                    implicitHeight: createInput.implicitHeight + FmTheme.padding.md * 2
 
                     TextInput {
                         id: createInput
@@ -105,14 +105,14 @@ Loader {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.leftMargin: Theme.padding.lg
-                        anchors.rightMargin: Theme.padding.lg
+                        anchors.leftMargin: FmTheme.padding.lg
+                        anchors.rightMargin: FmTheme.padding.lg
 
-                        color: Theme.palette.onSurface
-                        font.pointSize: Theme.font.size.sm
-                        font.family: Theme.font.family.mono
-                        selectionColor: Theme.palette.primary
-                        selectedTextColor: Theme.palette.onPrimary
+                        color: FmTheme.palette.onSurface
+                        font.pointSize: FmTheme.font.size.sm
+                        font.family: FmTheme.font.family.mono
+                        selectionColor: FmTheme.palette.primary
+                        selectedTextColor: FmTheme.palette.onPrimary
                         clip: true
                         focus: true
 
@@ -137,9 +137,9 @@ Loader {
                     Layout.fillWidth: true
                     visible: text !== ""
                     text: ""
-                    color: Theme.palette.error
-                    font.pointSize: Theme.font.size.xs
-                    font.family: Theme.font.family.mono
+                    color: FmTheme.palette.error
+                    font.pointSize: FmTheme.font.size.xs
+                    font.family: FmTheme.font.family.mono
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 }
 

@@ -1,10 +1,9 @@
 pragma Singleton
 
-import Quickshell
 import Symmetria.FileManager.Models
 import QtQuick
 
-Singleton {
+QtObject {
     id: root
 
     // Log file location — rotated on each service restart
@@ -98,7 +97,8 @@ Singleton {
         writeProcess.start();
     }
 
-    Timer {
+    // QtObject has no default property — children declared as named properties.
+    property Timer _flushTimer: Timer {
         id: flushTimer
         interval: 500
         repeat: false
@@ -106,7 +106,7 @@ Singleton {
     }
 
     // Ensure log directory exists + write buffered content
-    ShellRunner {
+    property ShellRunner _writeProcess: ShellRunner {
         id: writeProcess
         property string payload: ""
 

@@ -30,7 +30,7 @@ Item {
     // Background — match PreviewPanel shade
     StyledRect {
         anchors.fill: parent
-        color: Theme.layer(Theme.palette.surfaceContainerLow, 1)
+        color: FmTheme.layer(FmTheme.palette.surfaceContainerLow, 1)
     }
 
     // Empty state when at filesystem root
@@ -54,7 +54,7 @@ Item {
         id: parentView
 
         anchors.fill: parent
-        anchors.margins: Theme.padding.sm
+        anchors.margins: FmTheme.padding.sm
         visible: root._parentPath !== ""
         clip: true
         focus: false

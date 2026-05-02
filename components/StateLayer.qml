@@ -6,7 +6,7 @@ MouseArea {
 
     property bool disabled
     property bool showHoverBackground: true
-    property color color: Theme.palette.onSurface
+    property color color: FmTheme.palette.onSurface
     property real radius: parent?.radius ?? 0
 
     anchors.fill: parent
@@ -52,7 +52,7 @@ MouseArea {
             properties: "implicitWidth,implicitHeight"
             from: 0
             to: rippleAnim.radius * 2
-            easing.bezierCurve: Theme.animCurveStandardDecel
+            easing.bezierCurve: FmTheme.animCurveStandardDecel
         }
         Anim {
             target: ripple
@@ -72,7 +72,7 @@ MouseArea {
         StyledRect {
             id: ripple
 
-            radius: Theme.rounding.full
+            radius: FmTheme.rounding.full
             color: root.color
             opacity: 0
 

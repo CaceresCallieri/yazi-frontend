@@ -30,7 +30,7 @@ Item {
         id: videoOutput
 
         anchors.fill: parent
-        anchors.margins: Theme.padding.md
+        anchors.margins: FmTheme.padding.md
         fillMode: VideoOutput.PreserveAspectFit
 
         opacity: videoPlayer.hasVideo && videoOutput.sourceRect.width > 0 ? 1 : 0

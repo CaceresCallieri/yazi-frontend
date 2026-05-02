@@ -6,9 +6,9 @@ Text {
 
     renderType: Text.NativeRendering
     textFormat: Text.PlainText
-    color: Theme.palette.onSurface
-    font.family: Theme.font.family.sans
-    font.pointSize: Theme.font.size.sm
+    color: FmTheme.palette.onSurface
+    font.family: FmTheme.font.family.sans
+    font.pointSize: FmTheme.font.size.sm
 
     Behavior on color {
         CAnim {}

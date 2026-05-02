@@ -216,7 +216,7 @@ Singleton {
 
             property string initialPath: Paths.home
 
-            color: Theme.layer(Theme.palette.surface, 0)
+            color: FmTheme.layer(FmTheme.palette.surface, 0)
             title: qsTr("File Manager")
 
             implicitWidth: Config.fileManager.sizes.windowWidth
@@ -260,7 +260,7 @@ Singleton {
 
             property string initialPath: Paths.home
 
-            color: Theme.layer(Theme.palette.surface, 0)
+            color: FmTheme.layer(FmTheme.palette.surface, 0)
             title: FileManagerService.pickerTitle || qsTr("Select a File")
 
             implicitWidth: Config.fileManager.sizes.windowWidth
@@ -334,7 +334,7 @@ Singleton {
             // Delay destroy until close animation finishes
             Timer {
                 id: destroyTimer
-                interval: Theme.animDuration + 50
+                interval: FmTheme.animDuration + 50
                 onTriggered: overlayWin.visible = false
             }
 
@@ -375,7 +375,7 @@ Singleton {
 
                 Behavior on scale {
                     NumberAnimation {
-                        duration: Theme.animDuration
+                        duration: FmTheme.animDuration
                         easing.type: Easing.OutBack
                         easing.overshoot: 1.2
                     }
@@ -387,8 +387,8 @@ Singleton {
 
                 ClippingRect {
                     anchors.fill: parent
-                    radius: Theme.rounding.lg
-                    color: Theme.layer(Theme.palette.surface, 0)
+                    radius: FmTheme.rounding.lg
+                    color: FmTheme.layer(FmTheme.palette.surface, 0)
 
                     // Absorb clicks on the card to prevent them reaching
                     // the click-outside MouseArea and triggering close.

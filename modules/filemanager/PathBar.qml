@@ -12,9 +12,9 @@ Item {
     property WindowState windowState
 
     // Horizontal inset matching PathBar pill spacing in PathBar and StatusBar
-    readonly property real _barHorizontalMargin: Theme.padding.lg + Theme.padding.md
+    readonly property real _barHorizontalMargin: FmTheme.padding.lg + FmTheme.padding.md
 
-    implicitHeight: inner.implicitHeight + Theme.padding.md * 2
+    implicitHeight: inner.implicitHeight + FmTheme.padding.md * 2
 
     // Build breadcrumb segments: [{name, path, isHome}]
     readonly property var _segments: {
@@ -51,19 +51,19 @@ Item {
         id: inner
 
         anchors.fill: parent
-        anchors.topMargin: Theme.padding.md
-        anchors.bottomMargin: Theme.padding.md
+        anchors.topMargin: FmTheme.padding.md
+        anchors.bottomMargin: FmTheme.padding.md
         anchors.leftMargin: root._barHorizontalMargin
         anchors.rightMargin: root._barHorizontalMargin
-        spacing: Theme.spacing.sm
+        spacing: FmTheme.spacing.sm
 
         // Back button
         Item {
             implicitWidth: implicitHeight
-            implicitHeight: Math.max(backIcon.implicitHeight + Theme.padding.sm * 2, Theme.padding.md)
+            implicitHeight: Math.max(backIcon.implicitHeight + FmTheme.padding.sm * 2, FmTheme.padding.md)
 
             StateLayer {
-                radius: Theme.rounding.sm
+                radius: FmTheme.rounding.sm
                 disabled: !root.windowState || !root.windowState.canGoBack
                 onClicked: root.windowState.back()
             }
@@ -73,7 +73,7 @@ Item {
 
                 anchors.centerIn: parent
                 text: "arrow_back"
-                color: root.windowState && root.windowState.canGoBack ? Theme.palette.onSurface : Theme.palette.outline
+                color: root.windowState && root.windowState.canGoBack ? FmTheme.palette.onSurface : FmTheme.palette.outline
                 grade: 200
             }
         }
@@ -81,10 +81,10 @@ Item {
         // Forward button
         Item {
             implicitWidth: implicitHeight
-            implicitHeight: Math.max(forwardIcon.implicitHeight + Theme.padding.sm * 2, Theme.padding.md)
+            implicitHeight: Math.max(forwardIcon.implicitHeight + FmTheme.padding.sm * 2, FmTheme.padding.md)
 
             StateLayer {
-                radius: Theme.rounding.sm
+                radius: FmTheme.rounding.sm
                 disabled: !root.windowState || !root.windowState.canGoForward
                 onClicked: root.windowState.forward()
             }
@@ -94,7 +94,7 @@ Item {
 
                 anchors.centerIn: parent
                 text: "arrow_forward"
-                color: root.windowState && root.windowState.canGoForward ? Theme.palette.onSurface : Theme.palette.outline
+                color: root.windowState && root.windowState.canGoForward ? FmTheme.palette.onSurface : FmTheme.palette.outline
                 grade: 200
             }
         }
@@ -104,17 +104,17 @@ Item {
             id: breadcrumbContainer
 
             Layout.fillWidth: true
-            radius: Theme.rounding.full
-            color: Theme.pillMedium.background
-            border.color: Theme.pillMedium.border
+            radius: FmTheme.rounding.full
+            color: FmTheme.pillMedium.background
+            border.color: FmTheme.pillMedium.border
             border.width: 1
-            implicitHeight: breadcrumbs.implicitHeight + Math.round(Theme.padding.sm / 2) * 2
+            implicitHeight: breadcrumbs.implicitHeight + Math.round(FmTheme.padding.sm / 2) * 2
 
             RowLayout {
                 id: breadcrumbs
 
                 anchors.fill: parent
-                anchors.margins: Math.round(Theme.padding.sm / 2)
+                anchors.margins: Math.round(FmTheme.padding.sm / 2)
                 spacing: 0
 
                 Item { Layout.fillWidth: true } // Left spacer — centers breadcrumbs
@@ -135,21 +135,21 @@ Item {
                             Layout.rightMargin: 0
                             visible: segment.index > 0
                             text: "/"
-                            color: Theme.palette.onSurfaceVariant
+                            color: FmTheme.palette.onSurfaceVariant
                             font.bold: true
                         }
 
                         // Clickable segment
                         Item {
-                            implicitWidth: segmentName.implicitWidth + Theme.padding.sm * 2
-                            implicitHeight: segmentName.implicitHeight + Theme.padding.sm * 2
+                            implicitWidth: segmentName.implicitWidth + FmTheme.padding.sm * 2
+                            implicitHeight: segmentName.implicitHeight + FmTheme.padding.sm * 2
 
                             // Clickable only if not the last segment
                             Loader {
                                 anchors.fill: parent
                                 active: segment.index < root._segments.length - 1
                                 sourceComponent: StateLayer {
-                                    radius: Theme.rounding.sm
+                                    radius: FmTheme.rounding.sm
                                     onClicked: root.windowState.navigate(segment.modelData.path)
                                 }
                             }
@@ -160,7 +160,7 @@ Item {
                                 anchors.centerIn: parent
 
                                 text: segment.modelData.name
-                                color: segment.index < root._segments.length - 1 ? Theme.palette.onSurfaceVariant : Theme.palette.onSurface
+                                color: segment.index < root._segments.length - 1 ? FmTheme.palette.onSurfaceVariant : FmTheme.palette.onSurface
                                 font.bold: true
                             }
                         }
@@ -174,10 +174,10 @@ Item {
         // Hidden files toggle
         Item {
             implicitWidth: implicitHeight
-            implicitHeight: Math.max(hiddenIcon.implicitHeight + Theme.padding.sm * 2, Theme.padding.md)
+            implicitHeight: Math.max(hiddenIcon.implicitHeight + FmTheme.padding.sm * 2, FmTheme.padding.md)
 
             StateLayer {
-                radius: Theme.rounding.sm
+                radius: FmTheme.rounding.sm
                 onClicked: {
                     Config.fileManager.showHidden = !Config.fileManager.showHidden;
                     Config.save();
@@ -189,7 +189,7 @@ Item {
 
                 anchors.centerIn: parent
                 text: Config.fileManager.showHidden ? "visibility" : "visibility_off"
-                color: Config.fileManager.showHidden ? Theme.palette.onSurface : Theme.palette.outline
+                color: Config.fileManager.showHidden ? FmTheme.palette.onSurface : FmTheme.palette.outline
                 grade: 200
             }
         }

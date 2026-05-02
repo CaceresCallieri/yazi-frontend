@@ -47,7 +47,7 @@ Item {
         StyledRect {
             Layout.fillHeight: true
             implicitWidth: 1
-            color: Theme.palette.outlineVariant
+            color: FmTheme.palette.outlineVariant
         }
 
         // Center: active file list (keyboard nav, cursor)
@@ -68,7 +68,7 @@ Item {
         StyledRect {
             Layout.fillHeight: true
             implicitWidth: 1
-            color: Theme.palette.outlineVariant
+            color: FmTheme.palette.outlineVariant
         }
 
         // Right: passive preview of highlighted entry

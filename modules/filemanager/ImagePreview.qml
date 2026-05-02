@@ -25,7 +25,7 @@ Item {
         id: preview
 
         anchors.fill: parent
-        anchors.margins: Theme.padding.md
+        anchors.margins: FmTheme.padding.md
 
         source: previewHelper.resolvedUrl
         asynchronous: true

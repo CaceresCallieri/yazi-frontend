@@ -1,8 +1,8 @@
 pragma Singleton
 
-import Quickshell
+import QtQuick
 
-Singleton {
+QtObject {
     readonly property FileManagerConfig fileManager: FileManagerConfig {}
 
     function save(): void {

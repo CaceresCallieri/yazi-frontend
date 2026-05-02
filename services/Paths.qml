@@ -1,9 +1,9 @@
 pragma Singleton
 
-import Quickshell
 import Symmetria.FileManager.Models
+import QtQuick
 
-Singleton {
+QtObject {
     readonly property string home: Env.get("HOME")
     readonly property string _homeSlash: home + "/"
 

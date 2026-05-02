@@ -1,10 +1,9 @@
 pragma Singleton
 
-import Quickshell
 import Symmetria.FileManager.Models
 import QtQuick
 
-Singleton {
+QtObject {
     id: root
 
     // === Symmetria config directory ===
@@ -144,7 +143,8 @@ Singleton {
     // === Read theme directly from Symmetria config files ===
     // No IPC needed — works even when Symmetria Shell is not running.
 
-    FileWatcher {
+    // QtObject has no default property — children declared as named properties.
+    property FileWatcher _colorSchemeView: FileWatcher {
         id: colorSchemeView
         path: root._configDir + "/color-scheme.json"
         watchChanges: true
@@ -152,7 +152,7 @@ Singleton {
         onFileChanged: colorSchemeDebounce.restart()
     }
 
-    FileWatcher {
+    property FileWatcher _shellConfigView: FileWatcher {
         id: shellConfigView
         path: root._configDir + "/shell.json"
         watchChanges: true
@@ -160,13 +160,13 @@ Singleton {
         onFileChanged: appearanceDebounce.restart()
     }
 
-    Timer {
+    property Timer _colorSchemeDebounce: Timer {
         id: colorSchemeDebounce
         interval: 100
         onTriggered: root._applyColorScheme(colorSchemeView.text)
     }
 
-    Timer {
+    property Timer _appearanceDebounce: Timer {
         id: appearanceDebounce
         interval: 100
         onTriggered: root._applyAppearance(shellConfigView.text)
@@ -188,7 +188,7 @@ Singleton {
                     updated[key] = "#" + value;
             root.palette = updated;
         } catch (e) {
-            Logger.warn("Theme", "failed to parse color-scheme.json: " + e);
+            Logger.warn("FmTheme", "failed to parse color-scheme.json: " + e);
         }
     }
 
@@ -202,7 +202,7 @@ Singleton {
             const a = config.appearance;
             if (a?.transparency) _applyObject(root.transparency, a.transparency);
         } catch (e) {
-            Logger.warn("Theme", "failed to parse shell.json: " + e);
+            Logger.warn("FmTheme", "failed to parse shell.json: " + e);
         }
     }
 
