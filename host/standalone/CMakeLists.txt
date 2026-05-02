@@ -1,0 +1,51 @@
+cmake_minimum_required(VERSION 3.19)
+project(symmetria-fm-host VERSION 0.1.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "Install prefix" FORCE)
+endif()
+
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick Network)
+
+# Path to the panel-tier QML source root (top-level of symmetria-file-manager).
+# main.cpp uses this to addImportPath at runtime so main.qml's relative
+# `import "../../modules/filemanager"` resolves. Stage E will replace this
+# with proper module installation.
+set(SYMMETRIA_FM_PANEL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../.."
+    CACHE PATH "Path to the panel QML source root")
+set(SYMMETRIA_FM_QML_PATH "${CMAKE_CURRENT_SOURCE_DIR}/main.qml"
+    CACHE PATH "Path to the host main.qml")
+
+qt_standard_project_setup(REQUIRES 6.9)
+
+# === symmetria-fm — the daemon binary ===
+qt_add_executable(symmetria-fm
+    main.cpp
+    server.hpp
+    server.cpp
+)
+
+target_link_libraries(symmetria-fm PRIVATE
+    Qt::Core Qt::Gui Qt::Qml Qt::Quick Qt::Network
+)
+
+target_compile_definitions(symmetria-fm PRIVATE
+    SYMMETRIA_FM_PANEL_PATH="${SYMMETRIA_FM_PANEL_PATH}"
+    SYMMETRIA_FM_QML_PATH="${SYMMETRIA_FM_QML_PATH}"
+)
+
+install(TARGETS symmetria-fm RUNTIME DESTINATION bin)
+
+# === symmetria-fm-cli — the CLI sender ===
+qt_add_executable(symmetria-fm-cli
+    cli.cpp
+)
+
+target_link_libraries(symmetria-fm-cli PRIVATE
+    Qt::Core Qt::Network
+)
+
+install(TARGETS symmetria-fm-cli RUNTIME DESTINATION bin)

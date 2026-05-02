@@ -1,0 +1,3 @@
+module Config
+singleton Config 1.0 Config.qml
+FileManagerConfig 1.0 FileManagerConfig.qml

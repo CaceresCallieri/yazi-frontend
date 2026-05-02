@@ -1,0 +1,8 @@
+module Services
+singleton FmTheme 1.0 FmTheme.qml
+singleton Paths 1.0 Paths.qml
+singleton Logger 1.0 Logger.qml
+singleton FileManagerService 1.0 FileManagerService.qml
+singleton BookmarkService 1.0 BookmarkService.qml
+WindowState 1.0 WindowState.qml
+TabManager 1.0 TabManager.qml
