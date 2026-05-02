@@ -41,6 +41,25 @@ if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
+# === Install the panel QML as Symmetria.FileManager.UI ===
+# The panel files live at <project>/qml/Symmetria/FileManager/UI/. Their
+# directory layout already mirrors the Qt QML module convention, so a
+# direct copy to the system import path makes `import Symmetria.FileManager.UI`
+# resolve from any Qt6 process. The C++ plugin (Symmetria.FileManager.Models)
+# installed by add_subdirectory above lives as a sibling under
+# Symmetria/FileManager/Models/ — same prefix, different leaf.
+set(UI_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../qml/Symmetria/FileManager/UI")
+set(UI_INSTALL_DIR "${INSTALL_QMLDIR}/Symmetria/FileManager/UI")
+
+install(DIRECTORY "${UI_SOURCE_DIR}/"
+    DESTINATION "${UI_INSTALL_DIR}"
+    COMPONENT runtime
+    FILES_MATCHING
+        PATTERN "qmldir"
+        PATTERN "*.qml"
+        PATTERN "*.js"
+)
+
 # Clear Quickshell QML cache after install
 install(CODE "
     if(DEFINED ENV{SUDO_USER})

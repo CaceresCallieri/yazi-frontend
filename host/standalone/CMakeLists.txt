@@ -10,12 +10,12 @@ endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick Network)
 
-# Path to the panel-tier QML source root (top-level of symmetria-file-manager).
-# main.cpp uses this to addImportPath at runtime so main.qml's relative
-# `import "../../modules/filemanager"` resolves. Stage E will replace this
-# with proper module installation.
-set(SYMMETRIA_FM_PANEL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../.."
-    CACHE PATH "Path to the panel QML source root")
+# Path containing Symmetria/FileManager/UI/qmldir — passed to engine
+# .addImportPath() at startup. In dev this points at the source tree's
+# qml/ subdir; after install the binary will additionally find
+# /usr/lib/qt6/qml on its own (Qt's default QML import path).
+set(SYMMETRIA_FM_PANEL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../qml"
+    CACHE PATH "Path to the panel QML import root (containing Symmetria/...)")
 set(SYMMETRIA_FM_QML_PATH "${CMAKE_CURRENT_SOURCE_DIR}/main.qml"
     CACHE PATH "Path to the host main.qml")
 

@@ -2,8 +2,8 @@
 //@ pragma Env QSG_RENDER_LOOP=threaded
 //@ pragma AppId symmetria-fm
 
-import "modules/filemanager"
-import "services"
+import "qml/Symmetria/FileManager/UI/modules/filemanager"
+import "qml/Symmetria/FileManager/UI/services"
 import Quickshell
 import QtQuick
 

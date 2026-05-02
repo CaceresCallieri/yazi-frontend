@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
     // away QML compile / runtime errors silently in release builds.
     QObject::connect(&engine, &QQmlApplicationEngine::warnings, [](const QList<QQmlError>& errors) {
         for (const QQmlError& e : errors)
-            qWarning("symmetria-fm: QML: %s", qPrintable(e.toString()));
+            fprintf(stderr, "symmetria-fm: QML warning: %s\n", qPrintable(e.toString()));
     });
 
     // Add the panel QML root as an import path so main.qml can resolve

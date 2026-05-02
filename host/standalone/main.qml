@@ -6,8 +6,7 @@
 // ShellRunner, Timer) are declared as named properties. The `id: foo` form
 // remains accessible from the rest of this scope.
 
-import "../../modules/filemanager"
-import "../../services"
+import Symmetria.FileManager.UI
 import Symmetria.FileManager.Models
 import QtQuick
 
