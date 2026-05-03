@@ -76,10 +76,28 @@ QtObject {
     property list<real> animCurveStandardDecel: [0, 0, 0, 1, 1, 1]
 
     // === Transparency ===
+    // Both knobs are zero by user preference: every FM surface is fully
+    // transparent passthrough. The wallpaper (and whatever blur/tint the
+    // compositor applies under the window) shows through everywhere, with
+    // only icons/text/separators rendered on top.
+    //
+    // Decoupled from shell.json on purpose — Symmetria Shell's transparency
+    // is governed by its own logic and should not propagate here.
+    //
+    // History (so future readers know why this isn't tuned to Ghostty):
+    // Earlier iterations tried to match Ghostty's `background-opacity = 0.6`
+    // by tinting either the panels (`layers=0.6`) or the window backdrop
+    // (`base=0.6`). Both produced visually wrong results because the
+    // PathBar/StatusBar/TabBar have no background of their own — when the
+    // tint lived on the panels, only the columns were tinted; when it lived
+    // on the window, the whole FM looked thinner than Ghostty (Ghostty
+    // benefits from compositor blur the FM doesn't reliably trigger). The
+    // cleanest resolution was to drop the tint entirely and let the
+    // compositor handle the look behind the window.
     property QtObject transparency: QtObject {
         property bool enabled: true
-        property real base: 0.3
-        property real layers: 0.25
+        property real base: 0.0
+        property real layers: 0.0
     }
 
     // Simplified layer function matching Symmetria's approach:
@@ -152,24 +170,10 @@ QtObject {
         onFileChanged: colorSchemeDebounce.restart()
     }
 
-    property FileWatcher _shellConfigView: FileWatcher {
-        id: shellConfigView
-        path: root._configDir + "/shell.json"
-        watchChanges: true
-        onLoadedChanged: if (loaded) root._applyAppearance(text)
-        onFileChanged: appearanceDebounce.restart()
-    }
-
     property Timer _colorSchemeDebounce: Timer {
         id: colorSchemeDebounce
         interval: 100
         onTriggered: root._applyColorScheme(colorSchemeView.text)
-    }
-
-    property Timer _appearanceDebounce: Timer {
-        id: appearanceDebounce
-        interval: 100
-        onTriggered: root._applyAppearance(shellConfigView.text)
     }
 
     // === Apply palette from color-scheme.json ===
@@ -192,23 +196,4 @@ QtObject {
         }
     }
 
-    // === Apply appearance tokens from shell.json ===
-    // Only syncs transparency — layout tokens (rounding, spacing, padding,
-    // fonts) are intentionally kept independent because the file manager
-    // uses a denser layout than the shell.
-    function _applyAppearance(json: string): void {
-        try {
-            const config = JSON.parse(json);
-            const a = config.appearance;
-            if (a?.transparency) _applyObject(root.transparency, a.transparency);
-        } catch (e) {
-            Logger.warn("FmTheme", "failed to parse shell.json: " + e);
-        }
-    }
-
-    function _applyObject(target: QtObject, source: var): void {
-        for (const [key, value] of Object.entries(source))
-            if (target.hasOwnProperty(key))
-                target[key] = value;
-    }
 }

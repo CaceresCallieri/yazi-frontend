@@ -107,7 +107,7 @@ Five model classes in C++ namespace `symmetria::filemanager::models`:
 
 ### Symmetria Shell Dependency (One-Sided)
 
-Symmetria Shell imports `Symmetria.FileManager.Models` in 5 QML files (wallpaper grid, file dialog, etc.) — it depends on this plugin being installed. Symmetria File Manager does NOT depend on the shell at runtime — it reads theme data directly from config files on disk (`color-scheme.json`, `shell.json`), not via IPC.
+Symmetria Shell imports `Symmetria.FileManager.Models` in 5 QML files (wallpaper grid, file dialog, etc.) — it depends on this plugin being installed. Symmetria File Manager does NOT depend on the shell at runtime — it reads its palette directly from `color-scheme.json` on disk, not via IPC.
 
 If the plugin is not installed, Symmetria Shell's wallpaper picker and file dialog will fail to load. After any plugin API changes, verify the shell still works.
 
@@ -265,7 +265,8 @@ Use `Paths.basename(path)` and `Paths.parentDir(path)` instead of inline `substr
 ### Theme & Typography
 
 - All colors from `FmTheme.palette.*` — property names match `color-scheme.json` keys directly (e.g., `FmTheme.palette.surface`, `FmTheme.palette.onSurface`, `FmTheme.palette.primary`)
-- **Theme source**: Reads palette from `~/.config/quickshell/symmetria/config/color-scheme.json` directly (no IPC — works without Symmetria Shell running). Reads transparency from `shell.json`. Layout tokens (rounding, spacing, padding, fonts) are file-manager-specific and NOT synced from the shell. The path is historically named after Symmetria Shell's config dir; the file manager uses it as a convenient theme source, not a runtime dependency.
+- **Theme source**: Reads palette from `~/.config/quickshell/symmetria/config/color-scheme.json` directly (no IPC — works without Symmetria Shell running). Transparency, layout tokens (rounding, spacing, padding, fonts), and other appearance values are file-manager-specific and hardcoded in `FmTheme.qml` — NOT synced from the shell, because Symmetria Shell's transparency is governed by its own logic. The path is historically named after Symmetria Shell's config dir; the file manager uses it as a convenient palette source, not a runtime dependency.
+- **Transparency model**: `FmTheme.transparency` exposes two knobs — `base` (window backdrop, depth 0) and `layers` (panels, depth 1+) — applied via `FmTheme.layer(color, depth)`. Both are currently `0.0` by user preference: the entire FM is fully transparent passthrough; the compositor (Hyprland blur + wallpaper) supplies whatever look sits behind the window, and the FM only renders icons / text / 1-px separators on top. Two pitfalls to avoid if you ever reintroduce a tint: (1) Don't put non-zero values on both knobs simultaneously — the alphas compound (`effective = 1 − (1 − layers)(1 − base)`) and panels end up much darker than the bars. (2) The PathBar / StatusBar / TabBar have no background of their own, so a tint on `layers` alone would leave them clear while the columns darken — visually inconsistent. If you need a uniform tint, put it on `base` only and keep `layers` at 0.
 - **Indicator colors** via `FmTheme.indicator.cut`, `.yank`, `.selection` — hardcoded deliberately because palette tokens change with wallpaper-derived color schemes
 - **Overlay colors** via `FmTheme.overlay.subtle` (0.06 white), `.emphasis` (0.10 white) — for separators, keycap backgrounds, subtle highlights
 - Sans: `FmTheme.font.family.sans` (Rubik), Mono: `FmTheme.font.family.mono` (CaskaydiaCove NF), Icons: `FmTheme.font.family.material`
