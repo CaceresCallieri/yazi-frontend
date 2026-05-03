@@ -76,39 +76,19 @@ QtObject {
     property list<real> animCurveStandardDecel: [0, 0, 0, 1, 1, 1]
 
     // === Transparency ===
-    // Both knobs are zero by user preference: every FM surface is fully
-    // transparent passthrough. The wallpaper (and whatever blur/tint the
-    // compositor applies under the window) shows through everywhere, with
-    // only icons/text/separators rendered on top.
+    // Both knobs are zero by design: every FM surface is fully transparent
+    // passthrough. The compositor (Hyprland blur + wallpaper) handles the
+    // look behind the window; the FM only paints icons, text, and separators.
     //
-    // Decoupled from shell.json on purpose — Symmetria Shell's transparency
-    // is governed by its own logic and should not propagate here.
-    //
-    // History (so future readers know why this isn't tuned to Ghostty):
-    // Earlier iterations tried to match Ghostty's `background-opacity = 0.6`
-    // by tinting either the panels (`layers=0.6`) or the window backdrop
-    // (`base=0.6`). Both produced visually wrong results because the
-    // PathBar/StatusBar/TabBar have no background of their own — when the
-    // tint lived on the panels, only the columns were tinted; when it lived
-    // on the window, the whole FM looked thinner than Ghostty (Ghostty
-    // benefits from compositor blur the FM doesn't reliably trigger). The
-    // cleanest resolution was to drop the tint entirely and let the
-    // compositor handle the look behind the window.
-    property QtObject transparency: QtObject {
-        property bool enabled: true
-        property real base: 0.0
-        property real layers: 0.0
-    }
+    // Decoupled from shell.json — Symmetria Shell's transparency is governed
+    // by its own logic and should not propagate here.
+    readonly property real _transparencyBase: 0.0
+    readonly property real _transparencyLayers: 0.0
 
-    // Simplified layer function matching Symmetria's approach:
-    // layer 0 = base transparency (window background)
-    // layer 1+ = container transparency (layers value is the target alpha)
+    // Apply depth-aware transparency: depth 0 = window backdrop, depth 1+ = panel.
+    // Both values are currently 0.0 (fully transparent passthrough).
     function layer(c: color, depth: int): color {
-        if (!transparency.enabled)
-            return c;
-        return depth === 0
-            ? Qt.alpha(c, transparency.base)
-            : Qt.alpha(c, transparency.layers);
+        return Qt.alpha(c, depth === 0 ? root._transparencyBase : root._transparencyLayers);
     }
 
     // === Matte pill effect ===
