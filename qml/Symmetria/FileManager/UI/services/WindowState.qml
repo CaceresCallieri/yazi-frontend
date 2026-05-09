@@ -341,4 +341,16 @@ QtObject {
 
     // === Audio preview ===
     signal audioPlaybackToggle()
+
+    // === View mode (per-tab) ===
+    // Standalone FM toggles between miller-columns and recursive tree via Ctrl-E.
+    // Stored as int (mirrors the activeModal pattern) so WindowState stays
+    // independent of the C++ plugin module.
+    readonly property int viewMillerColumns: 0
+    readonly property int viewTree: 1
+    property int viewMode: viewMillerColumns
+
+    function toggleViewMode(): void {
+        viewMode = (viewMode === viewMillerColumns) ? viewTree : viewMillerColumns;
+    }
 }

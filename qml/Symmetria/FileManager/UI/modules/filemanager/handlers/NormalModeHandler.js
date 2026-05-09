@@ -295,6 +295,17 @@ function handleKey(event, root, view, pasteProcess, clipboardCopyProcess) {
         event.accepted = true;
         break;
 
+    case Qt.Key_E:
+        if (mods & Qt.ControlModifier) {
+            // Ctrl+E — toggle between miller-columns and tree view.
+            // The Loader in FileManager.qml swaps the visible component on
+            // viewMode change, which destroys this FileList and lets the
+            // tree view's own Keys.onPressed take over.
+            windowState.toggleViewMode();
+            event.accepted = true;
+        }
+        break;
+
     case Qt.Key_Comma:
         windowState.activeChordPrefix = ",";
         event.accepted = true;

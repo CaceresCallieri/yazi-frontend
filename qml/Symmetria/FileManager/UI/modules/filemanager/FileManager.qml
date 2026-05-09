@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import Symmetria.FileManager.UI
 import Symmetria.FileManager.Models
 import QtQuick
@@ -34,21 +36,46 @@ Item {
             windowState: tabManager.activeTab
         }
 
-        MillerColumns {
-            id: millerColumns
+        // Active view — swapped via Ctrl-E. MillerColumns is the default;
+        // FileTreeView is the recursive tree mode. Each tab's WindowState
+        // owns its own viewMode, so tabs can independently choose.
+        Loader {
+            id: viewLoader
             Layout.fillWidth: true
             Layout.fillHeight: true
-            windowState: tabManager.activeTab
-            tabManager: tabManager
-            onCloseRequested: root.closeRequested()
+            sourceComponent: (tabManager.activeTab && tabManager.activeTab.viewMode === tabManager.activeTab.viewTree)
+                             ? treeComponent : millerComponent
         }
 
         StatusBar {
             Layout.fillWidth: true
             windowState: tabManager.activeTab
-            fileCount: millerColumns.fileCount
-            currentEntry: millerColumns.currentEntry
+            fileCount: viewLoader.item ? viewLoader.item.fileCount : 0
+            currentEntry: viewLoader.item ? viewLoader.item.currentEntry : null
         }
+    }
+
+    Component {
+        id: millerComponent
+        MillerColumns {
+            windowState: tabManager.activeTab
+            tabManager: tabManager
+            onCloseRequested: root.closeRequested()
+        }
+    }
+
+    Component {
+        id: treeComponent
+        FileTreeView {
+            rootPath: tabManager.activeTab ? tabManager.activeTab.currentPath : Paths.home
+            showHidden: Config.fileManager.showHidden
+            windowState: tabManager.activeTab
+            onFileActivated: function(path) { fmFileOpener.open(path, ""); }
+        }
+    }
+
+    FileOpener {
+        id: fmFileOpener
     }
 
     // Modal overlays — render above the entire layout.
@@ -62,12 +89,16 @@ Item {
         anchors.fill: parent
         windowState: tabManager.activeTab
     }
+    // RenamePopup positional bindings only resolve in MillerColumns mode;
+    // FileTreeView lacks currentItemBottomY/currentColumnX/currentColumnWidth,
+    // so they fall back to 0 via optional chaining. Rename is unreachable in
+    // tree mode (no R chord wired) so the fallback is never user-visible.
     RenamePopup {
         anchors.fill: parent
         windowState: tabManager.activeTab
-        targetItemY: millerColumns.y + millerColumns.currentItemBottomY
-        targetColumnX: millerColumns.x + millerColumns.currentColumnX
-        targetColumnWidth: millerColumns.currentColumnWidth
+        targetItemY: viewLoader.y + (viewLoader.item && viewLoader.item.currentItemBottomY !== undefined ? viewLoader.item.currentItemBottomY : 0)
+        targetColumnX: viewLoader.x + (viewLoader.item && viewLoader.item.currentColumnX !== undefined ? viewLoader.item.currentColumnX : 0)
+        targetColumnWidth: viewLoader.item && viewLoader.item.currentColumnWidth !== undefined ? viewLoader.item.currentColumnWidth : 0
     }
     ContextMenuPopup {
         anchors.fill: parent

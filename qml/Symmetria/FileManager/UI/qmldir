@@ -15,6 +15,7 @@ singleton Config 1.0 config/Config.qml
 WindowState 1.0 services/WindowState.qml
 TabManager 1.0 services/TabManager.qml
 FileManagerConfig 1.0 config/FileManagerConfig.qml
+Gitignore 1.0 services/Gitignore.qml
 
 # === Reusable components ===
 Anim 1.0 components/Anim.qml
@@ -38,6 +39,7 @@ DeleteConfirmPopup 1.0 modules/filemanager/DeleteConfirmPopup.qml
 FallbackPreview 1.0 modules/filemanager/FallbackPreview.qml
 FileList 1.0 modules/filemanager/FileList.qml
 FileListItem 1.0 modules/filemanager/FileListItem.qml
+FileTreeView 1.0 modules/filemanager/FileTreeView.qml
 FuzzyFinderPopup 1.0 modules/filemanager/FuzzyFinderPopup.qml
 ImagePreview 1.0 modules/filemanager/ImagePreview.qml
 MillerColumns 1.0 modules/filemanager/MillerColumns.qml
