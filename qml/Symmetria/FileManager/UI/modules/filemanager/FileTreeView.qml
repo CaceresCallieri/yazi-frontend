@@ -34,15 +34,24 @@ Item {
     readonly property var currentEntry: currentRow ? currentRow.entry : null
     readonly property int fileCount: _rows.length
 
+    // Stub positional props — MillerColumns exposes these for RenamePopup positioning;
+    // FileTreeView always returns 0 since inline rename is out of scope for v1.
+    readonly property real currentItemBottomY: 0
+    readonly property real currentColumnX: 0
+    readonly property real currentColumnWidth: 0
+
     property var _models: ({})
     property var _expanded: ({})
     property var _ignored: ({})
     property var _rows: []
     property int _generation: 0
     property bool _pendingG: false
+    property var _pending: ({})
+    property bool _loading: false
 
     signal fileActivated(string path)
     signal directoryChanged(string path)
+    signal showHiddenToggleRequested()
 
     implicitWidth: 280
 
@@ -75,19 +84,27 @@ Item {
         _models = ({});
         _expanded = ({});
         _ignored = ({});
+        _pending = ({});
         _rows = [];
+        _loading = false;
         gitignoreSvc.clear();
         view.currentIndex = 0;
     }
 
     function _expand(path: string): void {
-        if (_models[path]) {
-            const e = Object.assign({}, _expanded);
-            e[path] = true;
-            _expanded = e;
-            _rebuildRows();
+        if (_models[path] || _pending[path]) {
+            if (_models[path]) {
+                const e = Object.assign({}, _expanded);
+                e[path] = true;
+                _expanded = e;
+                _rebuildRows();
+            }
             return;
         }
+        const newPending = Object.assign({}, _pending);
+        newPending[path] = true;
+        _pending = newPending;
+        _loading = true;
         const gen = _generation;
         const m = fsModelComponent.createObject(root, {
             "path": path,
@@ -98,6 +115,10 @@ Item {
         });
         if (!m) {
             Logger.warn("FileTreeView", "failed to create FileSystemModel for " + path);
+            const failedPending = Object.assign({}, _pending);
+            delete failedPending[path];
+            _pending = failedPending;
+            _loading = Object.keys(failedPending).length > 0;
             return;
         }
         const onChange = function() {
@@ -112,6 +133,10 @@ Item {
                 const newIgnored = Object.assign({}, root._ignored);
                 newIgnored[path] = ignoredSet || ({});
                 root._ignored = newIgnored;
+                const newPendingClear = Object.assign({}, root._pending);
+                delete newPendingClear[path];
+                root._pending = newPendingClear;
+                root._loading = Object.keys(newPendingClear).length > 0;
                 if (!root._models[path]) {
                     const newModels = Object.assign({}, root._models);
                     newModels[path] = m;
@@ -119,6 +144,12 @@ Item {
                     const newExpanded = Object.assign({}, root._expanded);
                     newExpanded[path] = true;
                     root._expanded = newExpanded;
+                } else {
+                    // A second expand call arrived before first entriesChanged.
+                    // Destroy this orphaned model — the first one is already registered.
+                    m.destroy();
+                    root._rebuildRows();
+                    return;
                 }
                 root._rebuildRows();
             };
@@ -169,7 +200,8 @@ Item {
     }
 
     function _refreshAllExpanded(): void {
-        // showHidden propagates to live models — the model re-scans automatically.
+        // Propagate showHidden to all live models (they re-scan automatically).
+        // Also called when respectGitignore changes to rebuild the visible rows.
         for (const path in _models) {
             const m = _models[path];
             if (m) m.showHidden = root.showHidden;
@@ -241,7 +273,6 @@ Item {
 
     Gitignore {
         id: gitignoreSvc
-        rootPath: root.rootPath
         enabled: root.respectGitignore
     }
 
@@ -258,7 +289,7 @@ Item {
 
     Loader {
         anchors.centerIn: parent
-        active: view.count === 0
+        active: view.count === 0 && !root._loading
         sourceComponent: PreviewStateIndicator {
             iconName: "folder_open"
             message: qsTr("Empty")
@@ -412,7 +443,7 @@ Item {
 
             case Qt.Key_H:
                 if (mods & Qt.ShiftModifier) {
-                    root.showHidden = !root.showHidden;
+                    root.showHiddenToggleRequested();
                 } else {
                     const cur = root.currentRow;
                     if (cur && cur.isDir && cur.expanded) root._collapse(cur.path);
@@ -422,8 +453,8 @@ Item {
                 break;
 
             case Qt.Key_Left: {
-                const curL = root.currentRow;
-                if (curL && curL.isDir && curL.expanded) root._collapse(curL.path);
+                const row = root.currentRow;
+                if (row && row.isDir && row.expanded) root._collapse(row.path);
                 else root._jumpToParent();
                 event.accepted = true;
                 break;
@@ -431,13 +462,13 @@ Item {
 
             case Qt.Key_L:
             case Qt.Key_Right: {
-                const cur2 = root.currentRow;
-                if (!cur2) { event.accepted = true; break; }
-                if (cur2.isDir) {
-                    if (!cur2.expanded) root._expand(cur2.path);
+                const row = root.currentRow;
+                if (!row) { event.accepted = true; break; }
+                if (row.isDir) {
+                    if (!row.expanded) root._expand(row.path);
                     else if (view.currentIndex + 1 < view.count) view.currentIndex++;
                 } else {
-                    root.fileActivated(cur2.path);
+                    root.fileActivated(row.path);
                 }
                 event.accepted = true;
                 break;
@@ -450,8 +481,8 @@ Item {
                 break;
 
             case Qt.Key_O: {
-                const cur3 = root.currentRow;
-                if (cur3 && cur3.isDir) root._toggle(cur3.path);
+                const row = root.currentRow;
+                if (row && row.isDir) root._toggle(row.path);
                 event.accepted = true;
                 break;
             }

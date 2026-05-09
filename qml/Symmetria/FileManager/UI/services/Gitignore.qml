@@ -19,7 +19,6 @@ import QtQuick
 QtObject {
     id: root
 
-    property string rootPath: ""
     property bool enabled: true
 
     // dirPath -> { mtime: number, ignored: { absChildPath: true, ... } }

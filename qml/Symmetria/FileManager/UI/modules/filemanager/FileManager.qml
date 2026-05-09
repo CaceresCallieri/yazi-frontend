@@ -71,6 +71,7 @@ Item {
             showHidden: Config.fileManager.showHidden
             windowState: tabManager.activeTab
             onFileActivated: function(path) { fmFileOpener.open(path, ""); }
+            onShowHiddenToggleRequested: Config.fileManager.showHidden = !Config.fileManager.showHidden
         }
     }
 
@@ -89,16 +90,12 @@ Item {
         anchors.fill: parent
         windowState: tabManager.activeTab
     }
-    // RenamePopup positional bindings only resolve in MillerColumns mode;
-    // FileTreeView lacks currentItemBottomY/currentColumnX/currentColumnWidth,
-    // so they fall back to 0 via optional chaining. Rename is unreachable in
-    // tree mode (no R chord wired) so the fallback is never user-visible.
     RenamePopup {
         anchors.fill: parent
         windowState: tabManager.activeTab
-        targetItemY: viewLoader.y + (viewLoader.item && viewLoader.item.currentItemBottomY !== undefined ? viewLoader.item.currentItemBottomY : 0)
-        targetColumnX: viewLoader.x + (viewLoader.item && viewLoader.item.currentColumnX !== undefined ? viewLoader.item.currentColumnX : 0)
-        targetColumnWidth: viewLoader.item && viewLoader.item.currentColumnWidth !== undefined ? viewLoader.item.currentColumnWidth : 0
+        targetItemY: viewLoader.y + (viewLoader.item ? viewLoader.item.currentItemBottomY : 0)
+        targetColumnX: viewLoader.x + (viewLoader.item ? viewLoader.item.currentColumnX : 0)
+        targetColumnWidth: viewLoader.item ? viewLoader.item.currentColumnWidth : 0
     }
     ContextMenuPopup {
         anchors.fill: parent
