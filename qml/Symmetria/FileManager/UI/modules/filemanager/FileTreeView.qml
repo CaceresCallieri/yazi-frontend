@@ -327,23 +327,6 @@ Item {
         }
     }
 
-    Connections {
-        target: root.windowState
-        enabled: root.windowState !== null
-
-        function onSearchQueryChanged(): void { root._computeMatches(false); }
-        function onCurrentMatchIndexChanged(): void { root._jumpToCurrentMatch(); }
-        function onSearchCancelled(): void {
-            const safe = Math.min(root._preSearchIndex, Math.max(0, root._rows.length - 1));
-            view.currentIndex = safe;
-            view.positionViewAtIndex(safe, ListView.Contain);
-            Qt.callLater(() => view.forceActiveFocus());
-        }
-        function onSearchConfirmed(): void {
-            Qt.callLater(() => view.forceActiveFocus());
-        }
-    }
-
     function _jumpToParent(): void {
         const cur = currentRow;
         if (!cur || cur.depth === 0) return;
@@ -376,6 +359,22 @@ Item {
         id: ggTimer
         interval: 500
         onTriggered: root._pendingG = false
+    }
+
+    Connections {
+        target: root.windowState
+
+        function onSearchQueryChanged(): void { root._computeMatches(false); }
+        function onCurrentMatchIndexChanged(): void { root._jumpToCurrentMatch(); }
+        function onSearchCancelled(): void {
+            const safe = Math.min(root._preSearchIndex, Math.max(0, root._rows.length - 1));
+            view.currentIndex = safe;
+            view.positionViewAtIndex(safe, ListView.Contain);
+            Qt.callLater(() => view.forceActiveFocus());
+        }
+        function onSearchConfirmed(): void {
+            Qt.callLater(() => view.forceActiveFocus());
+        }
     }
 
     StyledRect {

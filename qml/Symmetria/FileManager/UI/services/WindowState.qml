@@ -351,11 +351,11 @@ QtObject {
     property int viewMode: viewMillerColumns
 
     function toggleViewMode(): void {
-        // Clear transient mode state — its indices reference the outgoing
-        // view's model (Miller's fsModel entries vs Tree's flattened _rows)
-        // and would be meaningless against the incoming view.
-        if (searchActive || matchIndices.length > 0)
-            clearSearch();
+        // Clear transient search state — indices reference the outgoing view's
+        // row model (Miller's fsModel entries vs Tree's flattened _rows) and
+        // would be meaningless against the incoming view. clearSearch() is
+        // idempotent so no guard needed.
+        clearSearch();
         viewMode = (viewMode === viewMillerColumns) ? viewTree : viewMillerColumns;
     }
 }
