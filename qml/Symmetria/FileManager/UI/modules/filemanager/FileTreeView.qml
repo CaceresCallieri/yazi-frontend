@@ -223,6 +223,13 @@ Item {
     }
 
     function _rebuildRows(): void {
+        // Capture cursor by PATH before reassigning the model array.
+        // Reassigning ListView.model to a fresh JS array resets currentIndex,
+        // so an integer-only preservation strategy is unreliable. Path-based
+        // restore also keeps the cursor stable across file-watcher mutations
+        // (inserts/removes that shift indices around the cursor).
+        const prevPath = root.currentRow ? root.currentRow.path : "";
+
         const newRows = [];
         const visited = ({});
         const walk = function(parentPath, depth) {
@@ -251,8 +258,23 @@ Item {
         };
         walk(root.rootPath, 0);
         _rows = newRows;
-        if (view.currentIndex >= newRows.length)
+
+        let restored = -1;
+        if (prevPath !== "") {
+            for (let i = 0; i < newRows.length; i++) {
+                if (newRows[i].path === prevPath) { restored = i; break; }
+            }
+        }
+        if (restored >= 0) {
+            view.currentIndex = restored;
+            view.positionViewAtIndex(restored, ListView.Contain);
+        } else if (view.currentIndex >= newRows.length) {
             view.currentIndex = Math.max(0, newRows.length - 1);
+        }
+    }
+
+    function _halfPageCount(): int {
+        return Math.max(1, Math.floor(view.height / Config.fileManager.sizes.itemHeight / 2));
     }
 
     function _jumpToParent(): void {
@@ -485,6 +507,22 @@ Item {
             case Qt.Key_Enter:
                 root._activate(root.currentRow);
                 event.accepted = true;
+                break;
+
+            case Qt.Key_D:
+                if ((mods & Qt.ControlModifier) && view.count > 0) {
+                    view.currentIndex = Math.min(view.currentIndex + root._halfPageCount(), view.count - 1);
+                    view.positionViewAtIndex(view.currentIndex, ListView.Contain);
+                    event.accepted = true;
+                }
+                break;
+
+            case Qt.Key_U:
+                if ((mods & Qt.ControlModifier) && view.count > 0) {
+                    view.currentIndex = Math.max(view.currentIndex - root._halfPageCount(), 0);
+                    view.positionViewAtIndex(view.currentIndex, ListView.Contain);
+                    event.accepted = true;
+                }
                 break;
 
             case Qt.Key_O: {
