@@ -48,6 +48,8 @@ Item {
     property bool _pendingG: false
     property var _pending: ({})
     property bool _loading: false
+    // Cursor position captured when `/` is pressed; restored on Escape.
+    property int _preSearchIndex: 0
 
     signal fileActivated(string path)
     signal directoryChanged(string path)
@@ -271,10 +273,75 @@ Item {
         } else if (view.currentIndex >= newRows.length) {
             view.currentIndex = Math.max(0, newRows.length - 1);
         }
+
+        // Re-compute search matches against the new row list — expand/collapse
+        // changes the set of visible rows, so previous indices are now stale.
+        if (root.windowState && root.windowState.searchQuery !== "")
+            root._computeMatches(true);
     }
 
     function _halfPageCount(): int {
         return Math.max(1, Math.floor(view.height / Config.fileManager.sizes.itemHeight / 2));
+    }
+
+    // Search — matches against `_rows` (the flattened DFS list), so only
+    // currently-visible nodes match. Collapsed subtrees are intentionally
+    // out of scope per the v1 spec ("every visible element").
+    function _computeMatches(preservePosition: bool): void {
+        if (!root.windowState) return;
+        const query = root.windowState.searchQuery.toLowerCase();
+        if (query === "") {
+            root.windowState.matchIndices = [];
+            root.windowState.currentMatchIndex = -1;
+            return;
+        }
+        const rows = root._rows;
+        const indices = [];
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].name.toLowerCase().indexOf(query) !== -1)
+                indices.push(i);
+        }
+        root.windowState.matchIndices = indices;
+        if (indices.length === 0) {
+            root.windowState.currentMatchIndex = -1;
+        } else if (preservePosition) {
+            const prev = view.currentIndex;
+            const pos = indices.indexOf(prev);
+            root.windowState.currentMatchIndex = pos >= 0 ? pos : 0;
+        } else {
+            root.windowState.currentMatchIndex = 0;
+        }
+        // Always jump after recomputing — currentMatchIndexChanged won't fire
+        // if the value stays numerically the same (e.g. 0→0) even though
+        // matchIndices changed and the target row is different.
+        root._jumpToCurrentMatch();
+    }
+
+    function _jumpToCurrentMatch(): void {
+        if (!root.windowState) return;
+        const idx = root.windowState.currentMatchIndex;
+        const matches = root.windowState.matchIndices;
+        if (idx >= 0 && idx < matches.length) {
+            view.currentIndex = matches[idx];
+            view.positionViewAtIndex(view.currentIndex, ListView.Contain);
+        }
+    }
+
+    Connections {
+        target: root.windowState
+        enabled: root.windowState !== null
+
+        function onSearchQueryChanged(): void { root._computeMatches(false); }
+        function onCurrentMatchIndexChanged(): void { root._jumpToCurrentMatch(); }
+        function onSearchCancelled(): void {
+            const safe = Math.min(root._preSearchIndex, Math.max(0, root._rows.length - 1));
+            view.currentIndex = safe;
+            view.positionViewAtIndex(safe, ListView.Contain);
+            Qt.callLater(() => view.forceActiveFocus());
+        }
+        function onSearchConfirmed(): void {
+            Qt.callLater(() => view.forceActiveFocus());
+        }
     }
 
     function _jumpToParent(): void {
@@ -361,6 +428,17 @@ Item {
 
             width: ListView.view ? ListView.view.width : 0
             implicitHeight: Config.fileManager.sizes.itemHeight
+
+            // Search-match tint (rendered beneath the current-item highlight)
+            Rectangle {
+                anchors.fill: parent
+                anchors.leftMargin: FmTheme.padding.sm
+                anchors.rightMargin: FmTheme.padding.sm
+                radius: FmTheme.rounding.sm
+                color: FmTheme.palette.primary
+                opacity: root.windowState && root.windowState._matchIndexSet[delegateRoot.index] ? 0.08 : 0
+                Behavior on opacity { Anim {} }
+            }
 
             Rectangle {
                 anchors.fill: parent
@@ -535,6 +613,22 @@ Item {
             case Qt.Key_R:
                 if (mods & Qt.ShiftModifier) {
                     root._refreshAll();
+                    event.accepted = true;
+                }
+                break;
+
+            case Qt.Key_Slash:
+                if (root.windowState) {
+                    root._preSearchIndex = view.currentIndex;
+                    root.windowState.startSearch();
+                    event.accepted = true;
+                }
+                break;
+
+            case Qt.Key_N:
+                if (root.windowState && !root.windowState.searchActive && root.windowState.matchIndices.length > 0) {
+                    if (mods & Qt.ShiftModifier) root.windowState.previousMatch();
+                    else root.windowState.nextMatch();
                     event.accepted = true;
                 }
                 break;
