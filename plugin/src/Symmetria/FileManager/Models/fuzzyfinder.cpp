@@ -186,7 +186,11 @@ struct WalkResult {
 
 // Recursive directory walker with gitignore awareness.
 // Runs on a worker thread — no QObject access, pure data in/out.
-static void walkRecursive(
+//
+// Returns true to continue walking, false to abort early (cap reached).
+// The caller cascades the abort up the recursion stack so the entire
+// remaining subtree is short-circuited as soon as MaxScanFiles is hit.
+static bool walkRecursive(
     const QString& dirPath,
     const QString& rootPath,
     bool showHidden,
@@ -194,10 +198,13 @@ static void walkRecursive(
     QSet<QString>& visitedDirs,
     QVector<CachedPath>& out)
 {
+    if (out.size() >= FuzzyFinder::MaxScanFiles)
+        return false;
+
     // Prevent symlink cycles
     const QString canonical = QFileInfo(dirPath).canonicalFilePath();
     if (canonical.isEmpty() || visitedDirs.contains(canonical))
-        return;
+        return true;
     visitedDirs.insert(canonical);
 
     // Parse .gitignore at this level if it exists
@@ -215,6 +222,12 @@ static void walkRecursive(
     const auto rootLen = rootPath.size() + 1;  // +1 for trailing /
 
     for (const auto& info : entries) {
+        if (out.size() >= FuzzyFinder::MaxScanFiles) {
+            if (hasGitignore)
+                ruleStack.removeLast();
+            return false;
+        }
+
         const QString name = info.fileName();
         const QString fullPath = info.filePath();
 
@@ -243,12 +256,19 @@ static void walkRecursive(
 
         out.append({relativePath, name, fullPath, isDir, depth});
 
-        if (isDir)
-            walkRecursive(fullPath, rootPath, showHidden, ruleStack, visitedDirs, out);
+        if (isDir) {
+            if (!walkRecursive(fullPath, rootPath, showHidden, ruleStack, visitedDirs, out)) {
+                if (hasGitignore)
+                    ruleStack.removeLast();
+                return false;
+            }
+        }
     }
 
     if (hasGitignore)
         ruleStack.removeLast();
+
+    return true;
 }
 
 static WalkResult walkDirectory(const QString& rootPath, bool showHidden) {
@@ -265,7 +285,15 @@ static WalkResult walkDirectory(const QString& rootPath, bool showHidden) {
 
     // Pre-compute the basePath for root-level gitignore rules as empty string
     // (relative paths are already relative to rootPath)
-    walkRecursive(rootPath, rootPath, showHidden, ruleStack, visitedDirs, result.paths);
+    const bool finished = walkRecursive(
+        rootPath, rootPath, showHidden, ruleStack, visitedDirs, result.paths);
+
+    if (!finished) {
+        result.error = QStringLiteral(
+            "Directory tree too large — indexed first %1 files. Open the finder "
+            "from a more specific subdirectory for complete results.")
+            .arg(FuzzyFinder::MaxScanFiles);
+    }
 
     return result;
 }

@@ -97,6 +97,12 @@ public:
     Q_INVOKABLE void clear();
 
     static constexpr int MaxResults = 200;
+    // Hard cap on the recursive walk to keep enormous directories
+    // (~/Downloads with 270k files, monorepos with node_modules, etc.)
+    // from making the picker appear hung. When hit, the walker returns
+    // early with whatever was collected and sets `error` so the popup
+    // can warn the user that results are incomplete.
+    static constexpr int MaxScanFiles = 50000;
 
 signals:
     void searchPathChanged();

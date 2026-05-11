@@ -269,6 +269,22 @@ Loader {
                     font.pointSize: FmTheme.font.size.sm
                     horizontalAlignment: Text.AlignHCenter
                 }
+
+                // Walk-cap warning — shown when the walker hit MaxScanFiles.
+                // Uses M3 `error` token (not `tertiary`) so it actually stands
+                // out against the popup background; tertiary on this surface
+                // rendered too dark to read. Wraps so the full guidance
+                // ("open from a smaller subdir") stays legible at narrow widths.
+                StyledText {
+                    Layout.fillWidth: true
+                    Layout.topMargin: FmTheme.spacing.sm
+                    visible: fuzzyModel.error.length > 0
+                    text: fuzzyModel.error
+                    color: FmTheme.palette.error
+                    font.pointSize: FmTheme.font.size.xs
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                }
             }
         }
 

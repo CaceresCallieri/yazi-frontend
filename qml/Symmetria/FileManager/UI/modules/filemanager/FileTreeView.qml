@@ -54,6 +54,10 @@ Item {
     property int _preSearchIndex: 0
     // Cursor position captured when `S` is pressed; restored on Escape/Backspace-on-empty.
     property int _preFlashIndex: 0
+    // Set by the fuzzy-finder via WindowState.fuzzyFinderNavigated — consumed
+    // by _rebuildRows once the new rootPath's children land, so the cursor
+    // ends up on the file the user picked rather than at row 0.
+    property string _pendingFocusName: ""
 
     signal fileActivated(string path)
     signal directoryChanged(string path)
@@ -265,8 +269,21 @@ Item {
         walk(root.rootPath, 0);
         _rows = newRows;
 
+        // Fuzzy-finder pending focus takes precedence over path-based restore:
+        // the user explicitly asked for this file. Match name + depth=0 because
+        // the popup always navigates to the file's parent, so the picked file
+        // is a direct child of the new rootPath.
         let restored = -1;
-        if (prevPath !== "") {
+        if (root._pendingFocusName !== "") {
+            for (let i = 0; i < newRows.length; i++) {
+                if (newRows[i].name === root._pendingFocusName && newRows[i].depth === 0) {
+                    restored = i;
+                    break;
+                }
+            }
+            if (restored >= 0) root._pendingFocusName = "";
+        }
+        if (restored < 0 && prevPath !== "") {
             for (let i = 0; i < newRows.length; i++) {
                 if (newRows[i].path === prevPath) { restored = i; break; }
             }
@@ -410,6 +427,34 @@ Item {
         }
         function onSearchConfirmed(): void {
             Qt.callLater(() => view.forceActiveFocus());
+        }
+
+        // Any modal closing returns focus to the view. Required because the
+        // popup (a top-level Loader at FileManager scope) sits outside the
+        // tree's FocusScope, so closing it leaves focus orphaned — keyboard
+        // appears dead until something explicitly reclaims it. Mirrors the
+        // same handler in FileList.qml.
+        function onActiveModalChanged(): void {
+            if (root.windowState.activeModal === root.windowState.modalNone)
+                Qt.callLater(() => view.forceActiveFocus());
+        }
+
+        // Fuzzy finder picked a file in some directory. The popup emits this
+        // signal BEFORE calling navigate(parentPath) so we capture the name
+        // first; if the parent is reached via tree retarget, _rebuildRows
+        // consumes _pendingFocusName once the children land. The same-dir
+        // case (file's parent === current rootPath) bypasses that path because
+        // navigate() is a no-op on an unchanged path, so we focus immediately.
+        function onFuzzyFinderNavigated(filename: string): void {
+            root._pendingFocusName = filename;
+            for (let i = 0; i < root._rows.length; i++) {
+                if (root._rows[i].name === filename && root._rows[i].depth === 0) {
+                    view.currentIndex = i;
+                    view.positionViewAtIndex(i, ListView.Contain);
+                    root._pendingFocusName = "";
+                    return;
+                }
+            }
         }
     }
 
@@ -565,6 +610,17 @@ Item {
             const mods = event.modifiers;
             const key = event.key;
 
+            // Swallow all keys while a modal is open. The popup is a sibling
+            // Loader at FileManager scope, so without this guard a focus race
+            // can leave keystrokes hitting the tree ListView instead of the
+            // popup's TextInput — search input would stay empty and the
+            // popup would appear "broken". Matches FileList.qml's first
+            // guard in its Keys.onPressed.
+            if (root.windowState && root.windowState.activeModal !== root.windowState.modalNone) {
+                event.accepted = true;
+                return;
+            }
+
             if (key === Qt.Key_E && (mods & Qt.ControlModifier)) {
                 if (root.windowState) root.windowState.toggleViewMode();
                 event.accepted = true;
@@ -704,6 +760,13 @@ Item {
             case Qt.Key_Period:
                 root.respectGitignore = !root.respectGitignore;
                 event.accepted = true;
+                break;
+
+            case Qt.Key_F:
+                if (root.windowState) {
+                    root.windowState.requestFuzzyFinder();
+                    event.accepted = true;
+                }
                 break;
             }
         }
