@@ -16,6 +16,8 @@ pragma ComponentBehavior: Bound
 
 import Symmetria.FileManager.UI
 import Symmetria.FileManager.Models
+import "FlashLogic.js" as FlashLogic
+import "handlers/TreeFlashHandler.js" as TreeFlashHandler
 import QtQuick
 import QtQuick.Controls
 
@@ -50,6 +52,8 @@ Item {
     property bool _loading: false
     // Cursor position captured when `/` is pressed; restored on Escape.
     property int _preSearchIndex: 0
+    // Cursor position captured when `S` is pressed; restored on Escape/Backspace-on-empty.
+    property int _preFlashIndex: 0
 
     signal fileActivated(string path)
     signal directoryChanged(string path)
@@ -278,6 +282,14 @@ Item {
         // changes the set of visible rows, so previous indices are now stale.
         if (root.windowState && root.windowState.searchQuery !== "")
             root._computeMatches(true);
+
+        // Same staleness concern for flash: row indices in flashCurrentMatchMap
+        // reference the OLD row order, so re-resolve against the new rows.
+        // Cache invalidation alone isn't enough — the active session's per-row
+        // match map needs to be recomputed against the new index space.
+        TreeFlashHandler.invalidateEntryCache();
+        if (root.windowState && root.windowState.flashActive)
+            TreeFlashHandler.recompute(root, view);
     }
 
     function _halfPageCount(): int {
@@ -325,6 +337,30 @@ Item {
             view.currentIndex = matches[idx];
             view.positionViewAtIndex(view.currentIndex, ListView.Contain);
         }
+    }
+
+    // Flash label rendering — mirrors FileListItem._highlightFlash so the
+    // visual is identical across the Miller and Tree views.
+    function _htmlEscape(s: string): string {
+        return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    function _highlightFlash(name: string, query: string, label: string, matchStart: int): string {
+        if (matchStart < 0 || query === "" || label === "")
+            return root._htmlEscape(name);
+        const before = name.substring(0, matchStart);
+        const match = name.substring(matchStart, matchStart + query.length);
+        const afterMatchStart = matchStart + query.length;
+        const replacedEnd = Math.min(afterMatchStart + label.length, name.length);
+        const after = name.substring(replacedEnd);
+        const querySpan = "<span style=\"background-color: " + FmTheme.palette.secondaryContainer
+                        + "; color: " + FmTheme.palette.onSecondaryContainer + ";\">"
+                        + root._htmlEscape(match) + "</span>";
+        const labelSpan = "<span style=\"background-color: " + FmTheme.palette.primary
+                        + "; color: " + FmTheme.palette.onPrimary
+                        + "; font-weight: 700; font-family: " + FmTheme.font.family.mono + ";\">"
+                        + root._htmlEscape(label) + "</span>";
+        return root._htmlEscape(before) + querySpan + labelSpan + root._htmlEscape(after);
     }
 
     function _jumpToParent(): void {
@@ -425,6 +461,11 @@ Item {
             readonly property bool rowIsDir: modelData ? modelData.isDir : false
             readonly property bool rowExpanded: modelData ? modelData.expanded : false
 
+            // Flash match for THIS row's index (null if not a match or flash inactive).
+            readonly property var _flashMatch: root.windowState && root.windowState.flashActive
+                ? root.windowState.flashCurrentMatchMap[delegateRoot.index] : null
+            readonly property bool _isFlashMatch: !!_flashMatch
+
             width: ListView.view ? ListView.view.width : 0
             implicitHeight: Config.fileManager.sizes.itemHeight
 
@@ -466,6 +507,10 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: FmTheme.spacing.md
 
+                // Dim non-matching rows during flash so labels stand out.
+                opacity: root.windowState && root.windowState.flashActive && !delegateRoot._isFlashMatch ? 0.25 : 1.0
+                Behavior on opacity { Anim {} }
+
                 MaterialIcon {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: delegateRoot.rowIsDir
@@ -496,7 +541,15 @@ Item {
                 }
                 StyledText {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: delegateRoot.modelData ? delegateRoot.modelData.name : ""
+                    textFormat: delegateRoot._isFlashMatch ? Text.RichText : Text.PlainText
+                    text: {
+                        const name = delegateRoot.modelData ? delegateRoot.modelData.name : "";
+                        if (delegateRoot._isFlashMatch && root.windowState)
+                            return root._highlightFlash(name, root.windowState.flashQuery,
+                                                        delegateRoot._flashMatch.label,
+                                                        delegateRoot._flashMatch.matchStart);
+                        return name;
+                    }
                     color: FmTheme.palette.onSurface
                     font.pointSize: FmTheme.font.size.md
                 }
@@ -515,6 +568,13 @@ Item {
             if (key === Qt.Key_E && (mods & Qt.ControlModifier)) {
                 if (root.windowState) root.windowState.toggleViewMode();
                 event.accepted = true;
+                return;
+            }
+
+            // Flash mode captures every key — labels jump, continuations
+            // extend the query, Escape/Backspace exit.
+            if (root.windowState && root.windowState.flashActive) {
+                TreeFlashHandler.handleKey(event, root, view);
                 return;
             }
 
@@ -620,6 +680,15 @@ Item {
                 if (root.windowState) {
                     root._preSearchIndex = view.currentIndex;
                     root.windowState.startSearch();
+                    event.accepted = true;
+                }
+                break;
+
+            case Qt.Key_S:
+                if (root.windowState) {
+                    root._preFlashIndex = view.currentIndex;
+                    TreeFlashHandler.invalidateEntryCache();
+                    root.windowState.startFlash();
                     event.accepted = true;
                 }
                 break;
