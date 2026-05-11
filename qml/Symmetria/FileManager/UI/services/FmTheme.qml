@@ -76,19 +76,26 @@ QtObject {
     property list<real> animCurveStandardDecel: [0, 0, 0, 1, 1, 1]
 
     // === Transparency ===
-    // Both knobs are zero by design: every FM surface is fully transparent
-    // passthrough. The compositor (Hyprland blur + wallpaper) handles the
-    // look behind the window; the FM only paints icons, text, and separators.
+    // Ghostty-style single-layer model: the WINDOW carries a pure-black tint
+    // at ~0.6 alpha (matches `background = #000000` + `background-opacity = 0.6`
+    // in ~/.config/ghostty/config), and PANELS stay fully transparent so they
+    // become "windows" onto that single backdrop. This is intentionally one
+    // alpha layer, not two — stacking panel tints on top of the backdrop
+    // compounds (`effective = 1 − (1 − layers)(1 − base)`) and darkens the
+    // columns relative to the bars (PathBar/StatusBar/TabBar have no background
+    // of their own, so they'd stay clear while columns darken — visually
+    // inconsistent). See CLAUDE.md "Transparency model" for the full rationale.
     //
     // Decoupled from shell.json — Symmetria Shell's transparency is governed
     // by its own logic and should not propagate here.
-    readonly property real _transparencyBase: 0.0
+    readonly property color windowBackdrop: Qt.rgba(0, 0, 0, 0.6)
     readonly property real _transparencyLayers: 0.0
 
-    // Apply depth-aware transparency: depth 0 = window backdrop, depth 1+ = panel.
-    // Both values are currently 0.0 (fully transparent passthrough).
+    // Apply depth-aware transparency. Depth 0 (window backdrop) is now served
+    // by `windowBackdrop` directly; this function only handles depth 1+ panels,
+    // which are fully transparent passthrough by design.
     function layer(c: color, depth: int): color {
-        return Qt.alpha(c, depth === 0 ? root._transparencyBase : root._transparencyLayers);
+        return Qt.alpha(c, root._transparencyLayers);
     }
 
     // === Matte pill effect ===

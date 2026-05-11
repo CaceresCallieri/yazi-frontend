@@ -26,7 +26,7 @@ QtObject {
             width: 1100
             height: 720
             visible: true
-            color: FmTheme.layer(FmTheme.palette.surface, 0)
+            color: FmTheme.windowBackdrop
             title: qsTr("File Manager")
 
             onClosing: () => destroy()
@@ -57,7 +57,7 @@ QtObject {
             // `windowrulev2 = float, class:^(symmetria-fm)$` is the documented
             // fallback (see plan stage D risk hotspot a).
             flags: Qt.Dialog | Qt.WindowStaysOnTopHint
-            color: FmTheme.layer(FmTheme.palette.surface, 0)
+            color: FmTheme.windowBackdrop
             title: qsTr("Pick a File")
 
             Component.onCompleted: requestActivate()
@@ -94,6 +94,12 @@ QtObject {
             Logger.warn("HostController", "picker already active — ignoring request");
             return;
         }
+        // Diagnostic: confirm the portal-supplied parent_window handle reaches the
+        // picker spawn site. Used to validate the xdg-foreign-v2 import plan
+        // (stage 1 of the focus-return fix). Empty string is normal for
+        // requesters that don't export a toplevel (some XWayland apps).
+        Logger.info("HostController",
+                    "picker parentWindow=" + (options.parentWindow || "<empty>"));
         FileManagerService.startPickerMode(options);
         root._pickerWindow = pickerWindowComponent.createObject(root, {
             initialPath: options.currentFolder || Paths.home
