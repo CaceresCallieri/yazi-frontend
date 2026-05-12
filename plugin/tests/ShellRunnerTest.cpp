@@ -92,6 +92,69 @@ private slots:
         QVERIFY(runner.stdoutText().contains("payload"));
     }
 
+    void writeBeforeStartedIsBufferedAndFlushed()
+    {
+        // The race fix: callers chain start() / write() / closeWriteChannel()
+        // synchronously without waiting for started(). Pre-fix, write() and
+        // closeWriteChannel() would no-op (with a warning) because m_running
+        // was still false. Post-fix, the payload is buffered and flushed in
+        // onStarted(), and the deferred close lets `cat` actually terminate.
+        ShellRunner runner;
+        runner.setCommand({"/bin/cat"});
+
+        QSignalSpy exitedSpy(&runner, &ShellRunner::exited);
+        runner.start();
+        // Intentionally NOT waiting for started() — this is the whole point.
+        runner.write(QStringLiteral("buffered_payload\n"));
+        runner.closeWriteChannel();
+
+        QVERIFY(waitForSpy(exitedSpy));
+        QVERIFY(runner.stdoutText().contains("buffered_payload"));
+    }
+
+    void closeWriteChannelBeforeStartedDeliversEof()
+    {
+        // Without the deferred close, `cat` would never receive EOF and
+        // would hang until the test timeout. This test asserts the close
+        // actually reaches the subprocess (i.e. `cat` exits on its own).
+        ShellRunner runner;
+        runner.setCommand({"/bin/cat"});
+
+        QSignalSpy exitedSpy(&runner, &ShellRunner::exited);
+        runner.start();
+        runner.closeWriteChannel();  // empty stdin, immediate EOF
+
+        QVERIFY(waitForSpy(exitedSpy, 3000));
+        QCOMPARE(runner.exitCode(), 0);
+    }
+
+    void failedToStartDoesNotRetainBufferedStdin()
+    {
+        // If the first run fails to start, any buffered stdin must be
+        // discarded — otherwise a subsequent successful start() would
+        // inherit leaked bytes from the dead run.
+        ShellRunner runner;
+        runner.setCommand({"/no/such/binary_xyz_should_not_exist"});
+
+        QSignalSpy errorSpy(&runner, &ShellRunner::errorOccurred);
+        runner.start();
+        runner.write(QStringLiteral("leaked_bytes\n"));
+        runner.closeWriteChannel();
+        QVERIFY(waitForSpy(errorSpy));
+
+        // Second run: command exists, but we want to confirm the leaked
+        // stdin from run #1 doesn't surface in run #2's output.
+        runner.setCommand({"/bin/cat"});
+        QSignalSpy exitedSpy(&runner, &ShellRunner::exited);
+        runner.start();
+        runner.write(QStringLiteral("fresh_payload\n"));
+        runner.closeWriteChannel();
+        QVERIFY(waitForSpy(exitedSpy));
+
+        QVERIFY(runner.stdoutText().contains("fresh_payload"));
+        QVERIFY(!runner.stdoutText().contains("leaked_bytes"));
+    }
+
     void doubleStartIsNoOp()
     {
         // Starting while already running should log a warning and not start

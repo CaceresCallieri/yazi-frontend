@@ -111,6 +111,13 @@ private:
     QString m_stderrText;
     QString m_stdoutLineBuffer;  // partial trailing line (no \n yet)
     QString m_stderrLineBuffer;
+    // write() and closeWriteChannel() may fire from QML before QProcess
+    // emits started() — common pattern when callers do start()+write() back
+    // to back. We buffer here and flush in onStarted() instead of dropping.
+    // Critical for embedded Qt loops (e.g. PySide6 hosting QML) where the
+    // started() slot fires later than in a standalone Qt application.
+    QByteArray m_pendingStdin;
+    bool m_pendingCloseWriteChannel = false;
     int m_exitCode = 0;
     bool m_running = false;
     QProcess m_process;

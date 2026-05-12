@@ -65,6 +65,10 @@ void ShellRunner::start()
     m_stderrText.clear();
     m_stdoutLineBuffer.clear();
     m_stderrLineBuffer.clear();
+    // Clear any stale buffered stdin from a previous failed start — without
+    // this, a buffered payload from run #1 would leak into run #2.
+    m_pendingStdin.clear();
+    m_pendingCloseWriteChannel = false;
     m_exitCode = 0;
     emit stdoutTextChanged();
     emit stderrTextChanged();
@@ -98,22 +102,45 @@ void ShellRunner::kill()
 
 void ShellRunner::write(const QString& data)
 {
+    const QByteArray bytes = data.toUtf8();
     if (!m_running) {
-        qWarning() << "ShellRunner::write() called while not running";
+        // Buffer the payload and flush in onStarted(). The race window is
+        // start() returning before QProcess::started() fires — common when
+        // callers chain start()/write() synchronously, and especially flaky
+        // under embedded Qt loops (e.g. PySide6 hosting QML, where the
+        // started slot is queued later than in standalone Qt).
+        m_pendingStdin.append(bytes);
         return;
     }
-    m_process.write(data.toUtf8());
+    m_process.write(bytes);
 }
 
 void ShellRunner::closeWriteChannel()
 {
-    if (m_running)
-        m_process.closeWriteChannel();
+    if (!m_running) {
+        // Defer the close until onStarted() flushes the buffered stdin.
+        // Buffering the write but not the close would hang any subprocess
+        // that reads-until-EOF (e.g. `git check-ignore --stdin`, `cat`).
+        m_pendingCloseWriteChannel = true;
+        return;
+    }
+    m_process.closeWriteChannel();
 }
 
 void ShellRunner::onStarted()
 {
     m_running = true;
+    // Flush any stdin buffered by write() calls that fired before this slot.
+    // Order matters: write the bytes first, then close the channel — closing
+    // first would EOF the subprocess before it sees its input.
+    if (!m_pendingStdin.isEmpty()) {
+        m_process.write(m_pendingStdin);
+        m_pendingStdin.clear();
+    }
+    if (m_pendingCloseWriteChannel) {
+        m_process.closeWriteChannel();
+        m_pendingCloseWriteChannel = false;
+    }
     emit runningChanged();
     emit started();
 }
@@ -173,14 +200,23 @@ void ShellRunner::emitLines(QString& buffer, void (ShellRunner::*signal)(const Q
     }
 }
 
-void ShellRunner::onErrorOccurred(QProcess::ProcessError /*error*/)
+void ShellRunner::onErrorOccurred(QProcess::ProcessError error)
 {
     // FailedToStart fires before started(), so m_running is still false here —
     // no state correction needed. For errors other than FailedToStart (Crashed,
     // ReadError, WriteError, etc.), we also don't touch m_running: if the process
     // terminates as a result, finished() will clear it; if it keeps running
     // (e.g. a transient WriteError), m_running correctly stays true.
-    // We just surface the message to QML.
+    //
+    // FailedToStart specifically means onStarted() will never fire, so any
+    // stdin we buffered for the failed run will never be delivered. Clear it
+    // so the next start() doesn't accidentally inherit stale bytes (start()
+    // already clears these defensively, but doing it here surfaces the intent
+    // at the error site).
+    if (error == QProcess::FailedToStart) {
+        m_pendingStdin.clear();
+        m_pendingCloseWriteChannel = false;
+    }
     emit errorOccurred(m_process.errorString());
 }
 
