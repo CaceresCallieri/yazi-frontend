@@ -120,6 +120,10 @@ private:
     bool m_pendingCloseWriteChannel = false;
     int m_exitCode = 0;
     bool m_running = false;
+    // True between m_process.start() and the QProcess::started() slot landing.
+    // Guards start() from being called a second time during the brief window
+    // where m_running is still false but a process is already being launched.
+    bool m_starting = false;
     QProcess m_process;
 };
 

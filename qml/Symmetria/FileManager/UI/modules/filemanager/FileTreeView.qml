@@ -241,7 +241,9 @@ Item {
                     const expansionsTaken = root._autoExpandPending[path] !== undefined
                         ? root._autoExpandPending[path]
                         : 0;  // rootPath itself — implicit zero
-                    delete root._autoExpandPending[path];
+                    const clearedPending = Object.assign({}, root._autoExpandPending);
+                    delete clearedPending[path];
+                    root._autoExpandPending = clearedPending;
                     root._autoExpandChildrenOf(path, expansionsTaken);
                     // BFS settles when no more directories are queued.
                     // _autoExpandChildrenOf adds to _pending synchronously,
@@ -315,7 +317,18 @@ Item {
     function _refreshAll(): void {
         const r = root.rootPath;
         _resetTreeState();
-        if (r !== "") _expand(r);
+        if (r !== "") {
+            // Re-arm auto-expand state (same logic as onRootPathChanged) so
+            // Shift-R respects initialExpandDepth. Without this, _refreshAll()
+            // would leave _autoExpandActive=false from the previous mount and
+            // the tree would always reload collapsed regardless of the prop.
+            const target = initialExpandDepth === -1 ? maxExpandDepth : initialExpandDepth;
+            _autoExpandTargetDepth = Math.max(0, target);
+            _autoExpandActive = _autoExpandTargetDepth > 0;
+            _autoExpandCeilingLogged = false;
+            _autoExpandFanoutLogged = false;
+            _expand(r);
+        }
     }
 
     // Auto-expand fan-out — invoked from the async _expand finish callback

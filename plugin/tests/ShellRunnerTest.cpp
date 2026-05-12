@@ -155,6 +155,29 @@ private slots:
         QVERIFY(!runner.stdoutText().contains("leaked_bytes"));
     }
 
+
+    void multipleWritesBeforeStartedAreConcatenated()
+    {
+        // write() may be called multiple times before started() fires — each
+        // call appends to m_pendingStdin. All buffered bytes must arrive at the
+        // subprocess intact and in order (not just the last write or first write).
+        ShellRunner runner;
+        runner.setCommand({"/bin/cat"});
+
+        QSignalSpy exitedSpy(&runner, &ShellRunner::exited);
+        runner.start();
+        // Three writes before started() — intentionally not waiting.
+        runner.write(QStringLiteral("alpha\n"));
+        runner.write(QStringLiteral("beta\n"));
+        runner.write(QStringLiteral("gamma\n"));
+        runner.closeWriteChannel();
+
+        QVERIFY(waitForSpy(exitedSpy));
+        QVERIFY(runner.stdoutText().contains("alpha"));
+        QVERIFY(runner.stdoutText().contains("beta"));
+        QVERIFY(runner.stdoutText().contains("gamma"));
+    }
+
     void doubleStartIsNoOp()
     {
         // Starting while already running should log a warning and not start

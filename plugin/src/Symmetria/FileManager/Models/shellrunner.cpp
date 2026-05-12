@@ -51,8 +51,8 @@ int ShellRunner::exitCode() const { return m_exitCode; }
 
 void ShellRunner::start()
 {
-    if (m_running) {
-        qWarning() << "ShellRunner::start() called while already running, ignoring";
+    if (m_running || m_starting) {
+        qWarning() << "ShellRunner::start() called while already running or starting, ignoring";
         return;
     }
     if (m_command.isEmpty()) {
@@ -85,6 +85,7 @@ void ShellRunner::start()
 
     const QString program = m_command.first();
     const QStringList args = m_command.mid(1);
+    m_starting = true;
     m_process.start(program, args);
 }
 
@@ -129,6 +130,7 @@ void ShellRunner::closeWriteChannel()
 
 void ShellRunner::onStarted()
 {
+    m_starting = false;
     m_running = true;
     // Flush any stdin buffered by write() calls that fired before this slot.
     // Order matters: write the bytes first, then close the channel — closing
@@ -214,6 +216,7 @@ void ShellRunner::onErrorOccurred(QProcess::ProcessError error)
     // already clears these defensively, but doing it here surfaces the intent
     // at the error site).
     if (error == QProcess::FailedToStart) {
+        m_starting = false;
         m_pendingStdin.clear();
         m_pendingCloseWriteChannel = false;
     }
