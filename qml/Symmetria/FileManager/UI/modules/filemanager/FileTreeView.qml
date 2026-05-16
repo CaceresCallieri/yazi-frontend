@@ -71,7 +71,17 @@ Item {
     // glance without expanding them.
     property var statusProvider: null
 
-    readonly property int indentPixels: 16
+    // Density multiplier applied to every size in the row delegate
+    // (row height, indent, icon dimensions, font point sizes, leading
+    // padding, inter-element spacing). Default 1.0 preserves the
+    // standalone FM look; consumers wanting an IDE-style high-density
+    // sidebar can pass values like 0.6–0.75 to fit more rows per
+    // viewport. Single multiplier on purpose — keeps ratios intact so
+    // small values still look proportionate (Material 3 "density"
+    // pattern). Goes below ~0.5 risk illegible fonts; use judgement.
+    property real compactScale: 1.0
+
+    readonly property int indentPixels: Math.round(16 * compactScale)
     readonly property var currentRow: (view.currentIndex >= 0 && view.currentIndex < _rows.length) ? _rows[view.currentIndex] : null
     readonly property var currentEntry: currentRow ? currentRow.entry : null
     readonly property int fileCount: _rows.length
@@ -708,7 +718,7 @@ Item {
             readonly property bool _isFlashMatch: !!_flashMatch
 
             width: ListView.view ? ListView.view.width : 0
-            implicitHeight: Config.fileManager.sizes.itemHeight
+            implicitHeight: Config.fileManager.sizes.itemHeight * root.compactScale
 
             // Search-match tint (rendered beneath the current-item highlight)
             Rectangle {
@@ -737,16 +747,16 @@ Item {
                     required property int index
                     width: 1
                     height: delegateRoot.height
-                    x: index * root.indentPixels + FmTheme.padding.lg
+                    x: index * root.indentPixels + FmTheme.padding.lg * root.compactScale
                     color: FmTheme.palette.outlineVariant
                     opacity: 0.4
                 }
             }
 
             Row {
-                x: delegateRoot.rowDepth * root.indentPixels + FmTheme.padding.lg
+                x: delegateRoot.rowDepth * root.indentPixels + FmTheme.padding.lg * root.compactScale
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: FmTheme.spacing.md
+                spacing: FmTheme.spacing.md * root.compactScale
 
                 // Dim non-matching rows during flash so labels stand out.
                 opacity: root.windowState && root.windowState.flashActive && !delegateRoot._isFlashMatch ? 0.25 : 1.0
@@ -757,15 +767,18 @@ Item {
                     visible: delegateRoot.rowIsDir
                     text: delegateRoot.rowExpanded ? "expand_more" : "chevron_right"
                     color: FmTheme.palette.onSurfaceVariant
-                    font.pointSize: FmTheme.font.size.md
+                    font.pointSize: FmTheme.font.size.md * root.compactScale
                 }
                 Item {
                     visible: !delegateRoot.rowIsDir
-                    width: FmTheme.font.size.md
+                    width: FmTheme.font.size.md * root.compactScale
                     height: 1
                 }
                 FileIcon {
                     anchors.verticalCenter: parent.verticalCenter
+                    width: FmTheme.font.size.xl * 1.5 * root.compactScale
+                    height: FmTheme.font.size.xl * 1.5 * root.compactScale
+                    materialPointSize: FmTheme.font.size.xl * root.compactScale
                     entry: delegateRoot.modelData ? delegateRoot.modelData.entry : null
                     materialIconName: {
                         if (!delegateRoot.modelData) return "description";
@@ -792,7 +805,7 @@ Item {
                         return name;
                     }
                     color: FmTheme.palette.onSurface
-                    font.pointSize: FmTheme.font.size.md
+                    font.pointSize: FmTheme.font.size.md * root.compactScale
                 }
                 Loader {
                     id: statusBadgeLoader
