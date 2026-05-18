@@ -118,8 +118,11 @@ function handleKey(event, root, view, pasteProcess, clipboardCopyProcess) {
                 view.currentIndex = Math.min(view.currentIndex + _halfPageCount(view), view.count - 1);
                 view.positionViewAtIndex(view.currentIndex, ListView.Contain);
             }
+        } else if (mods & Qt.ShiftModifier) {
+            // Shift+D — navigate history forward (mirrors the PathBar forward button)
+            root._saveCursorAndNavigate(function() { windowState.forward(); });
         } else {
-            // D — trash file(s) (request confirmation)
+            // d — trash file(s) (request confirmation)
             if (windowState.selectedCount > 0) {
                 windowState.requestDelete(windowState.getSelectedPathsArray());
                 windowState.clearSelection();
@@ -184,12 +187,17 @@ function handleKey(event, root, view, pasteProcess, clipboardCopyProcess) {
         break;
 
     case Qt.Key_S:
-        Logger.info("Flash", "S pressed → entering flash mode (cursor at " + view.currentIndex + ")");
-        root._preFlashIndex = view.currentIndex;
-        // Invalidate before starting — preview column entries may have changed
-        // since the last flash session (cursor moved to different directory entry).
-        FlashHandler.invalidateEntryCache();
-        windowState.startFlash();
+        if (mods & Qt.ShiftModifier) {
+            // Shift+S — navigate history back (mirrors the PathBar back button)
+            root._saveCursorAndNavigate(function() { windowState.back(); });
+        } else {
+            Logger.info("Flash", "S pressed → entering flash mode (cursor at " + view.currentIndex + ")");
+            root._preFlashIndex = view.currentIndex;
+            // Invalidate before starting — preview column entries may have changed
+            // since the last flash session (cursor moved to different directory entry).
+            FlashHandler.invalidateEntryCache();
+            windowState.startFlash();
+        }
         event.accepted = true;
         break;
 

@@ -940,6 +940,10 @@ Item {
                     view.currentIndex = Math.min(view.currentIndex + root._halfPageCount(), view.count - 1);
                     view.positionViewAtIndex(view.currentIndex, ListView.Contain);
                     event.accepted = true;
+                } else if ((mods & Qt.ShiftModifier) && root.windowState) {
+                    // Shift+D — navigate history forward (mirrors the PathBar forward button)
+                    root.windowState.forward();
+                    event.accepted = true;
                 }
                 break;
 
@@ -975,9 +979,14 @@ Item {
 
             case Qt.Key_S:
                 if (root.windowState) {
-                    root._preFlashIndex = view.currentIndex;
-                    TreeFlashHandler.invalidateEntryCache();
-                    root.windowState.startFlash();
+                    if (mods & Qt.ShiftModifier) {
+                        // Shift+S — navigate history back (mirrors the PathBar back button)
+                        root.windowState.back();
+                    } else {
+                        root._preFlashIndex = view.currentIndex;
+                        TreeFlashHandler.invalidateEntryCache();
+                        root.windowState.startFlash();
+                    }
                     event.accepted = true;
                 }
                 break;
